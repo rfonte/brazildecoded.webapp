@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Cadastre-se — BrazilDecoded</title>
+    <title>Leads — BrazilDecoded</title>
     <link rel="stylesheet" href="assets/style.css" />
   </head>
   <body>
@@ -20,35 +20,18 @@
     </header>
 
     <main id="maincontent" class="container" role="main">
-      <h1>Cadastre seu e-mail</h1>
+      <h1>Leads (admin)</h1>
       <p>
-        Receba ofertas, novidades e guias exclusivos diretamente no seu e-mail.
+        Esta página mostra os leads coletados localmente e permite
+        exportar/limpar.
       </p>
 
-      <form id="leadForm">
-        <label for="leadEmail">E-mail</label>
-        <input
-          id="leadEmail"
-          name="email"
-          type="email"
-          placeholder="seu@exemplo.com"
-          required
-        />
+      <div class="admin-actions">
+        <button id="exportLeads">Exportar CSV</button>
+        <button id="clearLeads">Limpar leads</button>
+      </div>
 
-        <label class="consent"
-          ><input id="consent" type="checkbox" required /> Quero receber
-          novidades e ofertas por e-mail.</label
-        >
-
-        <!-- Honeypot anti-bot field (hidden via CSS) -->
-        <label class="hp" style="display: none"
-          >Se você é humano, deixe este campo em branco:
-          <input id="hp_lead" name="hp_lead" type="text"
-        /></label>
-
-        <button type="submit">Quero receber</button>
-        <p class="form-feedback" id="leadFeedback" aria-live="polite"></p>
-      </form>
+      <div id="leadsList" class="leads-list" aria-live="polite"></div>
     </main>
 
     <footer class="site-footer">
