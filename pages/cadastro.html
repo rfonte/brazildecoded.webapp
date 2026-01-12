@@ -17,113 +17,127 @@
     <header class="site-header">
       <div class="container">
         <a class="brand" href="../index.html">BrazilDecoded</a>
-        <nav class="main-nav" role="navigation" aria-label="Main menu">
-          <a href="../index.html#buy">Buy</a>
-          <a href="../index.html#inside">Inside</a>
-          <a href="cadastro.html">Free Starter Kit</a>
-          <a href="contato.html">Contact</a>
+        <nav class="main-nav" aria-label="Main menu">
+          <ul>
+            <li><a href="../index.html#inside">Inside</a></li>
+            <li><a href="../index.html#buy">Checkout</a></li>
+            <li>
+              <a class="nav-cta" href="cadastro.html" aria-current="page"
+                >Free Starter Kit</a
+              >
+            </li>
+            <li><a href="contato.html">Contact</a></li>
+          </ul>
         </nav>
       </div>
     </header>
 
     <main id="maincontent" role="main">
-      <section class="hero">
-        <div class="container">
-          <h1>Free Brazil Travel Starter Kit</h1>
-          <p>
-            A short PDF with safety tips, cultural etiquette, and what locals
-            wish tourists knew. Delivered to your email.
-          </p>
-
-          <div class="hero-actions">
-            <a
-              class="cta ghost"
-              href="https://linktr.ee/brazildecoded"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Or use Linktree
-            </a>
+      <section class="hero" aria-labelledby="starter-title">
+        <div class="container hero-grid">
+          <div class="stack">
+            <p class="eyebrow">Free download</p>
+            <h1 id="starter-title">Free Brazil Travel Starter Kit</h1>
+            <p class="lead measure">
+              A short PDF with safety tips, cultural etiquette, and what locals
+              wish tourists knew. Delivered to your email.
+            </p>
+            <ul class="hero-highlights" aria-label="Kit highlights">
+              <li>Quick planning checklist</li>
+              <li>Safety and etiquette basics</li>
+              <li>Perfect for first-time visitors</li>
+            </ul>
           </div>
+
+          <aside class="card" aria-label="Starter kit summary">
+            <h2 class="card-title">What happens next</h2>
+            <p class="card-subtitle">
+              You will get the starter kit by email. This prototype stores
+              submissions locally.
+            </p>
+            <p class="section-note">
+              Swap to Tally or Mailchimp when you are ready for real delivery.
+            </p>
+          </aside>
         </div>
       </section>
 
-      <section class="container section">
-        <div class="panel">
-          <h2>Get it now</h2>
-          <p class="muted">
-            This form stores submissions in localStorage for this prototype.
-            Swap it to Tally/Mailchimp when you are ready.
-          </p>
-
-          <form class="lead-form" id="leadForm" action="#" method="post">
-            <label for="leadName">Your name (optional)</label>
-            <input
-              type="text"
-              id="leadName"
-              name="name"
-              autocomplete="name"
-              placeholder="John"
-            />
-
-            <label for="leadEmail">Your email</label>
-            <input
-              type="email"
-              id="leadEmail"
-              name="email"
-              autocomplete="email"
-              placeholder="you@email.com"
-              required
-            />
-
-            <label class="visually-hidden" for="hp_lead"
-              >Leave this field blank</label
-            >
-            <input
-              type="text"
-              id="hp_lead"
-              name="company"
-              class="visually-hidden"
-              tabindex="-1"
-              autocomplete="off"
-            />
-
-            <label>
-              <input type="checkbox" id="consent" name="consent" required />
-              I agree to receive emails about BrazilDecoded.
-            </label>
-
-            <button class="cta primary" type="submit">
-              Send me the Starter Kit
-            </button>
-
-            <p id="leadFeedback" class="form-feedback" role="status"></p>
-
+      <section class="section" aria-labelledby="form-title">
+        <div class="container">
+          <div class="card">
+            <h2 class="section-title" id="form-title">Send the kit to me</h2>
             <p class="section-note">
-              Next step: I can adapt this to Tally + Make + Google Sheets and
-              auto-send the PDF.
+              Use a real email so the kit reaches you.
             </p>
-          </form>
-        </div>
 
-        <div class="cta-row">
-          <a
-            class="cta primary"
-            href="https://pay.hotmart.com/L98856517I"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Buy on Hotmart
-          </a>
-          <a
-            class="cta secondary"
-            href="https://cafonte.gumroad.com/l/brazildecoded"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Buy on Gumroad
-          </a>
-          <a class="cta ghost" href="../index.html">Back home</a>
+            <form class="lead-form" id="leadForm" action="#" method="post">
+              <label for="leadName">Your name (optional)</label>
+              <input
+                type="text"
+                id="leadName"
+                name="name"
+                autocomplete="name"
+                placeholder="John"
+              />
+
+              <label for="leadEmail">Your email</label>
+              <input
+                type="email"
+                id="leadEmail"
+                name="email"
+                autocomplete="email"
+                placeholder="you@email.com"
+                required
+                aria-describedby="email-helper"
+              />
+              <p class="form-helper" id="email-helper">
+                We will only send the starter kit and BrazilDecoded updates.
+              </p>
+
+              <label class="visually-hidden" for="hp_lead"
+                >Leave this field blank</label
+              >
+              <input
+                type="text"
+                id="hp_lead"
+                name="company"
+                class="visually-hidden"
+                tabindex="-1"
+                autocomplete="off"
+              />
+
+              <label>
+                <input type="checkbox" id="consent" name="consent" required />
+                I agree to receive emails about BrazilDecoded.
+              </label>
+
+              <button class="cta primary" type="submit">
+                Send me the Starter Kit
+              </button>
+
+              <p id="leadFeedback" class="form-feedback" role="status"></p>
+            </form>
+          </div>
+
+          <div class="cta-row section">
+            <a
+              class="cta primary"
+              href="https://pay.hotmart.com/L98856517I"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Buy on Hotmart
+            </a>
+            <a
+              class="cta secondary"
+              href="https://cafonte.gumroad.com/l/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Buy on Gumroad
+            </a>
+            <a class="cta ghost" href="../index.html">Back home</a>
+          </div>
         </div>
       </section>
     </main>

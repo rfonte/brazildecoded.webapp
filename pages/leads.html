@@ -11,24 +11,26 @@
     <header class="site-header">
       <div class="container">
         <a class="brand" href="../index.html">BrazilDecoded</a>
-        <nav class="main-nav" role="navigation" aria-label="Menu principal">
-          <a href="../index.html">Inicio</a>
-          <a href="contato.html">Contato</a>
-          <a href="cadastro.html">Cadastro</a>
+        <nav class="main-nav" aria-label="Menu principal">
+          <ul>
+            <li><a href="../index.html">Inicio</a></li>
+            <li><a href="contato.html">Contato</a></li>
+            <li><a href="cadastro.html">Cadastro</a></li>
+          </ul>
         </nav>
       </div>
     </header>
 
-    <main id="maincontent" class="container" role="main">
-      <h1>Leads (admin)</h1>
-      <p>
+    <main id="maincontent" class="container section" role="main">
+      <h1 class="section-title">Leads (admin)</h1>
+      <p class="section-note">
         Esta pagina mostra os leads coletados localmente e permite
         exportar/limpar.
       </p>
 
       <div class="admin-actions">
-        <button id="exportLeads">Exportar CSV</button>
-        <button id="clearLeads">Limpar leads</button>
+        <button class="cta ghost" id="exportLeads">Exportar CSV</button>
+        <button class="cta secondary" id="clearLeads">Limpar leads</button>
       </div>
 
       <div id="leadsList" class="leads-list" aria-live="polite"></div>
