@@ -1,31 +1,31 @@
 # brazildecoded.webapp
 
-Site estático inicial para o projeto BrazilDecoded — Viagem & Turismo.
+Site estatico inicial para o projeto BrazilDecoded - Viagem & Turismo.
 
-Arquivos adicionados:
+Estrutura principal:
 
-- `index.html` — página inicial
-- `contato.html` — formulário de contato (salva em localStorage como protótipo)
-- `cadastro.html` — formulário de cadastro de e-mail (lead capture)
-- `assets/style.css` — estilos básicos e responsividade simples
-- `assets/script.js` — lógica de formulário para protótipo estático
-- `leads.html` — página administrativa para visualizar/exportar leads
+- `index.html` - pagina inicial
+- `pages/contato.html` - formulario de contato (salva em localStorage como prototipo)
+- `pages/cadastro.html` - formulario de cadastro de e-mail (lead capture)
+- `assets/css/style.css` - estilos e responsividade simples
+- `assets/js/script.js` - logica de formulario para prototipo estatico
+- `pages/leads.html` - pagina administrativa para visualizar/exportar leads
 
 Como abrir localmente:
 
 1. Abra o arquivo `index.html` no navegador (duplo-clique ou arraste para a janela do navegador).
-2. Os formulários gravam dados em `localStorage` como protótipo. Para ver os dados, abra o console do navegador e execute `localStorage.getItem('brazildecoded_leads')` ou `localStorage.getItem('brazildecoded_contacts')`.
+2. Os formularios gravam dados em `localStorage` como prototipo. Para ver os dados, abra o console do navegador e execute `localStorage.getItem('brazildecoded_leads')` ou `localStorage.getItem('brazildecoded_contacts')`.
 
-Administração local:
+Administracao local:
 
-- Abra `leads.html` para visualizar os leads coletados localmente, exportar como CSV ou limpar o armazenamento local.
+- Abra `pages/leads.html` para visualizar os leads coletados localmente, exportar como CSV ou limpar o armazenamento local.
 
-Próximos passos sugeridos:
+Proximos passos sugeridos:
 
 - Melhorar o layout e a acessibilidade.
-- Integrar um back-end ou serviço de e-mail para persistência real dos leads.
-- Adicionar validação e testes mais robustos.
+- Integrar um back-end ou servico de e-mail para persistencia real dos leads.
+- Adicionar validacao e testes mais robustos.
 
-Observações de privacidade e consentimento:
+Observacoes de privacidade e consentimento:
 
-- Os formulários agora incluem um checkbox de consentimento no cadastro de e-mail; não guarde ou envie dados pessoais sem consentimento.
+- O formulario de cadastro inclui um checkbox de consentimento; nao guarde ou envie dados pessoais sem consentimento.

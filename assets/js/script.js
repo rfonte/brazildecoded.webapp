@@ -1,6 +1,7 @@
-// Manipulação simples de formulários para protótipo estático
+// Simple form handling for a static prototype.
 (function () {
   function showMessage(el, msg, isError) {
+    if (!el) return;
     el.textContent = msg;
     el.style.color = isError ? "#b00020" : "";
   }
@@ -9,30 +10,36 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
+  var yearEl = document.getElementById("year");
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
+
   // Lead capture (cadastro)
   var leadForm = document.getElementById("leadForm");
   if (leadForm) {
     leadForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      var nameEl = document.getElementById("leadName");
       var emailEl = document.getElementById("leadEmail");
       var honeypot = document.getElementById("hp_lead");
       var consent = document.getElementById("consent");
+      var name = ((nameEl && nameEl.value) || "").trim();
       var email = ((emailEl && emailEl.value) || "").trim();
       var feedback = document.getElementById("leadFeedback");
 
       if (honeypot && honeypot.value) {
-        // bot detected — silently ignore
-        return;
+        return; // bot detected
       }
       if (!isValidEmail(email)) {
-        showMessage(feedback, "Por favor, informe um e-mail válido.", true);
-        emailEl.focus();
+        showMessage(feedback, "Por favor, informe um e-mail valido.", true);
+        if (emailEl) emailEl.focus();
         return;
       }
       if (consent && !consent.checked) {
         showMessage(
           feedback,
-          "É necessário aceitar receber comunicações.",
+          "E necessario aceitar receber comunicacoes.",
           true
         );
         consent.focus();
@@ -42,7 +49,7 @@
       var leads = JSON.parse(
         localStorage.getItem("brazildecoded_leads") || "[]"
       );
-      leads.push({ email: email, date: new Date().toISOString() });
+      leads.push({ name: name, email: email, date: new Date().toISOString() });
       localStorage.setItem("brazildecoded_leads", JSON.stringify(leads));
       showMessage(feedback, "Obrigado! Seu e-mail foi registrado.");
       leadForm.reset();
@@ -54,9 +61,10 @@
   if (contactForm) {
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var name = (document.getElementById("name").value || "").trim();
-      var email = (document.getElementById("email").value || "").trim();
-      var message = (document.getElementById("message").value || "").trim();
+      var name = (document.getElementById("contactName").value || "").trim();
+      var email = (document.getElementById("contactEmail").value || "").trim();
+      var message = (document.getElementById("contactMessage").value || "")
+        .trim();
       var honeypot = document.getElementById("hp_contact");
       var feedback = document.getElementById("contactFeedback");
 
@@ -68,7 +76,7 @@
         return;
       }
       if (!isValidEmail(email)) {
-        showMessage(feedback, "E-mail inválido.", true);
+        showMessage(feedback, "E-mail invalido.", true);
         return;
       }
 
@@ -104,6 +112,8 @@
             "<tr><td>" +
             (i + 1) +
             "</td><td>" +
+            (l.name || "-") +
+            "</td><td>" +
             l.email +
             "</td><td>" +
             new Date(l.date).toLocaleString() +
@@ -112,7 +122,7 @@
         })
         .join("");
       leadsList.innerHTML =
-        '<table class="leads-table"><thead><tr><th>#</th><th>E-mail</th><th>Data</th></tr></thead><tbody>' +
+        '<table class="leads-table"><thead><tr><th>#</th><th>Nome</th><th>E-mail</th><th>Data</th></tr></thead><tbody>' +
         rows +
         "</tbody></table>";
     }
@@ -127,10 +137,12 @@
         );
         if (!leads.length) return alert("Nenhum lead para exportar.");
         var csv =
-          "email,date\n" +
+          "name,email,date\n" +
           leads
             .map(function (l) {
-              return '"' + l.email.replace(/"/g, '""') + '",' + l.date;
+              var name = (l.name || "").replace(/"/g, '""');
+              var email = (l.email || "").replace(/"/g, '""');
+              return '"' + name + '","' + email + '",' + l.date;
             })
             .join("\n");
         var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

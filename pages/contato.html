@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>BrazilDecoded - Contact</title>
+    <meta name="description" content="Contact BrazilDecoded." />
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#maincontent">Skip to content</a>
+
+    <header class="site-header">
+      <div class="container">
+        <a class="brand" href="../index.html">BrazilDecoded</a>
+        <nav class="main-nav" role="navigation" aria-label="Main menu">
+          <a href="../index.html#buy">Buy</a>
+          <a href="cadastro.html">Free Starter Kit</a>
+          <a href="contato.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="maincontent" role="main">
+      <section class="hero">
+        <div class="container">
+          <h1>Contact</h1>
+          <p>Questions about the guide, partnerships, or support? Reach out.</p>
+
+          <div class="hero-actions">
+            <a
+              class="cta ghost"
+              href="https://linktr.ee/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              All links
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="container section">
+        <div class="panel">
+          <h2>Send a message</h2>
+          <p class="muted">
+            This form stores messages in localStorage for this prototype.
+          </p>
+
+          <form id="contactForm" action="#" method="post">
+            <label for="contactName">Your name</label>
+            <input
+              type="text"
+              id="contactName"
+              name="name"
+              autocomplete="name"
+              required
+            />
+
+            <label for="contactEmail">Your email</label>
+            <input
+              type="email"
+              id="contactEmail"
+              name="email"
+              autocomplete="email"
+              required
+            />
+
+            <label for="contactMessage">Message</label>
+            <textarea
+              id="contactMessage"
+              name="message"
+              rows="4"
+              required
+            ></textarea>
+
+            <label class="visually-hidden" for="hp_contact"
+              >Leave this field blank</label
+            >
+            <input
+              type="text"
+              id="hp_contact"
+              name="company"
+              class="visually-hidden"
+              tabindex="-1"
+              autocomplete="off"
+            />
+
+            <button class="cta primary" type="submit">Send message</button>
+            <p id="contactFeedback" class="form-feedback" role="status"></p>
+          </form>
+        </div>
+
+        <div class="panel section" aria-label="Social channels">
+          <h2>Where to find us</h2>
+          <p>
+            <strong>Instagram:</strong>
+            <a
+              href="https://www.instagram.com/visitbrazil.guide"
+              target="_blank"
+              rel="noopener noreferrer"
+              >@visitbrazil.guide</a
+            >
+          </p>
+          <p>
+            <strong>Pinterest:</strong>
+            <a
+              href="https://www.pinterest.com/rodcafonte"
+              target="_blank"
+              rel="noopener noreferrer"
+              >rodcafonte</a
+            >
+          </p>
+        </div>
+
+        <div class="cta-row">
+          <a
+            class="cta primary"
+            href="https://pay.hotmart.com/L98856517I"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy on Hotmart
+          </a>
+          <a
+            class="cta secondary"
+            href="https://cafonte.gumroad.com/l/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy on Gumroad
+          </a>
+          <a class="cta ghost" href="../index.html">Back home</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <p>
+          &copy; <span id="year"></span> BrazilDecoded. All rights reserved.
+        </p>
+        <div class="footer-links">
+          <a
+            href="https://www.instagram.com/visitbrazil.guide"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Instagram</a
+          >
+          <a
+            href="https://www.pinterest.com/rodcafonte"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Pinterest</a
+          >
+          <a
+            href="https://linktr.ee/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Linktree</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script src="../assets/js/script.js"></script>
+  </body>
+</html>

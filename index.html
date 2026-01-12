@@ -1,55 +1,379 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>BrazilDecoded — Viagem & Turismo</title>
-    <link rel="stylesheet" href="assets/style.css" />
+    <title>Brazil Decoded - Secrets to a Perfect Vacation</title>
+    <meta
+      name="description"
+      content="Practical travel tips, cultural insights, safety advice, transportation guidance, gastronomy, and must-see attractions to explore Brazil like a local."
+    />
+
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Brazil Decoded: Secrets to a Perfect Vacation"
+    />
+    <meta
+      property="og:description"
+      content="Travel smarter in Brazil with safety tips, cultural etiquette, transportation guidance, and must-see attractions."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/cover.png" />
+
+    <link rel="stylesheet" href="assets/css/style.css" />
   </head>
+
   <body>
-    <a class="skip-link" href="#maincontent">Pular para o conteúdo</a>
-    <header class="site-header">
+    <a class="skip-link" href="#maincontent">Skip to content</a>
+
+    <header class="site-header" id="top">
       <div class="container">
         <a class="brand" href="index.html">BrazilDecoded</a>
-        <nav class="main-nav" role="navigation" aria-label="Menu principal">
-          <a href="index.html">Início</a>
-          <a href="contato.html">Contato</a>
-          <a href="cadastro.html">Cadastre-se</a>
+
+        <nav class="main-nav" role="navigation" aria-label="Main menu">
+          <a href="#inside">Inside</a>
+          <a href="#creator">Creator</a>
+          <a href="#guarantee">Guarantee</a>
+          <a href="#faq">FAQ</a>
+          <a href="pages/cadastro.html">Free Starter Kit</a>
+          <a href="pages/contato.html">Contact</a>
         </nav>
       </div>
     </header>
 
     <main id="maincontent" role="main">
+      <!-- HERO -->
       <section class="hero">
         <div class="container">
-          <h1>Descubra destinos incríveis no Brasil</h1>
-          <p>Guias, dicas e pacotes para sua próxima viagem.</p>
-          <a class="cta" href="cadastro.html">Receba ofertas por e-mail</a>
+          <h1>Brazil Decoded: Secrets to a Perfect Vacation</h1>
+          <p>
+            A practical travel guide created by a Brazilian to help you explore
+            Brazil with more confidence, safety, and cultural insight.
+          </p>
+
+          <div class="hero-actions">
+            <a
+              class="cta primary"
+              href="https://pay.hotmart.com/L98856517I"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get Instant Access (Hotmart)
+            </a>
+
+            <a
+              class="cta secondary"
+              href="https://cafonte.gumroad.com/l/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Buy Internationally (Gumroad)
+            </a>
+
+            <a
+              class="cta ghost"
+              href="https://linktr.ee/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              All Links (Linktree)
+            </a>
+          </div>
+
+          <p class="hero-note">
+            Instant access - Read on any device - 7-day unconditional guarantee
+          </p>
         </div>
       </section>
 
-      <section class="features container">
+      <!-- FEATURES -->
+      <section class="features container" aria-label="Key benefits">
         <article>
-          <h2>Roteiros personalizados</h2>
-          <p>Itinerários feitos sob medida para cada estilo de viajante.</p>
+          <h2>Travel smarter and safer</h2>
+          <p>
+            Avoid common tourist mistakes, understand local scenarios, and
+            reduce risk with practical street-smart tips.
+          </p>
         </article>
+
         <article>
-          <h2>Suporte local</h2>
-          <p>Parceiros locais para experiências autênticas e seguras.</p>
+          <h2>Cultural etiquette that works</h2>
+          <p>
+            Learn how Brazilians greet, communicate, and what to do (and not do)
+            in everyday situations.
+          </p>
         </article>
+
         <article>
-          <h2>Ofertas exclusivas</h2>
-          <p>Descontos e promoções direto na sua caixa de entrada.</p>
+          <h2>Move like a local</h2>
+          <p>
+            Transportation guidance: airports, apps, taxis, public transit, and
+            how to avoid scams.
+          </p>
         </article>
+      </section>
+
+      <!-- BUY OPTIONS (quick comparison) -->
+      <section class="container section" id="buy">
+        <h2>Choose Your Checkout</h2>
+        <p>
+          Same eBook, two secure options. Pick the one that works best for you.
+        </p>
+
+        <div class="buy-grid" role="list">
+          <div class="buy-card" role="listitem" aria-label="Hotmart option">
+            <h3>Hotmart</h3>
+            <p class="muted">
+              Great if you want a classic checkout experience with immediate
+              access.
+            </p>
+            <ul class="mini-list">
+              <li>Instant access</li>
+              <li>Secure payment</li>
+              <li>7-day guarantee</li>
+            </ul>
+            <a
+              class="cta primary"
+              href="https://pay.hotmart.com/L98856517I"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Unlock the Guide (Hotmart)
+            </a>
+          </div>
+
+          <div class="buy-card" role="listitem" aria-label="Gumroad option">
+            <h3>Gumroad</h3>
+            <p class="muted">
+              Best for many international buyers and alternative payment
+              preferences.
+            </p>
+            <ul class="mini-list">
+              <li>International-friendly</li>
+              <li>Secure checkout</li>
+              <li>Fast delivery</li>
+            </ul>
+            <a
+              class="cta secondary"
+              href="https://cafonte.gumroad.com/l/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get the eBook (Gumroad)
+            </a>
+          </div>
+        </div>
+
+        <p class="section-note">
+          Tip: If you share a QR code in your Uber, you can point it to Linktree
+          for flexibility.
+        </p>
+      </section>
+
+      <!-- INSIDE -->
+      <section class="container section" id="inside">
+        <h2>Inside the Book</h2>
+        <p>
+          Built to be simple, direct, and useful - planning tips, arrival
+          guidance, culture and etiquette, safety, transportation, and practical
+          do's and don'ts. Perfect for first-time visitors.
+        </p>
+
+        <div class="cta-row">
+          <a
+            class="cta primary"
+            href="https://pay.hotmart.com/L98856517I"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy on Hotmart
+          </a>
+          <a
+            class="cta secondary"
+            href="https://cafonte.gumroad.com/l/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Buy on Gumroad
+          </a>
+          <a class="cta ghost" href="pages/cadastro.html">
+            Get the Free Starter Kit
+          </a>
+        </div>
+      </section>
+
+      <!-- CREATOR -->
+      <section class="container section" id="creator">
+        <h2>Get to Know the Creator</h2>
+        <p>
+          I'm Rodrigo - a Brazilian and travel enthusiast. I created this guide
+          to help international travelers experience Brazil in a more authentic
+          and safe way, with practical tips you can use right away.
+        </p>
+
+        <div class="creator-links">
+          <a
+            class="cta ghost"
+            href="https://www.instagram.com/visitbrazil.guide"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Instagram: @visitbrazil.guide
+          </a>
+          <a
+            class="cta ghost"
+            href="https://www.pinterest.com/rodcafonte"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Pinterest: travel pins
+          </a>
+        </div>
+      </section>
+
+      <!-- GUARANTEE -->
+      <section class="container section" id="guarantee">
+        <h2>Guarantee</h2>
+        <p>
+          7-day unconditional guarantee. If you're not satisfied for any reason,
+          request a refund within 7 days.
+        </p>
+
+        <div class="price-box" aria-label="Price and checkout">
+          <div>
+            <strong>Only</strong>
+            <span class="price">$15</span>
+            <span class="price-note"
+              >Instant access - Secure checkout - Read on any device</span
+            >
+          </div>
+
+          <div class="price-actions">
+            <a
+              class="cta primary"
+              href="https://pay.hotmart.com/L98856517I"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Checkout on Hotmart
+            </a>
+            <a
+              class="cta secondary"
+              href="https://cafonte.gumroad.com/l/brazildecoded"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Checkout on Gumroad
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="container section" id="faq">
+        <h2>Frequently Asked Questions</h2>
+
+        <div class="faq">
+          <details>
+            <summary>Who is this guide for?</summary>
+            <p>
+              Travelers from anywhere in the world who want to explore Brazil
+              with safety, confidence, and cultural insight - including
+              first-time visitors, families, and digital nomads.
+            </p>
+          </details>
+
+          <details>
+            <summary>How do I access the product?</summary>
+            <p>
+              After purchase, you receive access by email and can read/download
+              on phone, tablet, or computer.
+            </p>
+          </details>
+
+          <details>
+            <summary>Is the content the same on Hotmart and Gumroad?</summary>
+            <p>
+              Yes - it's the same eBook. The difference is only the checkout
+              platform (choose the one you prefer).
+            </p>
+          </details>
+
+          <details>
+            <summary>How does the 7-day guarantee work?</summary>
+            <p>
+              You have 7 days from purchase to request a full refund (no
+              questions asked), according to the platform's policy.
+            </p>
+          </details>
+
+          <details>
+            <summary>Is it good for first-time travelers?</summary>
+            <p>
+              Yes - it's designed exactly for people visiting Brazil for the
+              first time.
+            </p>
+          </details>
+        </div>
+
+        <div class="cta-row">
+          <a
+            class="cta primary"
+            href="https://pay.hotmart.com/L98856517I"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get it on Hotmart
+          </a>
+          <a
+            class="cta secondary"
+            href="https://cafonte.gumroad.com/l/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get it on Gumroad
+          </a>
+          <a
+            class="cta ghost"
+            href="https://linktr.ee/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            See all links
+          </a>
+        </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <div class="container">
-        <p>&copy; 2026 BrazilDecoded. Todos os direitos reservados.</p>
+      <div class="container footer-grid">
+        <p>
+          &copy; <span id="year"></span> BrazilDecoded. All rights reserved.
+        </p>
+        <div class="footer-links">
+          <a
+            href="https://www.instagram.com/visitbrazil.guide"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Instagram</a
+          >
+          <a
+            href="https://www.pinterest.com/rodcafonte"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Pinterest</a
+          >
+          <a
+            href="https://linktr.ee/brazildecoded"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Linktree</a
+          >
+        </div>
       </div>
     </footer>
 
-    <script src="assets/script.js"></script>
+    <script src="assets/js/script.js"></script>
   </body>
 </html>
