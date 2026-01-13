@@ -79,13 +79,13 @@ describe("starter-kit utils", () => {
     );
     const code = readFileSync(scriptPath, "utf8");
     const sandbox = {
-      window: {},
       URLSearchParams,
     };
+    sandbox.window = sandbox;
     const context = createContext(sandbox);
     const script = new Script(code, { filename: scriptPath });
     script.runInContext(context);
-    expect(context.window.BDStarterKit).toBeTruthy();
-    expect(typeof context.window.BDStarterKit.isValidEmail).toBe("function");
+    expect(context.BDStarterKit).toBeTruthy();
+    expect(typeof context.BDStarterKit.isValidEmail).toBe("function");
   });
 });
