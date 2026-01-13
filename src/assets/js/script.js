@@ -15,44 +15,108 @@
     yearEl.textContent = new Date().getFullYear();
   }
 
-  // Lead capture (cadastro)
-  var leadForm = document.getElementById("leadForm");
-  if (leadForm) {
-    leadForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var nameEl = document.getElementById("leadName");
-      var emailEl = document.getElementById("leadEmail");
-      var honeypot = document.getElementById("hp_lead");
-      var consent = document.getElementById("consent");
-      var name = ((nameEl && nameEl.value) || "").trim();
-      var email = ((emailEl && emailEl.value) || "").trim();
-      var feedback = document.getElementById("leadFeedback");
+  // Starter kit form (Make webhook)
+  var starterForm = document.getElementById("starterKitForm");
+  if (starterForm) {
+    var submitBtn = document.getElementById("leadSubmit");
+    var consent = document.getElementById("consent");
+    var consentHelper = document.getElementById("consentHelper");
+    var statusEl = starterForm.querySelector("[data-status]");
 
-      if (honeypot && honeypot.value) {
-        return; // bot detected
+    function getUTM() {
+      var params = new URLSearchParams(window.location.search);
+      return {
+        utm_source: params.get("utm_source") || "",
+        utm_medium: params.get("utm_medium") || "",
+        utm_campaign: params.get("utm_campaign") || "",
+      };
+    }
+
+    function syncConsent() {
+      if (!submitBtn || !consent) return;
+      // Keep the button interactive (avoid native disabled) so clicks
+      // can be handled and a helpful message shown if consent is missing.
+      submitBtn.classList.toggle("disabled", !consent.checked);
+      submitBtn.setAttribute(
+        "aria-disabled",
+        !consent.checked ? "true" : "false"
+      );
+      if (consentHelper) {
+        consentHelper.textContent = consent.checked
+          ? "Thanks! You can submit the form now."
+          : "You must accept the consent to enable the button.";
       }
+    }
+
+    if (consent) {
+      consent.addEventListener("change", syncConsent);
+    }
+    syncConsent();
+
+    starterForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var honeypot = starterForm.querySelector('input[name="company"]');
+      if (honeypot && honeypot.value) return;
+
+      var email = ((starterForm.email && starterForm.email.value) || "").trim();
+      var name = ((starterForm.name && starterForm.name.value) || "").trim();
+      var makeUrl = starterForm.getAttribute("data-make-url") || "";
+
       if (!isValidEmail(email)) {
-        showMessage(feedback, "Por favor, informe um e-mail valido.", true);
-        if (emailEl) emailEl.focus();
+        showMessage(statusEl, "Please enter a valid email.", true);
+        if (starterForm.email) starterForm.email.focus();
         return;
       }
       if (consent && !consent.checked) {
         showMessage(
-          feedback,
-          "E necessario aceitar receber comunicacoes.",
+          statusEl,
+          "You must accept the consent to enable the button.",
           true
         );
         consent.focus();
         return;
       }
+      if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+        showMessage(
+          statusEl,
+          "Missing Make webhook URL. Please update the form settings.",
+          true
+        );
+        return;
+      }
 
-      var leads = JSON.parse(
-        localStorage.getItem("brazildecoded_leads") || "[]"
-      );
-      leads.push({ name: name, email: email, date: new Date().toISOString() });
-      localStorage.setItem("brazildecoded_leads", JSON.stringify(leads));
-      showMessage(feedback, "Obrigado! Seu e-mail foi registrado.");
-      leadForm.reset();
+      showMessage(statusEl, "Sending...");
+
+      var payload = {
+        type: "starter_kit",
+        email: email,
+        name: name,
+        page: window.location.pathname,
+        referrer: document.referrer || "",
+        user_agent: navigator.userAgent || "",
+      };
+
+      var utm = getUTM();
+      payload.utm_source = utm.utm_source;
+      payload.utm_medium = utm.utm_medium;
+      payload.utm_campaign = utm.utm_campaign;
+
+      fetch(makeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Request failed");
+          window.location.href = "/pages/thank-you.html";
+        })
+        .catch(function () {
+          showMessage(
+            statusEl,
+            "Something went wrong. Please try again.",
+            true
+          );
+        });
     });
   }
 
@@ -63,8 +127,9 @@
       e.preventDefault();
       var name = (document.getElementById("contactName").value || "").trim();
       var email = (document.getElementById("contactEmail").value || "").trim();
-      var message = (document.getElementById("contactMessage").value || "")
-        .trim();
+      var message = (
+        document.getElementById("contactMessage").value || ""
+      ).trim();
       var honeypot = document.getElementById("hp_contact");
       var feedback = document.getElementById("contactFeedback");
 

@@ -23,9 +23,16 @@
 body {
   margin: 0;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, rgba(14, 140, 102, 0.1), transparent 45%),
-    radial-gradient(circle at 30% 20%, rgba(241, 228, 210, 0.6), transparent 40%),
+  background: radial-gradient(
+      circle at top left,
+      rgba(14, 140, 102, 0.1),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 30% 20%,
+      rgba(241, 228, 210, 0.6),
+      transparent 40%
+    ),
     linear-gradient(180deg, #fff9f2 0%, var(--bg) 45%, #f7f1ea 100%);
   font-family: var(--font-sans);
   line-height: 1.6;
@@ -203,13 +210,27 @@ button.cta {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    background 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.cta.disabled,
+button.cta.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  pointer-events: auto; /* still allow clicks so script can react */
 }
 .cta:hover,
 button.cta:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-soft);
+}
+.cta:disabled,
+button.cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 .cta.secondary {
   background: var(--ink);
