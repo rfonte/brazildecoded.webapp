@@ -5,6 +5,7 @@
 
 # Business and product improvements
 
+- criar logo do instagram e do pinterest e do linktree na home
 - Thank-you page with a clear upsell and CTA to buy.
 - Email sequence (welcome + tips + offer) via Make.
 - Segmented lead magnets (first-time visitors, families, nomads).
@@ -73,8 +74,12 @@
 - Video mini-course.
 - Partnerships and affiliates with UTM tracking.
 
-#lgpd
-- termo de uso
+## LGPD
+- termom de aceite cookies
+- no rodapé, página de ccokies, privacy e terms and conditions
+https://help.x.com/rules-and-policies/twitter-cookies
+https://x.com/privacy
+https://x.com/tos
 - política de privacidade texto: A Bancorbrás valoriza sua privacidade e usará seus dados exclusivamente para fins de marketing, conforme a Política de Privacidade. 
 https://www.bancorbras.com.br/politica-de-privacidade/
 chkbox: Concordo com o tratamento dos meus dados pessoais conforme descrito.
