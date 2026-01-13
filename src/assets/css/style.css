@@ -105,10 +105,20 @@ a {
   gap: 1rem;
 }
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   font-weight: 700;
   text-decoration: none;
   color: var(--accent);
   letter-spacing: 0.3px;
+}
+.brand img {
+  height: 36px;
+  width: auto;
+}
+.brand-text {
+  font-size: 1.05rem;
 }
 .main-nav ul {
   list-style: none;

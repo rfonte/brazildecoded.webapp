@@ -3,6 +3,7 @@
   "description": "Practical Brazil travel guide with safety tips, local etiquette, transportation, and essential itineraries.",
   "gtmId": "GTM-PS36XKLG",
   "baseUrl": "https://brazildecoded.com.br",
+  "logo": "/images/logo.png",
   "buildVersion": "20260113",
   "nav": [
     { "label": "Inside", "href": "/index.html#inside", "key": "inside" },

@@ -91,7 +91,18 @@
 
     <header class="site-header" id="top">
       <div class="container">
-        <a class="brand" href="/index.html">{{ site.brand }}</a>
+        <a class="brand" href="/index.html" aria-label="{{ site.brand }}">
+          {% if site.logo %}
+          <img
+            src="{{ site.logo }}"
+            alt="{{ site.brand }} logo"
+            width="140"
+            height="40"
+            loading="lazy"
+          />
+          {% endif %}
+          <span class="brand-text visually-hidden">{{ site.brand }}</span>
+        </a>
         <nav class="main-nav" aria-label="Main menu">
           <ul>
             {% for item in site.nav %}
