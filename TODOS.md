@@ -1,10 +1,8 @@
 # Technical improvements
 - adicionar favicon
-- adicionar logo
 - Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).
-- Add lightweight error monitoring (Sentry or custom logging).
 
 # Business and product improvements
 

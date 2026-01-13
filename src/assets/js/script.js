@@ -7,6 +7,43 @@
   }
 
   var starterKitUtils = window.BDStarterKit || {};
+  var LOG_KEY = "brazildecoded_logs";
+
+  function logEvent(level, message, meta) {
+    try {
+      var existing = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+      var entry = {
+        level: level,
+        message: message,
+        meta: meta || {},
+        page: window.location.pathname,
+        timestamp: new Date().toISOString(),
+      };
+      existing.push(entry);
+      if (existing.length > 200) {
+        existing = existing.slice(existing.length - 200);
+      }
+      localStorage.setItem(LOG_KEY, JSON.stringify(existing));
+    } catch (err) {
+      // Do not throw while logging.
+    }
+  }
+
+  window.addEventListener("error", function (event) {
+    logEvent("error", event.message || "Script error", {
+      filename: event.filename || "",
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+    });
+  });
+
+  window.addEventListener("unhandledrejection", function (event) {
+    var reason = event.reason;
+    logEvent("error", "Unhandled promise rejection", {
+      message:
+        reason && reason.message ? reason.message : String(reason || ""),
+    });
+  });
   function isValidEmail(email) {
     if (starterKitUtils.isValidEmail) {
       return starterKitUtils.isValidEmail(email);
@@ -26,6 +63,7 @@
     var consent = document.getElementById("consent");
     var consentHelper = document.getElementById("consentHelper");
     var statusEl = starterForm.querySelector("[data-status]");
+    logEvent("info", "Starter kit form ready");
 
     function getUTM() {
       if (starterKitUtils.getUTM) {
@@ -63,6 +101,7 @@
       try {
         var honeypot = starterForm.querySelector('input[name="company_hp"]');
         if (honeypot && honeypot.value) {
+          logEvent("warn", "Starter kit blocked by honeypot");
           return;
         }
 
@@ -73,15 +112,18 @@
         var makeUrl = starterForm.getAttribute("data-make-url") || "";
 
         if (!emailField) {
+          logEvent("error", "Starter kit email field missing");
           return;
         }
 
         if (!isValidEmail(email)) {
+          logEvent("warn", "Starter kit invalid email", { email: email });
           showMessage(statusEl, "Please enter a valid email.", true);
           emailField.focus();
           return;
         }
         if (consent && !consent.checked) {
+          logEvent("warn", "Starter kit missing consent");
           showMessage(
             statusEl,
             "You must accept the consent to enable the button.",
@@ -91,6 +133,7 @@
           return;
         }
         if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+          logEvent("error", "Starter kit webhook missing");
           showMessage(
             statusEl,
             "Missing Make webhook URL. Please update the form settings.",
@@ -100,6 +143,7 @@
         }
 
         showMessage(statusEl, "Sending...");
+        logEvent("info", "Starter kit submit started");
         if (submitBtn) {
           submitBtn.disabled = true;
           submitBtn.setAttribute("aria-disabled", "true");
@@ -142,12 +186,18 @@
           })
           .then(function (result) {
             if (!result.ok) throw new Error("Request failed");
+            logEvent("info", "Starter kit webhook success", {
+              status: result.status,
+            });
             showMessage(statusEl, "Sending...");
             setTimeout(function () {
               window.location.href = "/pages/contato-sucesso.html";
             }, 800);
           })
           .catch(function (err) {
+            logEvent("error", "Starter kit webhook failed", {
+              message: err && err.message ? err.message : String(err || ""),
+            });
             showMessage(
               statusEl,
               "Something went wrong. Please try again.",
@@ -162,6 +212,9 @@
             }
           });
       } catch (err) {
+        logEvent("error", "Starter kit submit exception", {
+          message: err && err.message ? err.message : String(err || ""),
+        });
         showMessage(
           statusEl,
           "Unexpected error during submission. Please try again.",
@@ -185,13 +238,16 @@
       var feedback = document.getElementById("contactFeedback");
 
       if (honeypot && honeypot.value) {
+        logEvent("warn", "Contact blocked by honeypot");
         return; // bot
       }
       if (!name || !email || !message) {
+        logEvent("warn", "Contact missing fields");
         showMessage(feedback, "Please fill in all fields.", true);
         return;
       }
       if (!isValidEmail(email)) {
+        logEvent("warn", "Contact invalid email", { email: email });
         showMessage(feedback, "Invalid email.", true);
         return;
       }
@@ -206,6 +262,7 @@
         date: new Date().toISOString(),
       });
       localStorage.setItem("brazildecoded_contacts", JSON.stringify(contacts));
+      logEvent("info", "Contact stored locally");
       showMessage(feedback, "Message sent. Thank you!");
       contactForm.reset();
     });
@@ -245,6 +302,8 @@
 
     var btnExport = document.getElementById("exportLeads");
     var btnClear = document.getElementById("clearLeads");
+    var btnExportLogs = document.getElementById("exportLogs");
+    var btnClearLogs = document.getElementById("clearLogs");
 
     if (btnExport) {
       btnExport.addEventListener("click", function () {
@@ -268,6 +327,7 @@
         a.download = "brazildecoded_leads.csv";
         a.click();
         URL.revokeObjectURL(url);
+        logEvent("info", "Leads exported");
       });
     }
 
@@ -276,6 +336,31 @@
         if (!confirm("Clear all locally stored leads?")) return;
         localStorage.removeItem("brazildecoded_leads");
         renderLeads();
+        logEvent("info", "Leads cleared");
+      });
+    }
+
+    if (btnExportLogs) {
+      btnExportLogs.addEventListener("click", function () {
+        var logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+        if (!logs.length) return alert("No logs to export.");
+        var blob = new Blob([JSON.stringify(logs, null, 2)], {
+          type: "application/json;charset=utf-8;",
+        });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "brazildecoded_logs.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (btnClearLogs) {
+      btnClearLogs.addEventListener("click", function () {
+        if (!confirm("Clear all locally stored logs?")) return;
+        localStorage.removeItem(LOG_KEY);
+        logEvent("info", "Logs cleared");
       });
     }
 
