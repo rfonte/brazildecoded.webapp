@@ -669,4 +669,235 @@ describe("script.js", () => {
     const logs = getLogs();
     expect(logs.length).toBeGreaterThan(1);
   });
+
+  it("exposes helper API on window.BDApp", async () => {
+    await loadScript();
+    expect(window.BDApp).toBeTruthy();
+    expect(typeof window.BDApp.logEvent).toBe("function");
+    expect(typeof window.BDApp.getUTM).toBe("function");
+    expect(typeof window.BDApp.buildPayload).toBe("function");
+    expect(typeof window.BDApp.renderLeads).toBe("function");
+  });
+
+  it("uses helper email validator when provided", async () => {
+    window.BDStarterKit = { isValidEmail: vi.fn(() => true) };
+    await loadScript();
+    expect(window.BDApp.isValidEmail("user@example.com")).toBe(true);
+    expect(window.BDStarterKit.isValidEmail).toHaveBeenCalled();
+  });
+
+  it("builds payload with helper and fallback UTM", async () => {
+    await loadScript();
+    const helper = { buildPayload: vi.fn(() => ({ ok: true })) };
+    const helperPayload = window.BDApp.buildPayload({
+      email: "",
+      name: "",
+      page: "",
+      referrer: "",
+      userAgent: "",
+      queryString: "",
+      utils: helper,
+    });
+    expect(helper.buildPayload).toHaveBeenCalled();
+    expect(helper.buildPayload.mock.calls[0][0]).toMatchObject({
+      type: "starter_kit",
+      email: "",
+      name: "",
+      page: "",
+      referrer: "",
+      userAgent: "",
+      queryString: "",
+    });
+    expect(helperPayload.ok).toBe(true);
+
+    const fallbackPayload = window.BDApp.buildPayload({
+      email: "user@example.com",
+      name: "User",
+      page: "/page",
+      referrer: "",
+      userAgent: "ua",
+      queryString: "?utm_source=src&utm_medium=med&utm_campaign=cmp",
+      utils: {},
+    });
+    expect(fallbackPayload.utm_source).toBe("src");
+    expect(fallbackPayload.user_agent).toBe("ua");
+  });
+
+  it("getUTM uses helper or falls back to URLSearchParams", async () => {
+    await loadScript();
+    const helper = {
+      getUTM: vi.fn(() => ({
+        utm_source: "x",
+        utm_medium: "y",
+        utm_campaign: "z",
+      })),
+    };
+    const helperUtm = window.BDApp.getUTM("?utm_source=a", helper);
+    expect(helper.getUTM).toHaveBeenCalled();
+    expect(helperUtm.utm_source).toBe("x");
+
+    const fallbackUtm = window.BDApp.getUTM(
+      "?utm_source=src&utm_medium=med&utm_campaign=cmp"
+    );
+    expect(fallbackUtm.utm_campaign).toBe("cmp");
+  });
+
+  it("setButtonState toggles aria-disabled and handles null", async () => {
+    await loadScript();
+    const button = document.createElement("button");
+    window.BDApp.setButtonState(button, true);
+    expect(button.disabled).toBe(false);
+    expect(button.getAttribute("aria-disabled")).toBe("false");
+    window.BDApp.setButtonState(button, false);
+    expect(button.disabled).toBe(true);
+    expect(button.getAttribute("aria-disabled")).toBe("true");
+    window.BDApp.setButtonState(null, true);
+  });
+
+  it("logEvent handles storage failures safely", async () => {
+    await loadScript();
+    const realSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = vi.fn(() => {
+      throw new Error("boom");
+    });
+    expect(() => window.BDApp.logEvent("info", "test")).not.toThrow();
+    localStorage.setItem = realSetItem;
+  });
+
+  it("handles regex email validation with no helper", async () => {
+    await loadScript();
+    expect(window.BDApp.isValidEmail("bad-email")).toBe(false);
+  });
+
+  it("returns false when renderLeads has no element", async () => {
+    await loadScript();
+    expect(window.BDApp.renderLeads(null)).toBe(false);
+  });
+
+  it("clears leads and invokes render callback when confirmed", async () => {
+    await loadScript();
+    localStorage.setItem(
+      "brazildecoded_leads",
+      JSON.stringify([{ name: "User", email: "u@e.com", date: "now" }])
+    );
+    window.confirm = vi.fn(() => true);
+    const renderSpy = vi.fn();
+    expect(window.BDApp.clearLeads(renderSpy)).toBe(true);
+    expect(renderSpy).toHaveBeenCalled();
+  });
+
+  it("exports leads with quoted email and name", async () => {
+    await loadScript();
+    localStorage.setItem(
+      "brazildecoded_leads",
+      JSON.stringify([
+        { name: 'User "Quote"', email: 'a"b@example.com', date: "now" },
+      ])
+    );
+    expect(window.BDApp.exportLeads()).toBe(true);
+    expect(URL.createObjectURL).toHaveBeenCalled();
+  });
+
+  it("export and clear helpers return expected results", async () => {
+    setHtml('<div id="leadsList"></div>');
+    await loadScript();
+    window.alert = vi.fn();
+    window.confirm = vi.fn(() => false);
+    localStorage.removeItem("brazildecoded_leads");
+    localStorage.removeItem(logKey);
+    expect(window.BDApp.exportLeads()).toBe(false);
+    expect(window.BDApp.exportLogs()).toBe(false);
+    expect(window.BDApp.clearLeads(() => {})).toBe(false);
+    expect(window.BDApp.clearLogs()).toBe(false);
+
+    localStorage.setItem(
+      "brazildecoded_leads",
+      JSON.stringify([{ name: "User", email: "u@e.com", date: "now" }])
+    );
+    localStorage.setItem(
+      logKey,
+      JSON.stringify([{ level: "info", message: "log", timestamp: "now" }])
+    );
+    window.confirm = vi.fn(() => true);
+    expect(window.BDApp.exportLeads()).toBe(true);
+    expect(window.BDApp.exportLogs()).toBe(true);
+    expect(window.BDApp.clearLeads(() => {})).toBe(true);
+    expect(window.BDApp.clearLogs()).toBe(true);
+  });
+
+  it("passes userAgent and queryString when submitting with buildPayload", async () => {
+    setLocation("/pages/cadastro.html");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="name" id="leadName" />
+        <input type="text" name="company_hp" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    const payloadSpy = vi.fn(() => ({ ok: true }));
+    window.BDStarterKit = { buildPayload: payloadSpy, isValidEmail: () => true };
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve("OK"),
+      })
+    );
+    window.location.search = "?utm_source=test";
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    submitForm("starterKitForm");
+    await flushPromises();
+    await flushPromises();
+    expect(payloadSpy).toHaveBeenCalled();
+    expect(payloadSpy.mock.calls[0][0].userAgent).toBe(navigator.userAgent);
+    expect(payloadSpy.mock.calls[0][0].queryString).toBe("?utm_source=test");
+  });
+
+  it("logs string errors when webhook rejects with a string", async () => {
+    setLocation("/pages/cadastro.html");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    window.fetch = vi.fn(() => Promise.reject("fail"));
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    submitForm("starterKitForm");
+    await flushPromises();
+    await flushPromises();
+    const logs = getLogs();
+    const match = logs.find((log) => log.message === "Starter kit webhook failed");
+    expect(match.meta.message).toBe("fail");
+  });
+
+  it("logs string errors when submit handler throws a non-error", async () => {
+    setLocation("/pages/cadastro.html");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    await loadScript();
+    const form = document.getElementById("starterKitForm");
+    form.querySelector = () => {
+      throw "boom";
+    };
+    submitForm("starterKitForm");
+    const logs = getLogs();
+    const match = logs.find((log) => log.message === "Starter kit submit exception");
+    expect(match.meta.message).toBe("boom");
+  });
 });

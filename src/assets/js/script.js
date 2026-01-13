@@ -1,5 +1,7 @@
 // Simple form handling for a static prototype.
 (function () {
+  var app = window.BDApp || {};
+  window.BDApp = app;
   function showMessage(el, msg, isError) {
     if (!el) return;
     el.textContent = msg;
@@ -28,6 +30,157 @@
       // Do not throw while logging.
     }
   }
+
+  function setButtonState(button, enabled) {
+    if (!button) return;
+    button.disabled = !enabled;
+    button.setAttribute("aria-disabled", button.disabled ? "true" : "false");
+  }
+
+  function getUTM(search, utils) {
+    var helper = utils || starterKitUtils;
+    if (helper.getUTM) {
+      return helper.getUTM(search);
+    }
+    var params = new URLSearchParams(search || "");
+    return {
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
+    };
+  }
+
+  function buildPayload(options) {
+    var helper = options.utils || starterKitUtils;
+    if (helper.buildPayload) {
+      return helper.buildPayload({
+        type: "starter_kit",
+        email: options.email || "",
+        name: options.name || "",
+        page: options.page || "",
+        referrer: options.referrer || "",
+        userAgent: options.userAgent || "",
+        queryString: options.queryString || "",
+      });
+    }
+    var utm = getUTM(options.queryString || "", helper);
+    return {
+      type: "starter_kit",
+      email: options.email || "",
+      name: options.name || "",
+      page: options.page || "",
+      referrer: options.referrer || "",
+      user_agent: options.userAgent || "",
+      utm_source: utm.utm_source,
+      utm_medium: utm.utm_medium,
+      utm_campaign: utm.utm_campaign,
+    };
+  }
+
+  function renderLeads(listEl) {
+    if (!listEl) return false;
+    var leads = JSON.parse(
+      localStorage.getItem("brazildecoded_leads") || "[]"
+    );
+    if (!leads.length) {
+      listEl.innerHTML = "<p>No leads found.</p>";
+      return false;
+    }
+    var rows = leads
+      .map(function (l, i) {
+        return (
+          "<tr><td>" +
+          (i + 1) +
+          "</td><td>" +
+          (l.name || "-") +
+          "</td><td>" +
+          l.email +
+          "</td><td>" +
+          new Date(l.date).toLocaleString() +
+          "</td></tr>"
+        );
+      })
+      .join("");
+    listEl.innerHTML =
+      '<table class="leads-table"><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Date</th></tr></thead><tbody>' +
+      rows +
+      "</tbody></table>";
+    return true;
+  }
+
+  function exportLeads() {
+    var leads = JSON.parse(localStorage.getItem("brazildecoded_leads") || "[]");
+    if (!leads.length) {
+      alert("No leads to export.");
+      return false;
+    }
+    var csv =
+      "name,email,date\n" +
+      leads
+        .map(function (l) {
+          var name = (l.name || "").replace(/"/g, '""');
+          var email = (l.email || "").replace(/"/g, '""');
+          return '"' + name + '","' + email + '",' + l.date;
+        })
+        .join("\n");
+    var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "brazildecoded_leads.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    logEvent("info", "Leads exported");
+    return true;
+  }
+
+  function clearLeads(renderFn) {
+    if (!confirm("Clear all locally stored leads?")) return false;
+    localStorage.removeItem("brazildecoded_leads");
+    if (renderFn) {
+      renderFn();
+    }
+    logEvent("info", "Leads cleared");
+    return true;
+  }
+
+  function exportLogs() {
+    var logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+    if (!logs.length) {
+      alert("No logs to export.");
+      return false;
+    }
+    var blob = new Blob([JSON.stringify(logs, null, 2)], {
+      type: "application/json;charset=utf-8;",
+    });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "brazildecoded_logs.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+  }
+
+  function clearLogs() {
+    if (!confirm("Clear all locally stored logs?")) return false;
+    localStorage.removeItem(LOG_KEY);
+    logEvent("info", "Logs cleared");
+    return true;
+  }
+
+  app.showMessage = showMessage;
+  app.logEvent = logEvent;
+  app.isValidEmail = isValidEmail;
+  app.getUTM = getUTM;
+  app.buildPayload = buildPayload;
+  app.setButtonState = setButtonState;
+  app.renderLeads = renderLeads;
+  app.exportLeads = exportLeads;
+  app.clearLeads = clearLeads;
+  app.exportLogs = exportLogs;
+  app.clearLogs = clearLogs;
+  app.LOG_KEY = LOG_KEY;
 
   window.addEventListener("error", function (event) {
     logEvent("error", event.message || "Script error", {
@@ -65,25 +218,9 @@
     var statusEl = starterForm.querySelector("[data-status]");
     logEvent("info", "Starter kit form ready");
 
-    function getUTM() {
-      if (starterKitUtils.getUTM) {
-        return starterKitUtils.getUTM(window.location.search);
-      }
-      var params = new URLSearchParams(window.location.search);
-      return {
-        utm_source: params.get("utm_source") || "",
-        utm_medium: params.get("utm_medium") || "",
-        utm_campaign: params.get("utm_campaign") || "",
-      };
-    }
-
     function syncConsent() {
       if (!submitBtn || !consent) return;
-      submitBtn.disabled = !consent.checked;
-      submitBtn.setAttribute(
-        "aria-disabled",
-        submitBtn.disabled ? "true" : "false"
-      );
+      setButtonState(submitBtn, consent.checked);
       if (consentHelper) {
         consentHelper.textContent = consent.checked
           ? "Thanks! You can submit the form now."
@@ -144,35 +281,17 @@
 
         showMessage(statusEl, "Sending...");
         logEvent("info", "Starter kit submit started");
-        if (submitBtn) {
-          submitBtn.disabled = true;
-          submitBtn.setAttribute("aria-disabled", "true");
-        }
+        setButtonState(submitBtn, false);
 
-        var payload = starterKitUtils.buildPayload
-          ? starterKitUtils.buildPayload({
-              type: "starter_kit",
-              email: email,
-              name: name,
-              page: window.location.pathname,
-              referrer: document.referrer || "",
-              userAgent: navigator.userAgent || "",
-              queryString: window.location.search,
-            })
-          : (function () {
-              var utm = getUTM();
-              return {
-                type: "starter_kit",
-                email: email,
-                name: name,
-                page: window.location.pathname,
-                referrer: document.referrer || "",
-                user_agent: navigator.userAgent || "",
-                utm_source: utm.utm_source,
-                utm_medium: utm.utm_medium,
-                utm_campaign: utm.utm_campaign,
-              };
-            })();
+        var payload = buildPayload({
+          email: email,
+          name: name,
+          page: window.location.pathname,
+          referrer: document.referrer || "",
+          userAgent: navigator.userAgent || "",
+          queryString: window.location.search,
+          utils: starterKitUtils,
+        });
 
         fetch(makeUrl, {
           method: "POST",
@@ -203,13 +322,7 @@
               "Something went wrong. Please try again.",
               true
             );
-            if (submitBtn) {
-              submitBtn.disabled = !consent || !consent.checked;
-              submitBtn.setAttribute(
-                "aria-disabled",
-                submitBtn.disabled ? "true" : "false"
-              );
-            }
+            setButtonState(submitBtn, consent && consent.checked);
           });
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
@@ -271,99 +384,34 @@
   // Admin: leads viewer (leads.html)
   var leadsList = document.getElementById("leadsList");
   if (leadsList) {
-    function renderLeads() {
-      var leads = JSON.parse(
-        localStorage.getItem("brazildecoded_leads") || "[]"
-      );
-      if (!leads.length) {
-        leadsList.innerHTML = "<p>No leads found.</p>";
-        return;
-      }
-      var rows = leads
-        .map(function (l, i) {
-          return (
-            "<tr><td>" +
-            (i + 1) +
-            "</td><td>" +
-            (l.name || "-") +
-            "</td><td>" +
-            l.email +
-            "</td><td>" +
-            new Date(l.date).toLocaleString() +
-            "</td></tr>"
-          );
-        })
-        .join("");
-      leadsList.innerHTML =
-        '<table class="leads-table"><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Date</th></tr></thead><tbody>' +
-        rows +
-        "</tbody></table>";
-    }
-
     var btnExport = document.getElementById("exportLeads");
     var btnClear = document.getElementById("clearLeads");
     var btnExportLogs = document.getElementById("exportLogs");
     var btnClearLogs = document.getElementById("clearLogs");
+    var renderLeadsBound = function () {
+      return renderLeads(leadsList);
+    };
 
     if (btnExport) {
-      btnExport.addEventListener("click", function () {
-        var leads = JSON.parse(
-          localStorage.getItem("brazildecoded_leads") || "[]"
-        );
-        if (!leads.length) return alert("No leads to export.");
-        var csv =
-          "name,email,date\n" +
-          leads
-            .map(function (l) {
-              var name = (l.name || "").replace(/"/g, '""');
-              var email = (l.email || "").replace(/"/g, '""');
-              return '"' + name + '","' + email + '",' + l.date;
-            })
-            .join("\n");
-        var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "brazildecoded_leads.csv";
-        a.click();
-        URL.revokeObjectURL(url);
-        logEvent("info", "Leads exported");
-      });
+      btnExport.addEventListener("click", exportLeads);
     }
 
     if (btnClear) {
       btnClear.addEventListener("click", function () {
-        if (!confirm("Clear all locally stored leads?")) return;
-        localStorage.removeItem("brazildecoded_leads");
-        renderLeads();
-        logEvent("info", "Leads cleared");
+        clearLeads(renderLeadsBound);
       });
     }
 
     if (btnExportLogs) {
-      btnExportLogs.addEventListener("click", function () {
-        var logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
-        if (!logs.length) return alert("No logs to export.");
-        var blob = new Blob([JSON.stringify(logs, null, 2)], {
-          type: "application/json;charset=utf-8;",
-        });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "brazildecoded_logs.json";
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+      btnExportLogs.addEventListener("click", exportLogs);
     }
 
     if (btnClearLogs) {
       btnClearLogs.addEventListener("click", function () {
-        if (!confirm("Clear all locally stored logs?")) return;
-        localStorage.removeItem(LOG_KEY);
-        logEvent("info", "Logs cleared");
+        clearLogs();
       });
     }
 
-    renderLeads();
+    renderLeads(leadsList);
   }
 })();

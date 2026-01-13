@@ -1,6 +1,6 @@
 :root {
   --bg: #f6f1ea;
-  --paper: #ffffff;
+  --paper: #fff;
   --ink: #1b1b1f;
   --muted: #5b5d66;
   --accent: #0b6e4f;
@@ -10,8 +10,8 @@
   --sky: #e2f0f5;
   --container: 1120px;
   --radius: 14px;
-  --shadow: 0 18px 40px rgba(16, 24, 40, 0.12);
-  --shadow-soft: 0 8px 20px rgba(16, 24, 40, 0.08);
+  --shadow: 0 18px 40px rgb(16 24 40 / 12%);
+  --shadow-soft: 0 8px 20px rgb(16 24 40 / 8%);
   --font-sans: "Manrope", "Plus Jakarta Sans", "Segoe UI", sans-serif;
   --font-display: "Fraunces", "DM Serif Text", serif;
 }
@@ -25,12 +25,12 @@ body {
   color: var(--ink);
   background: radial-gradient(
       circle at top left,
-      rgba(14, 140, 102, 0.1),
+      rgb(14 140 102 / 10%),
       transparent 45%
     ),
     radial-gradient(
       circle at 30% 20%,
-      rgba(241, 228, 210, 0.6),
+      rgb(241 228 210 / 60%),
       transparent 40%
     ),
     linear-gradient(180deg, #fff9f2 0%, var(--bg) 45%, #f7f1ea 100%);
@@ -73,10 +73,12 @@ a {
   border-radius: 999px;
   z-index: 999;
 }
+
 .skip-link:focus {
   left: 1rem;
   top: 1rem;
 }
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -94,34 +96,39 @@ a {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+  background: rgb(255 255 255 / 90%);
+  border-bottom: 1px solid rgb(16 24 40 / 8%);
   backdrop-filter: blur(12px);
 }
+
 .site-header .container {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
+
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   font-weight: 700;
   text-decoration: none;
-  color: var(--accent);
+  color: vare(--accent);
   letter-spacing: 0.3px;
 }
+
 .brand img {
   height: 56px;
   width: auto;
   transform: scale(1.3);
   transform-origin: left center;
 }
+
 .brand-text {
   font-size: 1.05rem;
 }
+
 .main-nav ul {
   list-style: none;
   display: flex;
@@ -131,6 +138,7 @@ a {
   padding: 0;
   align-items: center;
 }
+
 .main-nav a {
   text-decoration: none;
   color: var(--ink);
@@ -138,19 +146,41 @@ a {
   border-radius: 999px;
   font-size: 0.95rem;
 }
-.main-nav a:hover {
-  background: rgba(11, 110, 79, 0.1);
+
+.footer-links a {
+  text-decoration: none;
+  margin-left: 0.75rem;
 }
+
+/* Focus styles */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgb(11 110 79 / 50%);
+  outline-offset: 3px;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.main-nav a:hover {
+  background: rgb(11 110 79 / 10%);
+}
+
 .main-nav a[aria-current="page"] {
   background: var(--accent-soft);
   color: var(--accent-dark);
   font-weight: 600;
 }
+
 .main-nav a.nav-cta {
   background: var(--accent);
   color: #fff;
   font-weight: 700;
 }
+
 .main-nav a.nav-cta:hover {
   background: var(--accent-soft);
   color: var(--accent-dark);
@@ -160,12 +190,14 @@ a {
 .hero {
   padding: 4.5rem 0 3.5rem;
 }
+
 .hero-grid {
   display: grid;
   gap: 2rem;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   align-items: center;
 }
+
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -173,15 +205,18 @@ a {
   font-weight: 700;
   color: var(--accent-dark);
 }
+
 .hero h1 {
   font-family: var(--font-display);
   font-size: clamp(2.2rem, 3vw, 3.4rem);
   margin: 0.2rem 0 0.6rem;
 }
+
 .lead {
   font-size: 1.15rem;
   color: var(--muted);
 }
+
 .hero-actions,
 .cta-row,
 .price-actions,
@@ -191,6 +226,7 @@ a {
   gap: 0.75rem;
   align-items: center;
 }
+
 .hero-highlights {
   list-style: none;
   display: grid;
@@ -200,6 +236,7 @@ a {
   color: var(--muted);
   font-size: 0.95rem;
 }
+
 .hero-highlights li::before {
   content: "-";
   color: var(--accent);
@@ -224,6 +261,7 @@ button.cta {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
+
 .cta.disabled,
 button.cta.disabled {
   opacity: 0.6;
@@ -232,11 +270,13 @@ button.cta.disabled {
   box-shadow: none;
   pointer-events: auto; /* still allow clicks so script can react */
 }
+
 .cta:hover,
 button.cta:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow-soft);
 }
+
 .cta:disabled,
 button.cta:disabled {
   opacity: 0.6;
@@ -244,30 +284,36 @@ button.cta:disabled {
   transform: none;
   box-shadow: none;
 }
+
 .cta.secondary {
   background: var(--ink);
 }
+
 .cta.secondary:hover {
   background: #000;
 }
+
 .cta.ghost {
   background: transparent;
   color: var(--ink);
-  border-color: rgba(16, 24, 40, 0.2);
+  border-color: rgb(16 24 40 / 20%);
 }
+
 .cta.ghost:hover {
-  background: rgba(16, 24, 40, 0.04);
+  background: rgb(16 24 40 / 4%);
 }
 
 /* Sections */
 .section {
   padding: 2.75rem 0;
 }
+
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(1.7rem, 2vw, 2.4rem);
   margin: 0 0 0.6rem;
 }
+
 .section-note {
   color: var(--muted);
   font-size: 0.95rem;
@@ -280,16 +326,19 @@ button.cta:disabled {
 .price-box {
   background: var(--paper);
   border-radius: var(--radius);
-  border: 1px solid rgba(16, 24, 40, 0.08);
+  border: 1px solid rgb(16 24 40 / 8%);
   box-shadow: var(--shadow-soft);
 }
+
 .card {
   padding: 1.5rem;
 }
+
 .card-title {
   margin: 0 0 0.75rem;
   font-size: 1.2rem;
 }
+
 .card-subtitle {
   color: var(--muted);
 }
@@ -300,9 +349,11 @@ button.cta:disabled {
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+
 .feature-item {
   padding: 1.25rem;
 }
+
 .feature-item h3 {
   margin-top: 0;
 }
@@ -314,9 +365,11 @@ button.cta:disabled {
   gap: 1.25rem;
   margin-top: 1.5rem;
 }
+
 .buy-card {
   padding: 1.5rem;
 }
+
 .mini-list {
   margin: 0.75rem 0 1.25rem;
   padding-left: 1rem;
@@ -332,12 +385,14 @@ button.cta:disabled {
   justify-content: space-between;
   padding: 1.5rem;
 }
+
 .price {
   display: block;
   font-size: 2rem;
   font-weight: 800;
   margin-top: 0.25rem;
 }
+
 .price-note {
   color: var(--muted);
 }
@@ -349,27 +404,37 @@ form {
   max-width: 520px;
   margin-top: 0.75rem;
 }
+
 label {
   font-weight: 600;
 }
+
 input[type="text"],
-input[type="email"],
-textarea {
+input[type="email"] {
   width: 100%;
   padding: 0.7rem 0.9rem;
-  border: 1px solid rgba(16, 24, 40, 0.2);
+  border: 1px solid rgb(16 24 40 / 20%);
   border-radius: 12px;
   font: inherit;
   background: #fff;
 }
+
 textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgb(16 24 40 / 20%);
+  border-radius: 12px;
+  font: inherit;
+  background: #fff;
   resize: vertical;
 }
+
 .form-feedback {
   margin: 0;
   color: var(--accent-dark);
   font-weight: 600;
 }
+
 .form-helper {
   margin: 0;
   color: var(--muted);
@@ -380,11 +445,12 @@ textarea {
 .faq details {
   background: var(--paper);
   border-radius: var(--radius);
-  border: 1px solid rgba(16, 24, 40, 0.08);
+  border: 1px solid rgb(16 24 40 / 8%);
   padding: 1rem 1.25rem;
   margin-bottom: 0.75rem;
   box-shadow: var(--shadow-soft);
 }
+
 .faq summary {
   cursor: pointer;
   font-weight: 700;
@@ -392,23 +458,17 @@ textarea {
 
 /* Footer */
 .site-footer {
-  border-top: 1px solid rgba(16, 24, 40, 0.08);
+  border-top: 1px solid rgb(16 24 40 / 8%);
   padding: 2rem 0;
   color: var(--muted);
 }
+
 .footer-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
   align-items: center;
-}
-.footer-links a {
-  text-decoration: none;
-  margin-left: 0.75rem;
-}
-.footer-links a:hover {
-  text-decoration: underline;
 }
 
 /* Admin */
@@ -418,6 +478,7 @@ textarea {
   gap: 0.75rem;
   margin: 1rem 0;
 }
+
 .leads-table {
   width: 100%;
   border-collapse: collapse;
@@ -426,28 +487,22 @@ textarea {
   overflow: hidden;
   box-shadow: var(--shadow-soft);
 }
+
 .leads-table th,
 .leads-table td {
   padding: 0.65rem 0.8rem;
-  border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+  border-bottom: 1px solid rgb(16 24 40 / 8%);
   text-align: left;
   font-size: 0.95rem;
 }
+
 .leads-table th {
   background: #f5f1ea;
   font-weight: 700;
 }
+
 .leads-table tbody tr:last-child td {
   border-bottom: none;
-}
-
-/* Focus styles */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-textarea:focus-visible {
-  outline: 3px solid rgba(11, 110, 79, 0.5);
-  outline-offset: 3px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -457,11 +512,12 @@ textarea:focus-visible {
   }
 }
 
-@media (max-width: 840px) {
+@media (width <= 840px) {
   .site-header .container {
     flex-direction: column;
     align-items: flex-start;
   }
+
   .hero {
     padding-top: 3.5rem;
   }
