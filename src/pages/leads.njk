@@ -1,10 +1,23 @@
-<form id="starterKitForm" class="form">
-  <!-- honeypot anti-spam -->
-  <input type="text" name="company" tabindex="-1" autocomplete="off" style="display:none" />
+---
+title: "Leads - BrazilDecoded"
+layout: "layout.njk"
+pageKey: "leads"
+permalink: "/pages/leads.html"
+lang: "pt-BR"
+---
+<section class="section">
+  <div class="container">
+    <h1 class="section-title">Leads (admin)</h1>
+    <p class="section-note">
+      Esta pagina mostra os leads coletados localmente e permite
+      exportar/limpar.
+    </p>
 
-  <input type="email" name="email" placeholder="Your email" required />
-  <input type="text" name="name" placeholder="First name (optional)" />
+    <div class="admin-actions">
+      <button class="cta ghost" id="exportLeads">Exportar CSV</button>
+      <button class="cta secondary" id="clearLeads">Limpar leads</button>
+    </div>
 
-  <button type="submit" class="cta">Get the free guide</button>
-  <p class="section-note" data-status></p>
-</form>
+    <div id="leadsList" class="leads-list" aria-live="polite"></div>
+  </div>
+</section>
