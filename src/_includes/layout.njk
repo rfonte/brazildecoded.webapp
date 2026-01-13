@@ -120,8 +120,7 @@
                 href="{{ item.href }}"
                 class="{{ item.class | default('') }}"
                 {% if pageKey == item.key %}aria-current="page"{% endif %}
-                >{{ item.label }}</a
-              >
+                >{{ item.label }}</a>
             </li>
             {% endfor %}
           </ul>

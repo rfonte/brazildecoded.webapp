@@ -114,7 +114,7 @@ a {
   gap: 0.6rem;
   font-weight: 700;
   text-decoration: none;
-  color: vare(--accent);
+  color: var(--accent);
   letter-spacing: 0.3px;
 }
 

@@ -536,16 +536,24 @@ describe("script.js", () => {
     expect(URL.createObjectURL).toHaveBeenCalled();
   });
 
-  it("stores contact messages locally and validates fields", async () => {
+  it("submits contact form to webhook and validates fields", async () => {
     setHtml(`
-      <form id="contactForm">
+      <form id="contactForm" data-make-url="https://example.com/webhook">
         <input type="text" id="contactName" />
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" />
         <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
       </form>
     `);
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve("OK"),
+      })
+    );
     await loadScript();
     document.getElementById("contactName").value = "";
     document.getElementById("contactEmail").value = "";
@@ -565,10 +573,9 @@ describe("script.js", () => {
 
     document.getElementById("contactEmail").value = "user@example.com";
     submitForm("contactForm");
-    const stored = JSON.parse(
-      localStorage.getItem("brazildecoded_contacts") || "[]"
-    );
-    expect(stored.length).toBe(1);
+    await flushPromises();
+    await flushPromises();
+    expect(window.fetch).toHaveBeenCalled();
     expect(document.getElementById("contactFeedback").textContent).toBe(
       "Message sent. Thank you!"
     );
@@ -576,12 +583,34 @@ describe("script.js", () => {
 
   it("skips contact submission when honeypot is filled", async () => {
     setHtml(`
-      <form id="contactForm">
+      <form id="contactForm" data-make-url="https://example.com/webhook">
         <input type="text" id="contactName" />
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" value="bot" />
         <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    window.fetch = vi.fn();
+    await loadScript();
+    document.getElementById("contactName").value = "User";
+    document.getElementById("contactEmail").value = "user@example.com";
+    document.getElementById("contactMessage").value = "Hi";
+    submitForm("contactForm");
+    expect(document.getElementById("contactFeedback").textContent).toBe("");
+    expect(window.fetch).not.toHaveBeenCalled();
+  });
+
+  it("handles missing contact webhook URL", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="">
+        <input type="text" id="contactName" />
+        <input type="email" id="contactEmail" />
+        <textarea id="contactMessage"></textarea>
+        <input type="text" id="hp_contact" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
       </form>
     `);
     await loadScript();
@@ -589,7 +618,39 @@ describe("script.js", () => {
     document.getElementById("contactEmail").value = "user@example.com";
     document.getElementById("contactMessage").value = "Hi";
     submitForm("contactForm");
-    expect(document.getElementById("contactFeedback").textContent).toBe("");
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Missing Make webhook URL. Please update the form settings."
+    );
+  });
+
+  it("handles contact webhook failure", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" />
+        <input type="email" id="contactEmail" />
+        <textarea id="contactMessage"></textarea>
+        <input type="text" id="hp_contact" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve("fail"),
+      })
+    );
+    await loadScript();
+    document.getElementById("contactName").value = "User";
+    document.getElementById("contactEmail").value = "user@example.com";
+    document.getElementById("contactMessage").value = "Hi";
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Something went wrong. Please try again."
+    );
   });
 
   it("renders leads and supports export/clear actions", async () => {

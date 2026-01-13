@@ -29,8 +29,7 @@ permalink: "/pages/contato.html"
           href="https://www.instagram.com/visitbrazil.guide"
           target="_blank"
           rel="noopener noreferrer"
-          >@visitbrazil.guide</a
-        >
+          >@visitbrazil.guide</a>
       </p>
       <p>
         <strong>Pinterest:</strong>
@@ -38,8 +37,7 @@ permalink: "/pages/contato.html"
           href="https://www.pinterest.com/rodcafonte"
           target="_blank"
           rel="noopener noreferrer"
-          >rodcafonte</a
-        >
+          >rodcafonte</a>
       </p>
       <a
         class="cta ghost"
@@ -58,11 +56,16 @@ permalink: "/pages/contato.html"
     <div class="card">
       <h2 class="section-title" id="message-title">Send your message</h2>
       <p class="section-note">
-        This form is a prototype that stores messages locally. For production,
-        configure an endpoint or email service.
+        This form sends messages through a temporary Make webhook. For production,
+        connect a verified email service.
       </p>
 
-      <form id="contactForm" action="#" method="post">
+      <form
+        id="contactForm"
+        action="#"
+        method="post"
+        data-make-url="https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm"
+      >
         <label for="contactName">Your name</label>
         <input type="text" id="contactName" name="name" autocomplete="name" required />
 
@@ -85,7 +88,9 @@ permalink: "/pages/contato.html"
           aria-hidden="true"
         />
 
-        <button class="cta primary" type="submit">Send message</button>
+        <button class="cta primary" id="contactSubmit" type="submit">
+          Send message
+        </button>
         <p id="contactFeedback" class="form-feedback" role="status"></p>
       </form>
     </div>

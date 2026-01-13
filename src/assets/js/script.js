@@ -349,6 +349,8 @@
       ).trim();
       var honeypot = document.getElementById("hp_contact");
       var feedback = document.getElementById("contactFeedback");
+      var submitBtn = document.getElementById("contactSubmit");
+      var makeUrl = contactForm.getAttribute("data-make-url") || "";
 
       if (honeypot && honeypot.value) {
         logEvent("warn", "Contact blocked by honeypot");
@@ -364,20 +366,62 @@
         showMessage(feedback, "Invalid email.", true);
         return;
       }
+      if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+        logEvent("error", "Contact webhook missing");
+        showMessage(
+          feedback,
+          "Missing Make webhook URL. Please update the form settings.",
+          true
+        );
+        return;
+      }
 
-      var contacts = JSON.parse(
-        localStorage.getItem("brazildecoded_contacts") || "[]"
-      );
-      contacts.push({
+      showMessage(feedback, "Sending...");
+      setButtonState(submitBtn, false);
+
+      var utm = getUTM(window.location.search, starterKitUtils);
+      var payload = {
+        type: "contact",
         name: name,
         email: email,
         message: message,
-        date: new Date().toISOString(),
-      });
-      localStorage.setItem("brazildecoded_contacts", JSON.stringify(contacts));
-      logEvent("info", "Contact stored locally");
-      showMessage(feedback, "Message sent. Thank you!");
-      contactForm.reset();
+        page: window.location.pathname,
+        referrer: document.referrer || "",
+        user_agent: navigator.userAgent || "",
+        utm_source: utm.utm_source,
+        utm_medium: utm.utm_medium,
+        utm_campaign: utm.utm_campaign,
+      };
+
+      fetch(makeUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(function (res) {
+          return res.text().then(function (text) {
+            return { ok: res.ok, status: res.status, text: text };
+          });
+        })
+        .then(function (result) {
+          if (!result.ok) throw new Error("Request failed");
+          logEvent("info", "Contact webhook success", {
+            status: result.status,
+          });
+          showMessage(feedback, "Message sent. Thank you!");
+          contactForm.reset();
+        })
+        .catch(function (err) {
+          logEvent("error", "Contact webhook failed", {
+            message: err && err.message ? err.message : String(err || ""),
+          });
+          showMessage(
+            feedback,
+            "Something went wrong. Please try again.",
+            true
+          );
+          setButtonState(submitBtn, true);
+        });
     });
   }
 
