@@ -1,5 +1,7 @@
 # brazildecoded.webapp
 
+![Deploy Eleventy to GitHub Pages](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/pages.yml/badge.svg)
+
 Site estático inicial para o projeto **BrazilDecoded — Viagem & Turismo**, gerado com Eleventy. Este repositório contém templates, estilos e scripts do protótipo de captura de leads e páginas de contato.
 
 **Avaliação do projeto (resumo rápido)**:
