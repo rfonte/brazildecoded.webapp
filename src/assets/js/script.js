@@ -6,8 +6,12 @@
     el.style.color = isError ? "#b00020" : "";
   }
 
+  var starterKitUtils = window.BDStarterKit || {};
   function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (starterKitUtils.isValidEmail) {
+      return starterKitUtils.isValidEmail(email);
+    }
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
   }
 
   var yearEl = document.getElementById("year");
@@ -24,6 +28,9 @@
     var statusEl = starterForm.querySelector("[data-status]");
 
     function getUTM() {
+      if (starterKitUtils.getUTM) {
+        return starterKitUtils.getUTM(window.location.search);
+      }
       var params = new URLSearchParams(window.location.search);
       return {
         utm_source: params.get("utm_source") || "",
@@ -98,19 +105,30 @@
           submitBtn.setAttribute("aria-disabled", "true");
         }
 
-        var payload = {
-          type: "starter_kit",
-          email: email,
-          name: name,
-          page: window.location.pathname,
-          referrer: document.referrer || "",
-          user_agent: navigator.userAgent || "",
-        };
-
-        var utm = getUTM();
-        payload.utm_source = utm.utm_source;
-        payload.utm_medium = utm.utm_medium;
-        payload.utm_campaign = utm.utm_campaign;
+        var payload = starterKitUtils.buildPayload
+          ? starterKitUtils.buildPayload({
+              type: "starter_kit",
+              email: email,
+              name: name,
+              page: window.location.pathname,
+              referrer: document.referrer || "",
+              userAgent: navigator.userAgent || "",
+              queryString: window.location.search,
+            })
+          : (function () {
+              var utm = getUTM();
+              return {
+                type: "starter_kit",
+                email: email,
+                name: name,
+                page: window.location.pathname,
+                referrer: document.referrer || "",
+                user_agent: navigator.userAgent || "",
+                utm_source: utm.utm_source,
+                utm_medium: utm.utm_medium,
+                utm_campaign: utm.utm_campaign,
+              };
+            })();
 
         fetch(makeUrl, {
           method: "POST",

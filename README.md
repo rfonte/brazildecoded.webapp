@@ -46,6 +46,26 @@ Observação: ao editar arquivos em `src/`, o Eleventy irá regenerar `dist/` au
 npm run build
 ```
 
+**Testes**
+
+- Unitarios (Vitest):
+
+```powershell
+npm run test:unit
+```
+
+- Unitarios com cobertura:
+
+```powershell
+npm run test:unit:coverage
+```
+
+- E2E (Playwright):
+
+```powershell
+npm run test:e2e
+```
+
 - Deploy sugerido: GitHub Pages (via GitHub Actions) ou um serviço estático (Netlify, Vercel). Garanta que `dist/` seja usado como diretório de publicação.
 
 **Formulários e fluxo de leads**
