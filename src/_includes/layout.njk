@@ -29,6 +29,13 @@
     <meta name="twitter:site" content="{{ site.twitter }}" />
     {% endif %}
     <link rel="icon" type="image/png" href="/images/favicon.png" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    <link
+      rel="preload"
+      as="style"
+      href="/assets/css/style.css?v={{ site.buildVersion }}"
+    />
 
     {# JSON-LD: WebSite and Organization to help Google understand the brand #}
     <script type="application/ld+json">
@@ -100,6 +107,7 @@
             width="140"
             height="40"
             loading="lazy"
+            decoding="async"
           />
           {% endif %}
           <span class="brand-text visually-hidden">{{ site.brand }}</span>

@@ -106,3 +106,13 @@ npm run format
 **Deploy**
 
 - GitHub Pages via GitHub Actions, publishing `dist/`.
+
+**GitHub Pages caching (Cloudflare)**
+
+GitHub Pages ignores `_headers`, so you need a CDN like Cloudflare if you want custom cache headers:
+
+- Add the custom domain in Cloudflare and set DNS to "proxied" (orange cloud).
+- Set cache rules:
+  - `*/*` -> Cache HTML with "Bypass cache" or short TTL.
+  - `/assets/*` and `/images/*` -> Cache Everything, Edge TTL 1 year.
+- Keep cache busting with `site.buildVersion` for CSS/JS.
