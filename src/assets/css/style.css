@@ -114,8 +114,10 @@ a {
   letter-spacing: 0.3px;
 }
 .brand img {
-  height: 36px;
+  height: 56px;
   width: auto;
+  transform: scale(1.3);
+  transform-origin: left center;
 }
 .brand-text {
   font-size: 1.05rem;
