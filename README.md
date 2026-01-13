@@ -58,6 +58,18 @@ npm run test:unit:coverage
 npm run test:e2e
 ```
 
+**Lint**
+
+```powershell
+npm run lint
+```
+
+**Formatting**
+
+```powershell
+npm run format
+```
+
 **Forms and lead flow**
 
 - Starter kit form uses `data-make-url` to post to Make (webhook).

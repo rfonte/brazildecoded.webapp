@@ -1,0 +1,7 @@
+{
+  "doctype-first": false,
+  "tagname-lowercase": true,
+  "attr-lowercase": false,
+  "attr-value-double-quotes": true,
+  "id-unique": true
+}
