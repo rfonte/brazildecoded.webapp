@@ -26,7 +26,7 @@
         existing = existing.slice(existing.length - 200);
       }
       localStorage.setItem(LOG_KEY, JSON.stringify(existing));
-    } catch (err) {
+    } catch {
       // Do not throw while logging.
     }
   }
