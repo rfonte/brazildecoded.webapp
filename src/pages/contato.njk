@@ -1,6 +1,6 @@
 ---
-title: "Brazil Decoded - Contact"
-description: "Contact Brazil Decoded."
+title: "Contato — BrazilDecoded | Parcerias e Suporte"
+description: "Fale com o BrazilDecoded para parcerias, suporte ao cliente ou dúvidas sobre o guia de viagem. Resposta rápida quando possível."
 layout: "layout.njk"
 pageKey: "contact"
 permalink: "/pages/contato.html"
@@ -8,16 +8,16 @@ permalink: "/pages/contato.html"
 <section class="hero" aria-labelledby="contact-title">
   <div class="container hero-grid">
     <div class="stack">
-      <p class="eyebrow">Contact</p>
-      <h1 id="contact-title">Talk to Brazil Decoded</h1>
+      <p class="eyebrow">Contato</p>
+      <h1 id="contact-title">Fale com o BrazilDecoded</h1>
       <p class="lead measure">
-        Questions about the guide, partnerships, or support? Reach out and we
-        will reply as soon as possible.
+        Tem dúvidas sobre o guia, interesse em parcerias ou precisa de suporte?
+        Envie sua mensagem e retornaremos o contato o mais rápido possível.
       </p>
       <ul class="hero-highlights" aria-label="Contact highlights">
-        <li>Support and partnerships</li>
-        <li>Fast response when possible</li>
-        <li>Social links below</li>
+        <li>Parcerias e oportunidades comerciais</li>
+        <li>Suporte e dúvidas sobre o produto</li>
+        <li>Redes sociais e canais de atendimento</li>
       </ul>
     </div>
 
@@ -56,31 +56,20 @@ permalink: "/pages/contato.html"
 <section class="section" aria-labelledby="message-title">
   <div class="container">
     <div class="card">
-      <h2 class="section-title" id="message-title">Send a message</h2>
+      <h2 class="section-title" id="message-title">Envie sua mensagem</h2>
       <p class="section-note">
-        This form stores messages in localStorage for this prototype.
+        Este formulário é um protótipo que armazena mensagens localmente. Para
+        integração real, configure um endpoint ou serviço de e-mail.
       </p>
 
       <form id="contactForm" action="#" method="post">
-        <label for="contactName">Your name</label>
-        <input
-          type="text"
-          id="contactName"
-          name="name"
-          autocomplete="name"
-          required
-        />
+        <label for="contactName">Seu nome</label>
+        <input type="text" id="contactName" name="name" autocomplete="name" required />
 
-        <label for="contactEmail">Your email</label>
-        <input
-          type="email"
-          id="contactEmail"
-          name="email"
-          autocomplete="email"
-          required
-        />
+        <label for="contactEmail">Seu e-mail</label>
+        <input type="email" id="contactEmail" name="email" autocomplete="email" required />
 
-        <label for="contactMessage">Message</label>
+        <label for="contactMessage">Mensagem</label>
         <textarea id="contactMessage" name="message" rows="4" required></textarea>
 
         <label class="visually-hidden" for="hp_contact"
@@ -95,7 +84,7 @@ permalink: "/pages/contato.html"
           autocomplete="off"
         />
 
-        <button class="cta primary" type="submit">Send message</button>
+        <button class="cta primary" type="submit">Enviar mensagem</button>
         <p id="contactFeedback" class="form-feedback" role="status"></p>
       </form>
     </div>
