@@ -24,6 +24,19 @@ Administracao local:
 
 - Abra `http://localhost:8080/pages/leads.html` para visualizar os leads coletados localmente, exportar como CSV ou limpar o armazenamento local.
 
+Make (webhook):
+
+- O fluxo (scenario) no Make precisa estar ativado para receber os envios.
+- URL do webhook deve estar configurada no formulario (atributo `data-make-url` em `src/pages/cadastro.njk`).
+
+Resumo de configuracoes no Make:
+
+- Crie um novo scenario.
+- Adicione o modulo **Custom webhook** como gatilho.
+- Copie a URL do webhook gerada pelo Make.
+- Ative o scenario (botao **Run once** para testar e depois **ON** para manter ativo).
+- Adicione os modulos de destino (ex: Google Sheets, Mailchimp, Gmail) conforme o fluxo desejado.
+
 Proximos passos sugeridos:
 
 - Melhorar o layout e a acessibilidade.
