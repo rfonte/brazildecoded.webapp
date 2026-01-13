@@ -6,8 +6,6 @@
 - Add webhook contract tests (payload validation and mock responses).
 - Add lightweight error monitoring (Sentry or custom logging).
 - Improve performance (minify, preload, lazy load, cache headers).
-- Review accessibility (contrast, labels, keyboard flow, ARIA).
-- Keep cache busting for assets (build version).
 
 # Business and product improvements
 
