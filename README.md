@@ -86,6 +86,12 @@ npm run format
 - Starter kit form uses `data-make-url` to post to Make (webhook).
 - Local admin page: `http://localhost:8080/pages/leads.html`.
 
+**Sensitive configuration (webhook, consent, privacy)**
+
+- `data-make-url` in `src/pages/cadastro.njk` is a sensitive webhook endpoint. Keep it out of public docs and rotate it if exposed.
+- Consent checkbox (`#consent`) must remain required before any webhook submission.
+- Do not store or transmit personal data without consent, and keep privacy messaging aligned with local regulations.
+
 **Make webhook setup**
 
 - Create a scenario with a **Custom webhook** trigger.

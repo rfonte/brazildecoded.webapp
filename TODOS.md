@@ -8,7 +8,6 @@
 - Improve performance (minify, preload, lazy load, cache headers).
 - Review accessibility (contrast, labels, keyboard flow, ARIA).
 - Keep cache busting for assets (build version).
-- Document sensitive variables (webhook, consent, privacy).
 
 # Business and product improvements
 
