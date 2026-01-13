@@ -22,6 +22,11 @@
     var consent = document.getElementById("consent");
     var consentHelper = document.getElementById("consentHelper");
     var statusEl = starterForm.querySelector("[data-status]");
+    console.log("[starter-kit] form detected", {
+      hasSubmit: !!submitBtn,
+      hasConsent: !!consent,
+      hasStatus: !!statusEl,
+    });
 
     function getUTM() {
       var params = new URLSearchParams(window.location.search);
@@ -34,12 +39,10 @@
 
     function syncConsent() {
       if (!submitBtn || !consent) return;
-      // Keep the button interactive (avoid native disabled) so clicks
-      // can be handled and a helpful message shown if consent is missing.
-      submitBtn.classList.toggle("disabled", !consent.checked);
+      submitBtn.disabled = !consent.checked;
       submitBtn.setAttribute(
         "aria-disabled",
-        !consent.checked ? "true" : "false"
+        submitBtn.disabled ? "true" : "false"
       );
       if (consentHelper) {
         consentHelper.textContent = consent.checked
@@ -55,12 +58,17 @@
 
     starterForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      console.log("[starter-kit] submit triggered");
       var honeypot = starterForm.querySelector('input[name="company"]');
       if (honeypot && honeypot.value) return;
 
       var email = ((starterForm.email && starterForm.email.value) || "").trim();
       var name = ((starterForm.name && starterForm.name.value) || "").trim();
       var makeUrl = starterForm.getAttribute("data-make-url") || "";
+      console.log("[starter-kit] form values", {
+        emailPresent: !!email,
+        consentChecked: consent ? consent.checked : null,
+      });
 
       if (!isValidEmail(email)) {
         showMessage(statusEl, "Please enter a valid email.", true);
@@ -86,6 +94,10 @@
       }
 
       showMessage(statusEl, "Sending...");
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.setAttribute("aria-disabled", "true");
+      }
 
       var payload = {
         type: "starter_kit",
@@ -101,21 +113,31 @@
       payload.utm_medium = utm.utm_medium;
       payload.utm_campaign = utm.utm_campaign;
 
+      console.log("[starter-kit] Sending payload to Make webhook.");
       fetch(makeUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
         .then(function (res) {
+          console.log("[starter-kit] Webhook response:", res.status);
           if (!res.ok) throw new Error("Request failed");
-          window.location.href = "/pages/thank-you.html";
+          window.location.href = "/pages/contato-sucesso.html";
         })
-        .catch(function () {
+        .catch(function (err) {
+          console.error("[starter-kit] Webhook error:", err);
           showMessage(
             statusEl,
             "Something went wrong. Please try again.",
             true
           );
+          if (submitBtn) {
+            submitBtn.disabled = !consent || !consent.checked;
+            submitBtn.setAttribute(
+              "aria-disabled",
+              submitBtn.disabled ? "true" : "false"
+            );
+          }
         });
     });
   }

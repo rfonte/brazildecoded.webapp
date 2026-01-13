@@ -11,6 +11,7 @@ Estrutura principal:
 - `src/pages/thank-you.njk` - pagina de confirmacao (noindex)
 - `src/_includes/layout.njk` - header/footer compartilhados
 - `src/assets/` - estilos e scripts
+- `src/CNAME` - dominio customizado do GitHub Pages
 - `dist/` - build gerado (saida)
 
 Como rodar localmente:
@@ -28,6 +29,10 @@ Proximos passos sugeridos:
 - Melhorar o layout e a acessibilidade.
 - Integrar um back-end ou servico de e-mail para persistencia real dos leads.
 - Adicionar validacao e testes mais robustos.
+
+Deploy:
+
+- O deploy eh feito via GitHub Actions para o GitHub Pages, gerando a pasta `dist/`.
 
 Observacoes de privacidade e consentimento:
 
