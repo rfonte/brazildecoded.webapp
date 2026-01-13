@@ -2,6 +2,7 @@
   "brand": "BrazilDecoded",
   "description": "Travel smarter in Brazil with safety tips, cultural etiquette, transportation guidance, and must-see attractions.",
   "gtmId": "GTM-PS36XKLG",
+  "baseUrl": "https://brazildecoded.com.br",
   "buildVersion": "20260113",
   "nav": [
     { "label": "Inside", "href": "/index.html#inside", "key": "inside" },

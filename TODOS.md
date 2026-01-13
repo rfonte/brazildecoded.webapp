@@ -3,7 +3,6 @@
 - Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).
-- Add lint/formatting in CI (HTML/CSS/JS).
 - Add lightweight error monitoring (Sentry or custom logging).
 - Improve performance (minify, preload, lazy load, cache headers).
 - Add 404 page, sitemap.xml, and robots.txt.
