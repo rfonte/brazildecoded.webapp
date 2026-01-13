@@ -72,3 +72,10 @@
 - Community or support channel.
 - Video mini-course.
 - Partnerships and affiliates with UTM tracking.
+
+#lgpd
+- termo de uso
+- política de privacidade texto: A Bancorbrás valoriza sua privacidade e usará seus dados exclusivamente para fins de marketing, conforme a Política de Privacidade. 
+https://www.bancorbras.com.br/politica-de-privacidade/
+chkbox: Concordo com o tratamento dos meus dados pessoais conforme descrito.
+- desafio ou cloudflare ou google para evitar robos
