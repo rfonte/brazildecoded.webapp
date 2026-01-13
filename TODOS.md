@@ -1,84 +1,71 @@
-# Melhorias tecnicas
-- Consolidar scripts (remover JS legado e garantir um unico fluxo para formularios e webhook).
+# Technical improvements
+- Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - 
-- Adicionar testes de integracao do webhook (mock e contratos de payload).
-- Configurar lint (HTML/CSS/JS) e formatacao automatica no CI.
-- Implementar monitoramento simples de erros no frontend (Sentry ou logging custom).
-- Melhorar performance (otimizar CSS, preconnect, lazy loading, minificacao e cache headers).
-- Criar pagina 404 e sitemap.xml/robots.txt para SEO.
-- Revisar acessibilidade (contraste, labels, navegacao por teclado e ARIA).
-- Adicionar build version e cache busting para todos os assets.
-- Documentar variaveis e fluxos sensiveis (webhook, consentimento, privacidade).
+- Add webhook contract tests (payload validation and mock responses).
+- Add lint/formatting in CI (HTML/CSS/JS).
+- Add lightweight error monitoring (Sentry or custom logging).
+- Improve performance (minify, preload, lazy load, cache headers).
+- Add 404 page, sitemap.xml, and robots.txt.
+- Review accessibility (contrast, labels, keyboard flow, ARIA).
+- Keep cache busting for assets (build version).
+- Document sensitive variables (webhook, consent, privacy).
 
-# Melhorias de negocio e produto
-- Pagina de obrigado com oferta clara (upsell) e CTA para compra imediata.
-- Sequencia de emails (boas-vindas + dicas + oferta) integrada ao Make.
-- Lead magnet segmentado (primeira vez no Brasil, familias, nomades) para maior conversao.
-- Prova social (depoimentos, numero de leitores, avaliacoes).
-- Secao “o que voce recebe” com preview do conteudo do guia (sumario + amostra).
-- Oferta com urgencia leve (bonus temporario, preco promocional).
-- Pagina de FAQ focada em objecoes de compra.
-- Captura de feedback rapido apos download (1 pergunta).
-- Linktree otimizado com CTA principal e UTM.
-- Conteudo de follow nas redes (CTA para seguir Instagram e Pinterest).
+# Business and product improvements
+- Thank-you page with a clear upsell and CTA to buy.
+- Email sequence (welcome + tips + offer) via Make.
+- Segmented lead magnets (first-time visitors, families, nomads).
+- Social proof (testimonials, ratings, reader count).
+- "What you get" section with preview (summary + sample pages).
+- Light urgency (limited bonus, temporary price).
+- FAQ focused on purchase objections.
+- Quick feedback prompt after download.
+- Linktree with UTM and a primary CTA.
+- Social follow CTA after submission.
 
-# Estudo competitivo (modelo generico sem pesquisa externa)
-## Tipos de concorrentes (benchmark)
-- Guias digitais e ebooks de viagem para o Brasil (autores independentes).
-- Blogs e sites de conteudo com foco em travel tips e roteiros.
-- Agencias e pacotes de turismo (conteudo institucional + captura de leads).
-- Creators no YouTube/Instagram com guias pagos.
-- Plataformas de comunidade (ex: grupos pagos, newsletters premium).
+# Competitive study (generic model)
+## Competitor types
+- Travel ebooks and digital guides for Brazil.
+- Blogs and travel content sites.
+- Tour agencies and package sellers.
+- Creators selling guides on YouTube/Instagram.
+- Community-based products (paid newsletters or groups).
 
-## Dimensoes de comparacao
-- Proposta de valor principal (seguranca, cultura, roteiro, economia, autenticidade).
-- Formato do produto (ebook, video, comunidade, consultoria).
-- Preco e garantias (faixa de preco, reembolso, bonus).
-- Prova social (avaliacoes, depoimentos, numeros).
-- Experiencia de compra (checkout, tempo para acessar, onboarding).
-- Distribuicao (SEO, Instagram, YouTube, afiliados, ads).
-- Conteudo gratuito (lead magnet, checklist, mini curso).
-- Diferenciais claros (local expertise, atualizacao frequente, suporte).
+## Comparison dimensions
+- Value proposition (safety, culture, itinerary, savings).
+- Product format (ebook, video, community, consulting).
+- Price and guarantee (refund, bonus, trial).
+- Social proof (reviews, testimonials, metrics).
+- Purchase experience (checkout, onboarding, access time).
+- Distribution (SEO, Instagram, YouTube, affiliates, ads).
+- Free content (lead magnet, checklist, mini course).
+- Differentiation (local expertise, updates, support).
 
-## Hipoteses comuns de concorrentes (o que geralmente fazem)
-- Prometem “roteiro pronto” ou “dicas secretas”.
-- Foco em atracoes populares, pouca profundidade cultural.
-- Pouca preocupacao com seguranca e etiqueta.
-- Formato generico (PDF longo, dificil de consumir).
-- Pouca personalizacao e segmentacao.
+## Common competitor patterns (hypotheses)
+- Generic itineraries and surface-level tips.
+- Little focus on safety and etiquette.
+- Long PDFs that are hard to act on.
+- Weak personalization or segmentation.
 
-## Oportunidades de diferenciacao para BrazilDecoded
-- Posicionamento: “guia prático + segurança + cultura local”.
-- Entrega curta e acionavel (checklists, mapas, dicas rapidas).
-- Bonus: mini guia de golpes comuns + etiqueta local.
-- Mensagem forte de autoria (brasileiro, experiencia real).
-- Garantia clara e preco baixo para reduz risco.
+## Differentiation opportunities
+- Positioning: practical + safety + local culture.
+- Short, actionable delivery (checklists, quick tips).
+- Bonus: scams checklist + etiquette cheatsheet.
+- Strong author credibility (Brazilian local).
+- Clear guarantee and low price to reduce risk.
 
-# Prioridades sugeridas (impacto vs esforco)
-## Alto impacto, baixo esforco
-- Ajustar copy para clareza (beneficios e resultado).
-- Prova social minima (3 depoimentos + nota media).
-- CTA unico forte no hero e no final de cada secao.
-- Lead magnet com promessa clara e entrega imediata.
+# Priority roadmap (impact vs effort)
+## High impact, low effort
+- Sharpen copy for benefit clarity.
+- Add basic social proof (3 testimonials).
+- Use one primary CTA per section.
+- Clear lead magnet promise + instant delivery.
 
-## Alto impacto, medio esforco
-- Sequencia de emails (onboarding + ofertas).
-- Bonus limitado no tempo (urgencia leve).
-- Pagina de obrigado com upsell.
+## High impact, medium effort
+- Email sequence automation.
+- Time-limited bonus.
+- Thank-you page upsell.
 
-## Alto impacto, alto esforco
-- Comunidade ou suporte ao comprador (grupo fechado).
-- Conteudo em video (mini curso).
-- Parceiros e afiliados com UTM tracking.
-
-# Melhorias de negocio e produto
-- Pagina de obrigado com oferta clara (upsell) e CTA para compra imediata.
-- Sequencia de emails (boas-vindas + dicas + oferta) integrada ao Make.
-- Lead magnet segmentado (primeira vez no Brasil, familias, nomades) para maior conversao.
-- Prova social (depoimentos, numero de leitores, avaliações).
-- Seção “o que voce recebe” com preview do conteudo do guia (sumario + amostra).
-- Oferta com urgencia leve (bonus temporario, preco promocional).
-- Página de FAQ focada em objeções de compra.
-- Captura de feedback rapido apos download (1 pergunta).
-- Linktree otimizado com CTA principal e UTM.
-- Conteudo de follow nas redes (CTA para seguir Instagram e Pinterest).
+## High impact, high effort
+- Community or support channel.
+- Video mini-course.
+- Partnerships and affiliates with UTM tracking.

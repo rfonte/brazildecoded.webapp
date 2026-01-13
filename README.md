@@ -2,61 +2,51 @@
 
 ![Deploy Eleventy to GitHub Pages](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/pages.yml/badge.svg)
 
-Site estático inicial para o projeto **BrazilDecoded — Viagem & Turismo**, gerado com Eleventy. Este repositório contém templates, estilos e scripts do protótipo de captura de leads e páginas de contato.
+Static site for BrazilDecoded, built with Eleventy. This repo includes templates, styles, and scripts for the lead capture prototype and support pages.
 
-**Avaliação do projeto (resumo rápido)**:
+**Project overview**
 
-- **Escopo:** site estático com captura de e-mails (lead capture), formulário de contato e página administrativa local para exportar leads (usando localStorage como protótipo).
-- **Pontos fortes:** estrutura Eleventy clara, boa separação de templates (`src/_includes`), CSS moderno e atenção à acessibilidade (skip-link, foco visível, ARIA).
-- **Limitações atuais:** persistência de dados é apenas local (localStorage). Integração com serviço externo (Make, Mailchimp, backend) é opcional e precisa ser configurada.
+- **Scope:** static site with email lead capture, support form, and local admin page (localStorage prototype).
+- **Strengths:** clear Eleventy structure, modern CSS, accessibility basics (skip link, focus states, ARIA).
+- **Current limits:** data persistence is local; external integrations (Make/Mailchimp/backend) require setup.
 
-**Estrutura principal**
+**Structure**
 
-- `src/index.njk` — página inicial
-- `src/pages/cadastro.njk` — formulário de cadastro de e-mail (lead capture)
-- `src/pages/contato.njk` — formulário de contato (prototipado para gravar em `localStorage`)
-- `src/pages/leads.njk` / `leads.html` — página administrativa para visualizar/exportar leads
-- `src/pages/thank-you.njk` — página de confirmação
-- `src/_includes/layout.njk` — header/footer compartilhados e inclusão de `assets/js/script.js`
-- `src/assets/` — CSS e JS fonte
-- `dist/` — saída gerada pelo build (não comitada por padrão)
+- `src/index.njk` - home page
+- `src/pages/cadastro.njk` - starter kit form (lead capture)
+- `src/pages/contato.njk` - support form (localStorage prototype)
+- `src/pages/leads.njk` - admin page to view/export leads
+- `src/pages/thank-you.njk` - confirmation page
+- `src/pages/contato-sucesso.njk` - starter kit success page
+- `src/_includes/layout.njk` - shared layout + script include
+- `src/assets/` - source CSS and JS
+- `src/CNAME` - custom domain for GitHub Pages
+- `dist/` - build output (not committed)
 
-**Como rodar localmente (desenvolvimento)**
-
-1. Instale Node.js (versão compatível) e npm.
-2. No diretório do projeto, instale dependências:
+**Local development**
 
 ```powershell
 npm install
-```
-
-3. Rode o servidor de desenvolvimento (Eleventy com live-reload):
-
-```powershell
 npm run serve
 ```
 
-4. Abra `http://localhost:8080/` no navegador.
+Open `http://localhost:8080/`.
 
-Observação: ao editar arquivos em `src/`, o Eleventy irá regenerar `dist/` automaticamente.
-
-**Build e deploy**
-
-- Para gerar a saída estática em `dist/`:
+**Build**
 
 ```powershell
 npm run build
 ```
 
-**Testes**
+**Tests**
 
-- Unitarios (Vitest):
+- Unit (Vitest):
 
 ```powershell
 npm run test:unit
 ```
 
-- Unitarios com cobertura:
+- Unit with coverage:
 
 ```powershell
 npm run test:unit:coverage
@@ -68,42 +58,22 @@ npm run test:unit:coverage
 npm run test:e2e
 ```
 
-- Deploy sugerido: GitHub Pages (via GitHub Actions) ou um serviço estático (Netlify, Vercel). Garanta que `dist/` seja usado como diretório de publicação.
+**Forms and lead flow**
 
-**Formulários e fluxo de leads**
+- Starter kit form uses `data-make-url` to post to Make (webhook).
+- Local admin page: `http://localhost:8080/pages/leads.html`.
 
-- O formulário do starter kit (`id="starterKitForm"`) usa `data-make-url` para enviar a um webhook (Make) — se configurado, o script fará `fetch` para essa URL.
-- Como protótipo, os formulários também salvam em `localStorage` para testes locais. Veja `src/assets/js/script.js` para detalhes.
-- Página administrativa local: abra `/pages/leads.html` para ver, exportar (CSV) ou limpar leads salvos.
+**Make webhook setup**
 
-**Privacidade e consentimento**
+- Create a scenario with a **Custom webhook** trigger.
+- Copy the webhook URL into `data-make-url` in `src/pages/cadastro.njk`.
+- Activate the scenario (Run once to test, then switch ON).
+- Add downstream modules (Google Sheets, Mailchimp, email, etc.).
 
-- O formulário de cadastro exige um checkbox de consentimento antes do envio. Não envie ou armazene dados pessoais sem o consentimento explícito do usuário.
-- Ao integrar com serviços externos (Mailchimp, Google Sheets, etc.), verifique requisitos legais de proteção de dados (LGPD/GDPR) e termos desses serviços.
+**Privacy and consent**
 
-**Configuração de webhook (Make / Integromat)**
+- Starter kit form requires explicit consent. Do not store or send data without consent.
 
-1. Crie um scenario no Make e adicione um módulo de webhook personalizado.
-2. Cole a URL do webhook no atributo `data-make-url` do formulário em `src/pages/cadastro.njk`.
-3. Ative o scenario e teste um envio real.
+**Deploy**
 
-**Checklist de qualidade / próximos passos recomendados**
-
-- [ ] Validar e traduzir mensagens para PT-BR (atualmente algumas mensagens em inglês).
-- [ ] Adicionar testes automáticos para validação de formulários (unit/integration).
-- [ ] Implementar persistência segura server-side (serverless function ou pequeno backend).
-- [ ] Adicionar envio real de e-mail (Mailchimp, SendGrid ou similar) e confirmação por e-mail.
-- [ ] Revisar políticas de privacidade e SLA do serviço de e-mail escolhido.
-
-**Solução rápida de problemas**
-
-- Se o botão "Send me the Starter Kit" não reage: verifique se `src/assets/js/script.js` está carregado e se o checkbox de consentimento está marcado (o script usa a classe `.disabled` para controle visual).
-- Se o webhook não funcionar: confirme a URL em `data-make-url` e verifique os logs do serviço (Make).
-
-Se quiser, eu posso:
-
-- traduzir todas as mensagens do formulário para PT-BR e atualizar o site, ou
-- implementar uma função serverless (ex.: Netlify Functions / Vercel Serverless / AWS Lambda) para persistir leads, ou
-- criar uma integração pronta com Mailchimp/Tally.
-
----
+- GitHub Pages via GitHub Actions, publishing `dist/`.

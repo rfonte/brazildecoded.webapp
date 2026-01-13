@@ -188,11 +188,11 @@
         return; // bot
       }
       if (!name || !email || !message) {
-        showMessage(feedback, "Preencha todos os campos.", true);
+        showMessage(feedback, "Please fill in all fields.", true);
         return;
       }
       if (!isValidEmail(email)) {
-        showMessage(feedback, "E-mail invalido.", true);
+        showMessage(feedback, "Invalid email.", true);
         return;
       }
 
@@ -206,7 +206,7 @@
         date: new Date().toISOString(),
       });
       localStorage.setItem("brazildecoded_contacts", JSON.stringify(contacts));
-      showMessage(feedback, "Mensagem enviada. Obrigado!");
+      showMessage(feedback, "Message sent. Thank you!");
       contactForm.reset();
     });
   }
@@ -219,7 +219,7 @@
         localStorage.getItem("brazildecoded_leads") || "[]"
       );
       if (!leads.length) {
-        leadsList.innerHTML = "<p>Nenhum lead encontrado.</p>";
+        leadsList.innerHTML = "<p>No leads found.</p>";
         return;
       }
       var rows = leads
@@ -238,7 +238,7 @@
         })
         .join("");
       leadsList.innerHTML =
-        '<table class="leads-table"><thead><tr><th>#</th><th>Nome</th><th>E-mail</th><th>Data</th></tr></thead><tbody>' +
+        '<table class="leads-table"><thead><tr><th>#</th><th>Name</th><th>Email</th><th>Date</th></tr></thead><tbody>' +
         rows +
         "</tbody></table>";
     }
@@ -251,7 +251,7 @@
         var leads = JSON.parse(
           localStorage.getItem("brazildecoded_leads") || "[]"
         );
-        if (!leads.length) return alert("Nenhum lead para exportar.");
+        if (!leads.length) return alert("No leads to export.");
         var csv =
           "name,email,date\n" +
           leads
@@ -273,7 +273,7 @@
 
     if (btnClear) {
       btnClear.addEventListener("click", function () {
-        if (!confirm("Limpar todos os leads armazenados localmente?")) return;
+        if (!confirm("Clear all locally stored leads?")) return;
         localStorage.removeItem("brazildecoded_leads");
         renderLeads();
       });
