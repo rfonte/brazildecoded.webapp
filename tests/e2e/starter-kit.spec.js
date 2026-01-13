@@ -11,7 +11,9 @@ test("starter kit form submits and redirects", async ({ page }) => {
 
   await page.goto("/pages/cadastro.html");
   await page.getByLabel("Your email").fill("user@example.com");
-  await page.getByLabel("I agree to receive emails about BrazilDecoded.").check();
+  await page
+    .getByLabel("I agree to receive BrazilDecoded emails and offers.")
+    .check();
   await page.getByRole("button", { name: "Send me the Starter Kit" }).click();
 
   await expect(page).toHaveURL(/\/pages\/contato-sucesso\.html$/);
