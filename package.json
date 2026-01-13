@@ -1,0 +1,13 @@
+{
+  "name": "brazildecoded.webapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BrazilDecoded static site (Eleventy).",
+  "scripts": {
+    "build": "eleventy",
+    "serve": "eleventy --serve"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1"
+  }
+}

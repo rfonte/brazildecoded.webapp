@@ -1,0 +1,23 @@
+---
+title: "Leads - BrazilDecoded"
+layout: "layout.njk"
+pageKey: "leads"
+permalink: "/pages/leads.html"
+lang: "pt-BR"
+---
+<section class="section">
+  <div class="container">
+    <h1 class="section-title">Leads (admin)</h1>
+    <p class="section-note">
+      Esta pagina mostra os leads coletados localmente e permite
+      exportar/limpar.
+    </p>
+
+    <div class="admin-actions">
+      <button class="cta ghost" id="exportLeads">Exportar CSV</button>
+      <button class="cta secondary" id="clearLeads">Limpar leads</button>
+    </div>
+
+    <div id="leadsList" class="leads-list" aria-live="polite"></div>
+  </div>
+</section>

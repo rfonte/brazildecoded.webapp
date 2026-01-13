@@ -1,0 +1,30 @@
+{
+  "brand": "BrazilDecoded",
+  "description": "Travel smarter in Brazil with safety tips, cultural etiquette, transportation guidance, and must-see attractions.",
+  "gtmId": "GTM-PS36XKLG",
+  "nav": [
+    { "label": "Inside", "href": "/index.html#inside", "key": "inside" },
+    { "label": "Checkout", "href": "/index.html#buy", "key": "buy" },
+    {
+      "label": "Free Starter Kit",
+      "href": "/pages/cadastro.html",
+      "key": "starter",
+      "class": "nav-cta"
+    },
+    { "label": "Contact", "href": "/pages/contato.html", "key": "contact" }
+  ],
+  "footerLinks": [
+    {
+      "label": "Instagram",
+      "href": "https://www.instagram.com/visitbrazil.guide"
+    },
+    {
+      "label": "Pinterest",
+      "href": "https://www.pinterest.com/rodcafonte"
+    },
+    {
+      "label": "Linktree",
+      "href": "https://linktr.ee/brazildecoded"
+    }
+  ]
+}

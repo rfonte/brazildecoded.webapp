@@ -1,24 +1,27 @@
 # brazildecoded.webapp
 
-Site estatico inicial para o projeto BrazilDecoded - Viagem & Turismo.
+Site estatico inicial para o projeto BrazilDecoded - Viagem & Turismo, agora usando Eleventy para reaproveitar layout.
 
 Estrutura principal:
 
-- `index.html` - pagina inicial
-- `pages/contato.html` - formulario de contato (salva em localStorage como prototipo)
-- `pages/cadastro.html` - formulario de cadastro de e-mail (lead capture)
-- `assets/css/style.css` - estilos e responsividade simples
-- `assets/js/script.js` - logica de formulario para prototipo estatico
-- `pages/leads.html` - pagina administrativa para visualizar/exportar leads
+- `src/index.njk` - pagina inicial
+- `src/pages/cadastro.njk` - formulario de cadastro de e-mail (lead capture)
+- `src/pages/contato.njk` - formulario de contato (salva em localStorage como prototipo)
+- `src/pages/leads.njk` - pagina administrativa para visualizar/exportar leads
+- `src/pages/thank-you.njk` - pagina de confirmacao (noindex)
+- `src/_includes/layout.njk` - header/footer compartilhados
+- `src/assets/` - estilos e scripts
+- `dist/` - build gerado (saida)
 
-Como abrir localmente:
+Como rodar localmente:
 
-1. Abra o arquivo `index.html` no navegador (duplo-clique ou arraste para a janela do navegador).
-2. Os formularios gravam dados em `localStorage` como prototipo. Para ver os dados, abra o console do navegador e execute `localStorage.getItem('brazildecoded_leads')` ou `localStorage.getItem('brazildecoded_contacts')`.
+1. Instale dependencias com `npm install`.
+2. Inicie o servidor com `npm run serve` (Eleventy).
+3. Acesse o site gerado em `http://localhost:8080/`.
 
 Administracao local:
 
-- Abra `pages/leads.html` para visualizar os leads coletados localmente, exportar como CSV ou limpar o armazenamento local.
+- Abra `http://localhost:8080/pages/leads.html` para visualizar os leads coletados localmente, exportar como CSV ou limpar o armazenamento local.
 
 Proximos passos sugeridos:
 
