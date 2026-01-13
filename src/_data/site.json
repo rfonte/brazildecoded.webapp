@@ -1,19 +1,19 @@
 {
   "brand": "BrazilDecoded",
-  "description": "Guia prático para viajar pelo Brasil: dicas de segurança, etiqueta local, transporte e roteiros essenciais para aproveitar sua viagem.",
+  "description": "Practical Brazil travel guide with safety tips, local etiquette, transportation, and essential itineraries.",
   "gtmId": "GTM-PS36XKLG",
   "baseUrl": "https://brazildecoded.com.br",
   "buildVersion": "20260113",
   "nav": [
-    { "label": "Conteúdo", "href": "/index.html#inside", "key": "inside" },
-    { "label": "Comprar", "href": "/index.html#buy", "key": "buy" },
+    { "label": "Inside", "href": "/index.html#inside", "key": "inside" },
+    { "label": "Checkout", "href": "/index.html#buy", "key": "buy" },
     {
-      "label": "Starter Grátis",
+      "label": "Free Starter Kit",
       "href": "/pages/cadastro.html",
       "key": "starter",
       "class": "nav-cta"
     },
-    { "label": "Contato", "href": "/pages/contato.html", "key": "contact" }
+    { "label": "Contact", "href": "/pages/contato.html", "key": "contact" }
   ],
   "footerLinks": [
     {

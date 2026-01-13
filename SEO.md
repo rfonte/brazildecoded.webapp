@@ -1,53 +1,51 @@
-SEO: Mapeamento de palavras-chave
+SEO: Keyword Mapping
 
-Objetivo: melhorar o posicionamento e conversão do site com foco em vendas do eBook e captação de leads.
+Goal: improve organic ranking and conversion with a focus on eBook sales and lead capture.
 
-1) Palavras-chave principais por página
+1) Primary keywords per page
 
 - Home (`/index.html`)
-  - Primárias: "guia de viagem Brasil", "guia para viajar ao Brasil", "dicas de viagem Brasil"
-  - Secundárias: "roteiros Brasil", "segurança viagem Brasil", "o que fazer no Brasil"
-  - Meta title sugerido: "BrazilDecoded — Guia de Viagem para o Brasil | Dicas, Segurança e Roteiros"
-  - Meta description sugerida: "Guia prático para viajar pelo Brasil: dicas de segurança, transporte, atrações imperdíveis e roteiros. Compre o eBook ou baixe o Starter Kit gratuito."
+  - Primary: "Brazil travel guide", "travel to Brazil guide", "Brazil travel tips"
+  - Secondary: "Brazil itineraries", "Brazil safety tips", "things to do in Brazil"
+  - Suggested meta title: "BrazilDecoded - Brazil Travel Guide | Tips, Safety, Itineraries"
+  - Suggested meta description: "Practical Brazil travel guide with safety tips, transportation advice, must-see places, and itineraries. Buy the eBook or download the free Starter Kit."
 
-- Cadastro / Starter Kit (`/pages/cadastro.html`)
-  - Primárias: "starter kit viagem Brasil", "kit viagem grátis Brasil", "baixar starter kit Brasil"
-  - Secundárias: "guia viagem gratuito", "guia PDF Brasil"
-  - Title: "Starter Kit de Viagem — BrazilDecoded"
-  - Description: "Baixe o Starter Kit de Viagem do BrazilDecoded por e-mail — dicas de segurança, etiqueta e checklist."
+- Starter Kit (`/pages/cadastro.html`)
+  - Primary: "Brazil starter kit", "free Brazil travel kit", "Brazil travel checklist"
+  - Secondary: "free travel guide Brazil", "Brazil travel PDF"
+  - Title: "BrazilDecoded - Free Brazil Starter Kit"
+  - Description: "Get the BrazilDecoded starter kit by email with safety tips, etiquette guidance, and a travel checklist."
 
-- Página de checkout / vendas (separada) (Hotmart/Gumroad)
-  - Primárias: "comprar guia viagem Brasil", "guia Brasil comprar", "eBook viagem Brasil"
-  - Use páginas de produto com `Product` schema + preço e disponibilidade.
+- Checkout / sales page (Hotmart/Gumroad)
+  - Primary: "buy Brazil travel guide", "Brazil travel guide ebook", "Brazil guide book"
+  - Use product pages with `Product` schema plus price and availability.
 
-- Contato (`/pages/contato.html`)
-  - Primárias: "contato BrazilDecoded", "parcerias guia Brasil", "suporte guia viagem"
-  - Description: "Fale com o BrazilDecoded para parcerias, suporte ao cliente ou dúvidas sobre o guia de viagem."
+- Contact (`/pages/contato.html`)
+  - Primary: "BrazilDecoded contact", "Brazil travel guide support", "Brazil travel guide partnerships"
+  - Description: "Contact BrazilDecoded for partnerships, customer support, or questions about the travel guide."
 
 - Thank-you (noindex)
-  - Title: "Obrigado — Pedido recebido | BrazilDecoded"
+  - Title: "Thank you - Request received | BrazilDecoded"
 
-2) Ações aplicadas nesta alteração
+2) Changes applied in this update
 
-- Titles e descriptions atualizados para PT-BR nas páginas: `index.njk`, `cadastro.njk`, `contato.njk`, `thank-you.njk`.
-- `cadastro.njk` recebeu JSON-LD `Product` para rich results.
-- `src/_data/site.json` atualizado com descrição em PT-BR e labels de navegação em PT-BR.
-- `src/_includes/layout.njk` inclui JSON-LD de `WebSite` e `Organization`, OG e Twitter defaults.
-- `src/sitemap.xml.njk` com `changefreq` e `priority`.
+- Titles and descriptions standardized to English for: `index.njk`, `cadastro.njk`, `contato.njk`, `thank-you.njk`.
+- `cadastro.njk` includes `Product` JSON-LD for rich results.
+- `src/_data/site.json` updated with English description and nav labels.
+- `src/_includes/layout.njk` provides WebSite and Organization JSON-LD plus OG/Twitter defaults.
+- `src/sitemap.xml.njk` includes changefreq and priority metadata.
 
-3) Próximos passos recomendados
+3) Recommended next steps
 
-- Mapear palavras-chave de cauda longa por seção (ex.: "roteiro 7 dias Rio de Janeiro e Salvador").
-- Criar páginas de conteúdo (blog/guides) otimizadas para essas palavras-chave para atrair tráfego orgânico.
-- Implementar `hreflang` se houver conteúdo multilíngue.
-- Submeter sitemap ao Google Search Console e testar páginas com Rich Results Test.
-- Monitorar tráfego e conversões com Google Analytics/GA4 e ajustar copy/páginas conforme resultados.
+- Map long-tail keywords by section (example: "7 day Brazil itinerary Rio and Salvador").
+- Create optimized content pages (blog/guides) to capture organic traffic.
+- Implement `hreflang` if you add multilingual content.
+- Submit the sitemap in Google Search Console and test pages with Rich Results.
+- Monitor traffic and conversions with GA4 and iterate on copy and layout.
 
-4) Monitoramento e métricas
+4) Monitoring and metrics
 
-- Métricas iniciais: taxa de conversão do formulário de Starter Kit, visualizações da página de vendas, CTR de resultados orgânicos.
-- Ferramentas recomendadas: Google Search Console, Google Analytics (GA4), Hotjar (heatmaps), Ahrefs/SEMrush.
+- Starter kit form conversion rate, sales page views, organic CTR.
+- Recommended tools: Google Search Console, Google Analytics (GA4), Hotjar, Ahrefs or SEMrush.
 
----
-
-Se quiser, eu aplico hreflang, variantes de titles para A/B testing ou crio a primeira página de conteúdo otimizada (ex.: "Roteiro de 7 dias pelo Brasil: o essencial").
+If you want, I can add hreflang, title variants for A/B testing, or draft the first optimized content page (example: "7 Day Brazil Itinerary: The Essentials").
