@@ -5,11 +5,18 @@ permalink: "/sitemap.xml"
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{{ site.baseUrl }}/index.html</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
     <loc>{{ site.baseUrl }}/pages/cadastro.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>{{ site.baseUrl }}/pages/contato.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
+  {# include other pages automatically if needed in future #}
 </urlset>

@@ -1,11 +1,11 @@
 # Technical improvements
-
+- adicionar favicon
+- adicionar logo
 - Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).
 - Add lightweight error monitoring (Sentry or custom logging).
 - Improve performance (minify, preload, lazy load, cache headers).
-- Add 404 page, sitemap.xml, and robots.txt.
 - Review accessibility (contrast, labels, keyboard flow, ARIA).
 - Keep cache busting for assets (build version).
 - Document sensitive variables (webhook, consent, privacy).

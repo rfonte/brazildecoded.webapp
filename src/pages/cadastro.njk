@@ -1,6 +1,5 @@
----
-title: "BrazilDecoded - Free Starter Kit"
-description: "Get the free Brazil Travel Starter Kit by email."
+title: "BrazilDecoded — Starter Kit de Viagem (Grátis)"
+description: "Baixe o Starter Kit de Viagem do BrazilDecoded por e-mail — dicas de segurança, etiqueta e checklist." 
 layout: "layout.njk"
 pageKey: "starter"
 permalink: "/pages/cadastro.html"
@@ -8,16 +7,16 @@ permalink: "/pages/cadastro.html"
 <section class="hero" aria-labelledby="starter-title">
   <div class="container hero-grid">
     <div class="stack">
-      <p class="eyebrow">Free download</p>
-      <h1 id="starter-title">Free Brazil Travel Starter Kit</h1>
+      <p class="eyebrow">Download grátis</p>
+      <h1 id="starter-title">Starter Kit de Viagem — Brasil</h1>
       <p class="lead measure">
-        A short PDF with safety tips, cultural etiquette, and what locals wish
-        tourists knew. Delivered to your email.
+        Um guia prático em PDF com dicas de segurança, etiqueta local e um
+        checklist rápido para planejar sua viagem ao Brasil. Enviado por e-mail.
       </p>
       <ul class="hero-highlights" aria-label="Kit highlights">
-        <li>Quick planning checklist</li>
-        <li>Safety and etiquette basics</li>
-        <li>Perfect for first-time visitors</li>
+        <li>Checklist rápido de planejamento</li>
+        <li>Dicas de segurança e etiqueta</li>
+        <li>Indicado para quem visita o país pela primeira vez</li>
       </ul>
     </div>
 
@@ -37,8 +36,8 @@ permalink: "/pages/cadastro.html"
 <section class="section" aria-labelledby="form-title">
   <div class="container">
     <div class="card">
-      <h2 class="section-title" id="form-title">Send the kit to me</h2>
-      <p class="section-note">Use a real email so the kit reaches you.</p>
+      <h2 class="section-title" id="form-title">Quero receber o kit</h2>
+      <p class="section-note">Use um e-mail válido para receber o material.</p>
 
       <form
         class="lead-form"
@@ -86,7 +85,7 @@ permalink: "/pages/cadastro.html"
 
         <label>
           <input type="checkbox" id="consent" name="consent" required />
-          I agree to receive emails about BrazilDecoded.
+          Concordo em receber comunicações e ofertas do BrazilDecoded.
         </label>
         <p
           id="consentHelper"
@@ -97,8 +96,8 @@ permalink: "/pages/cadastro.html"
           You must accept the consent to enable the button.
         </p>
 
-        <button class="cta primary" id="leadSubmit" type="submit" disabled>
-          Send me the Starter Kit
+        <button class="cta primary" id="leadSubmit" type="submit">
+          Enviar o Starter Kit
         </button>
 
         <p
@@ -131,3 +130,26 @@ permalink: "/pages/cadastro.html"
     </div>
   </div>
 </section>
+
+{# JSON-LD: Product (digital starter kit) to improve appearance in search results #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Starter Kit de Viagem — BrazilDecoded",
+  "description": "Guia em PDF com dicas de segurança, etiqueta e checklist para viajar pelo Brasil.",
+  "brand": {
+    "@type": "Organization",
+    "name": "BrazilDecoded",
+    "url": "{{ site.baseUrl }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ site.baseUrl }}{{ page.url }}",
+    "price": "0.00",
+    "priceCurrency": "BRL",
+    "availability": "https://schema.org/InStock",
+    "category": "Digital"
+  }
+}
+</script>

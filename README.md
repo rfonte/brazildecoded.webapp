@@ -32,6 +32,17 @@ npm run serve
 
 Open `http://localhost:8080/`.
 
+Structured-data (JSON-LD) check
+
+After running a build, you can validate the generated JSON-LD blocks with the local checker:
+
+```powershell
+# build the site to `dist/`
+npm run build
+# run the structured-data report (or `node tools/structured-data-report.js`)
+npm run sd:report
+```
+
 **Build**
 
 ```powershell

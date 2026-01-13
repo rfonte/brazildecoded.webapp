@@ -6,6 +6,7 @@
   "scripts": {
     "build": "eleventy",
     "serve": "eleventy --serve",
+    "sd:report": "node tools/structured-data-report.js",
     "lint": "eslint \"src/assets/js/**/*.js\" && stylelint \"src/assets/css/**/*.css\" && htmlhint \"src/**/*.njk\"",
     "format": "prettier --write \"src/assets/js/**/*.js\" \"src/assets/css/**/*.css\" \"src/**/*.njk\" \"README.md\" \"TODOS.md\"",
     "format:check": "prettier --check \"src/assets/js/**/*.js\" \"src/assets/css/**/*.css\" \"src/**/*.njk\" \"README.md\" \"TODOS.md\"",
