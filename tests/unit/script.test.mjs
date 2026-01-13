@@ -623,6 +623,28 @@ describe("script.js", () => {
     );
   });
 
+  it("handles contact webhook fetch rejection", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    window.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Something went wrong. Please try again."
+    );
+    expect(document.getElementById("contactSubmit").disabled).toBe(false);
+  });
+
   it("handles contact webhook failure", async () => {
     setHtml(`
       <form id="contactForm" data-make-url="https://example.com/webhook">
@@ -650,6 +672,24 @@ describe("script.js", () => {
     await flushPromises();
     expect(document.getElementById("contactFeedback").textContent).toBe(
       "Something went wrong. Please try again."
+    );
+  });
+
+  it("blocks contact submission when webhook URL is a placeholder", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://hook.us2.make.com/COLE_AQUI">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    submitForm("contactForm");
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Missing Make webhook URL. Please update the form settings."
     );
   });
 
@@ -684,6 +724,22 @@ describe("script.js", () => {
     dispatchClick(document.getElementById("exportLogs"));
     dispatchClick(document.getElementById("clearLogs"));
     expect(JSON.parse(localStorage.getItem(logKey) || "[]").length).toBe(1);
+  });
+
+  it("handles missing admin buttons on leads page", async () => {
+    setHtml(`
+      <div id="leadsList"></div>
+      <button id="exportLeads"></button>
+    `);
+    localStorage.setItem(
+      "brazildecoded_leads",
+      JSON.stringify([{ name: "User", email: "u@e.com", date: "now" }])
+    );
+    await loadScript();
+    expect(document.getElementById("leadsList").innerHTML).toContain("<table");
+    // click export to make sure the existing button works
+    dispatchClick(document.getElementById("exportLeads"));
+    expect(URL.createObjectURL).toHaveBeenCalled();
   });
 
   it("handles empty leads and log actions safely", async () => {
@@ -960,5 +1016,24 @@ describe("script.js", () => {
     const logs = getLogs();
     const match = logs.find((log) => log.message === "Starter kit submit exception");
     expect(match.meta.message).toBe("boom");
+  });
+
+  it("builds payload with null and undefined options", async () => {
+    await loadScript();
+    const payload = window.BDApp.buildPayload({
+      email: null,
+      name: undefined,
+      page: null,
+      referrer: undefined,
+      userAgent: null,
+      queryString: undefined,
+      utils: {},
+    });
+    expect(payload.email).toBe("");
+    expect(payload.name).toBe("");
+    expect(payload.page).toBe("");
+    expect(payload.referrer).toBe("");
+    expect(payload.user_agent).toBe("");
+    expect(payload.utm_source).toBe("");
   });
 });
