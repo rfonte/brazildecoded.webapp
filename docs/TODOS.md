@@ -1,5 +1,4 @@
 # Technical improvements
-- adicionar favicon
 - Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).

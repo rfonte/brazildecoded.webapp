@@ -20,7 +20,9 @@ Static site for BrazilDecoded, built with Eleventy. This repo includes templates
 - `src/pages/contato-sucesso.njk` - starter kit success page
 - `src/_includes/layout.njk` - shared layout + script include
 - `src/assets/` - source CSS and JS
+- `src/assets/images` - logos and icons
 - `src/CNAME` - custom domain for GitHub Pages
+- `docs/` - project documentation (SEO and TODOs)
 - `dist/` - build output (not committed)
 
 **Local development**
@@ -114,5 +116,5 @@ GitHub Pages ignores `_headers`, so you need a CDN like Cloudflare if you want c
 - Add the custom domain in Cloudflare and set DNS to "proxied" (orange cloud).
 - Set cache rules:
   - `*/*` -> Cache HTML with "Bypass cache" or short TTL.
-  - `/assets/*` and `/images/*` -> Cache Everything, Edge TTL 1 year.
+- `/assets/*` -> Cache Everything, Edge TTL 1 year.
 - Keep cache busting with `site.buildVersion` for CSS/JS.
