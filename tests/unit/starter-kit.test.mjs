@@ -88,4 +88,24 @@ describe("starter-kit utils", () => {
     expect(context.BDStarterKit).toBeTruthy();
     expect(typeof context.BDStarterKit.isValidEmail).toBe("function");
   });
+
+  it("exports BDStarterKit via module.exports when available", () => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const scriptPath = join(
+      __dirname,
+      "../../src/assets/js/lib/starter-kit.js"
+    );
+    const code = readFileSync(scriptPath, "utf8");
+    const sandbox = {
+      URLSearchParams,
+      module: { exports: {} },
+    };
+    sandbox.window = sandbox;
+    const context = createContext(sandbox);
+    const script = new Script(code, { filename: scriptPath });
+    script.runInContext(context);
+    expect(context.module.exports).toBeTruthy();
+    expect(typeof context.module.exports.isValidEmail).toBe("function");
+  });
 });

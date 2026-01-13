@@ -1,9 +1,11 @@
 (function (root, factory) {
+  /* c8 ignore start */
   if (typeof module === "object" && module.exports) {
     module.exports = factory();
   } else {
     root.BDStarterKit = factory();
   }
+  /* c8 ignore end */
 })(this, function () {
   function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
