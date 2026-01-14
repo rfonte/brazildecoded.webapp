@@ -1,5 +1,9 @@
 {
     "cSpell.words": [
         "brazildecoded"
-    ]
+    ],
+    "sonarlint.connectedMode.project": {
+        "connectionId": "rfonte",
+        "projectKey": "rfonte_brazildecoded.webapp"
+    }
 }
