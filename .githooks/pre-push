@@ -9,3 +9,4 @@ if [ -z "$SONAR_TOKEN" ]; then
   exit 0
 fi
 npm run prepush
+npm run sonar:summary

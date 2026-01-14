@@ -73,6 +73,13 @@ $env:SONAR_TOKEN="YOUR_TOKEN_HERE"
 npm run sonar
 ```
 
+- SonarCloud summary report (local files in `reports/sonar/`):
+
+```powershell
+$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
+npm run sonar:summary
+```
+
 - Pre-push hook (runs unit tests, coverage, and SonarCloud when `SONAR_TOKEN` is set):
 
 ```powershell

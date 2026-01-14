@@ -14,6 +14,7 @@
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
     "sonar": "sonar-scanner",
+    "sonar:summary": "node tools/sonar-summary.js",
     "prepush": "npm run test:unit && npm run test:unit:coverage && npm run sonar",
     "test:e2e": "playwright test",
     "docs": "jsdoc -c jsdoc.json",

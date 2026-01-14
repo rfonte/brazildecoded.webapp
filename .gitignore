@@ -5,6 +5,7 @@ test-results/
 playwright-report/
 artifacts/
 .scannerwork/
+reports/sonar/
 *.log
 npm-debug.log*
 pnpm-debug.log*
