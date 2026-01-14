@@ -172,7 +172,6 @@ input[type="email"],
   width: 100%;
   max-width: 100%;
   appearance: none;
-  -webkit-appearance: none;
   padding: 0.7rem 0.9rem;
   border: 1px solid rgb(16 24 40 / 20%);
   border-radius: 12px;
@@ -186,7 +185,6 @@ textarea.form-input {
   width: 100%;
   max-width: 100%;
   appearance: none;
-  -webkit-appearance: none;
   padding: 0.7rem 0.9rem;
   border: 1px solid rgb(16 24 40 / 20%);
   border-radius: 12px;
@@ -499,7 +497,7 @@ button.cta:disabled {
   display: none;
 }
 
-.cookie-banner__content {
+.cookie-banner-content {
   max-width: var(--container);
   margin: 0 auto;
   padding: 1rem 1.25rem;
@@ -509,20 +507,20 @@ button.cta:disabled {
   justify-content: space-between;
 }
 
-.cookie-banner__content p {
+.cookie-banner-content p {
   margin: 0;
   color: var(--muted);
   max-width: 60ch;
 }
 
-.cookie-banner__actions {
+.cookie-banner-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
 
-.cookie-banner__settings {
+.cookie-banner-settings {
   max-width: var(--container);
   margin: 0 auto;
   padding: 0 1.25rem 1rem;
@@ -531,11 +529,11 @@ button.cta:disabled {
   border-top: 1px solid rgb(16 24 40 / 10%);
 }
 
-.cookie-banner__settings.is-visible {
+.cookie-banner-settings.is-visible {
   display: grid;
 }
 
-.cookie-banner__note {
+.cookie-banner-note {
   margin: 0.75rem 0 0;
   color: var(--muted);
   font-size: 0.9rem;
@@ -603,12 +601,12 @@ button.cta:disabled {
     padding-top: 3.5rem;
   }
 
-  .cookie-banner__content {
+  .cookie-banner-content {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .cookie-banner__settings {
+  .cookie-banner-settings {
     padding: 0 1.25rem 1.25rem;
   }
 }

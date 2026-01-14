@@ -154,7 +154,7 @@ describe("script.js", () => {
         <button id="cookieAccept" type="button"></button>
         <button id="cookieReject" type="button"></button>
         <button id="cookieSettings" type="button"></button>
-        <div id="cookieSettingsPanel" class="cookie-banner__settings"></div>
+        <div id="cookieSettingsPanel" class="cookie-banner-settings"></div>
         <input type="checkbox" id="cookieAnalytics" />
         <input type="checkbox" id="cookieMarketing" />
         <button id="cookieSave" type="button"></button>
