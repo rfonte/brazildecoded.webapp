@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
+    "prepush": "npm run test:unit && npm run test:unit:coverage",
     "test:e2e": "playwright test",
     "docs": "jsdoc -c jsdoc.json",
     "postinstall": "playwright install --with-deps"
