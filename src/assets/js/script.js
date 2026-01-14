@@ -17,6 +17,50 @@
 
   var starterKitUtils = window.BDStarterKit || {};
   var LOG_KEY = "brazildecoded_logs";
+  var COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
+
+  function loadGtm(gtmId) {
+    if (!gtmId || window.__bdGtmLoaded) return;
+    window.__bdGtmLoaded = true;
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+    var f = document.getElementsByTagName("script")[0];
+    var j = document.createElement("script");
+    j.async = true;
+    j.src = "https://www.googletagmanager.com/gtm.js?id=" + gtmId;
+    f.parentNode.insertBefore(j, f);
+  }
+
+  function getCookieConsent() {
+    try {
+      var raw = localStorage.getItem(COOKIE_CONSENT_KEY) || "";
+      if (!raw) return null;
+      if (raw === "accepted" || raw === "rejected") {
+        return {
+          status: raw,
+          analytics: raw === "accepted",
+          marketing: raw === "accepted",
+        };
+      }
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return null;
+      return {
+        status: parsed.status || "custom",
+        analytics: !!parsed.analytics,
+        marketing: !!parsed.marketing,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  function setCookieConsent(value) {
+    try {
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(value));
+    } catch {
+      // Ignore storage failures.
+    }
+  }
 
   function logEvent(level, message, meta) {
     try {
@@ -214,6 +258,94 @@
   var yearEl = document.getElementById("year");
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
+  }
+
+  // Cookie consent banner (LGPD)
+  var cookieBanner = document.getElementById("cookieBanner");
+  var cookieAccept = document.getElementById("cookieAccept");
+  var cookieReject = document.getElementById("cookieReject");
+  var cookieSettings = document.getElementById("cookieSettings");
+  var cookieSave = document.getElementById("cookieSave");
+  var cookieSettingsPanel = document.getElementById("cookieSettingsPanel");
+  var cookieAnalytics = document.getElementById("cookieAnalytics");
+  var cookieMarketing = document.getElementById("cookieMarketing");
+  var gtmId = document.body ? document.body.getAttribute("data-gtm-id") : "";
+  var consent = getCookieConsent();
+
+  function shouldLoadGtm(consentState) {
+    return (
+      consentState &&
+      (consentState.analytics === true || consentState.marketing === true)
+    );
+  }
+
+  function applyConsent(consentState) {
+    if (!cookieBanner) return;
+    if (!consentState) {
+      cookieBanner.classList.remove("is-hidden");
+      return;
+    }
+    cookieBanner.classList.add("is-hidden");
+    if (shouldLoadGtm(consentState)) {
+      loadGtm(gtmId);
+    }
+  }
+
+  if (cookieBanner) {
+    applyConsent(consent);
+
+    if (cookieAnalytics && consent) {
+      cookieAnalytics.checked = consent.analytics;
+    }
+    if (cookieMarketing && consent) {
+      cookieMarketing.checked = consent.marketing;
+    }
+
+    if (cookieAccept) {
+      cookieAccept.addEventListener("click", function () {
+        var state = { status: "accepted", analytics: true, marketing: true };
+        setCookieConsent(state);
+        consent = state;
+        applyConsent(state);
+      });
+    }
+
+    if (cookieReject) {
+      cookieReject.addEventListener("click", function () {
+        var state = { status: "rejected", analytics: false, marketing: false };
+        setCookieConsent(state);
+        consent = state;
+        applyConsent(state);
+      });
+    }
+
+    if (cookieSettings && cookieSettingsPanel) {
+      cookieSettings.addEventListener("click", function () {
+        var isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
+        cookieSettings.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+        cookieSettingsPanel.setAttribute(
+          "aria-hidden",
+          isExpanded ? "false" : "true"
+        );
+        if (cookieAnalytics && !consent) cookieAnalytics.checked = false;
+        if (cookieMarketing && !consent) cookieMarketing.checked = false;
+      });
+    }
+
+    if (cookieSave) {
+      cookieSave.addEventListener("click", function () {
+        var state = {
+          status: "custom",
+          analytics: !!(cookieAnalytics && cookieAnalytics.checked),
+          marketing: !!(cookieMarketing && cookieMarketing.checked),
+        };
+        setCookieConsent(state);
+        consent = state;
+        applyConsent(state);
+      });
+    }
+  } else if (consent && shouldLoadGtm(consent)) {
+    loadGtm(gtmId);
   }
 
   // Starter kit form (Make webhook)

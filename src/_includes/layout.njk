@@ -64,38 +64,13 @@
     }
     </script>
 
-    <!-- Google Tag Manager -->
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "{{ site.gtmId }}");
-    </script>
-    <!-- End Google Tag Manager -->
-
     <link
       rel="stylesheet"
       href="/assets/css/style.css?v={{ site.buildVersion }}"
     />
   </head>
 
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript>
-      <iframe
-        src="https://www.googletagmanager.com/ns.html?id={{ site.gtmId }}"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe>
-    </noscript>
-    <!-- End Google Tag Manager (noscript) -->
+  <body data-gtm-id="{{ site.gtmId }}">
     <a class="skip-link" href="#maincontent">Skip to content</a>
 
     <header class="site-header" id="top">
@@ -147,6 +122,59 @@
         </div>
       </div>
     </footer>
+
+    <div
+      class="cookie-banner is-hidden"
+      id="cookieBanner"
+      role="dialog"
+      aria-live="polite"
+      aria-label="Cookie consent"
+    >
+      <div class="cookie-banner__content">
+        <p>
+          We use essential cookies for the site to function. With your consent,
+          we use performance and marketing cookies to improve your experience.
+        </p>
+        <div class="cookie-banner__actions">
+          <a class="cta ghost" href="/pages/cookies.html">View policy</a>
+          <button
+            class="cta ghost"
+            id="cookieSettings"
+            type="button"
+            aria-expanded="false"
+            aria-controls="cookieSettingsPanel"
+          >
+            Preferences
+          </button>
+          <button class="cta ghost" id="cookieReject" type="button">
+            Reject
+          </button>
+          <button class="cta primary" id="cookieAccept" type="button">
+            Accept
+          </button>
+        </div>
+      </div>
+      <div
+        class="cookie-banner__settings"
+        id="cookieSettingsPanel"
+        aria-hidden="true"
+      >
+        <p class="cookie-banner__note">Essential cookies are always on.</p>
+        <label class="cookie-option">
+          <input type="checkbox" id="cookieAnalytics" />
+          Performance and analytics
+        </label>
+        <label class="cookie-option">
+          <input type="checkbox" id="cookieMarketing" />
+          Marketing
+        </label>
+        <div class="cookie-banner__actions">
+          <button class="cta primary" id="cookieSave" type="button">
+            Save preferences
+          </button>
+        </div>
+      </div>
+    </div>
 
     <script src="/assets/js/lib/starter-kit.js?v={{ site.buildVersion }}"></script>
     <script src="/assets/js/script.js?v={{ site.buildVersion }}"></script>
