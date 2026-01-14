@@ -73,7 +73,3 @@
 - Community or support channel.
 - Video mini-course.
 - Partnerships and affiliates with UTM tracking.
-
-## LGPD
-chkbox: Concordo com o tratamento dos meus dados pessoais conforme descrito.
-- desafio ou cloudflare ou google para evitar robos
