@@ -2,6 +2,13 @@
 (function () {
   var app = window.BDApp || {};
   window.BDApp = app;
+
+  /**
+   * Displays a message to the user in a specified element.
+   * @param {HTMLElement} el The element to display the message in.
+   * @param {string} msg The message to display.
+   * @param {boolean} [isError=false] Whether the message is an error, which affects the text color.
+   */
   function showMessage(el, msg, isError) {
     if (!el) return;
     el.textContent = msg;

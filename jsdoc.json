@@ -1,0 +1,14 @@
+{
+  "source": {
+    "include": [
+      "src/assets/js"
+    ],
+    "includePattern": ".+\.js(doc)?$",
+    "excludePattern": "(^|/|\\)_"
+  },
+  "opts": {
+    "destination": "./docs/api/",
+    "recurse": true,
+    "readme": "README.md"
+  }
+}
