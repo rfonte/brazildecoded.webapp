@@ -18,6 +18,7 @@
   var starterKitUtils = window.BDStarterKit || {};
   var LOG_KEY = "brazildecoded_logs";
   var COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
+  var MIN_FORM_TIME_MS = 3000;
 
   function loadGtm(gtmId) {
     if (!gtmId || window.__bdGtmLoaded) return;
@@ -355,7 +356,12 @@
     var consent = document.getElementById("consent");
     var consentHelper = document.getElementById("consentHelper");
     var statusEl = starterForm.querySelector("[data-status]");
+    var starterFormStartedAt = document.getElementById("starterFormStartedAt");
     logEvent("info", "Starter kit form ready");
+
+    if (starterFormStartedAt) {
+      starterFormStartedAt.value = String(Date.now());
+    }
 
     function syncConsent() {
       if (!submitBtn || !consent) return;
@@ -379,6 +385,18 @@
         if (honeypot && honeypot.value) {
           logEvent("warn", "Starter kit blocked by honeypot");
           return;
+        }
+        if (starterFormStartedAt) {
+          var elapsed = Date.now() - Number(starterFormStartedAt.value || 0);
+          if (!elapsed || elapsed < MIN_FORM_TIME_MS) {
+            logEvent("warn", "Starter kit blocked by timing");
+            showMessage(
+              statusEl,
+              "Please wait a moment and try again.",
+              true
+            );
+            return;
+          }
         }
 
         var emailField = starterForm.querySelector('input[name="email"]');
@@ -482,6 +500,11 @@
     var contactConsent = document.getElementById("contactConsent");
     var contactConsentHelper = document.getElementById("contactConsentHelper");
     var contactSubmitBtn = document.getElementById("contactSubmit");
+    var contactFormStartedAt = document.getElementById("contactFormStartedAt");
+
+    if (contactFormStartedAt) {
+      contactFormStartedAt.value = String(Date.now());
+    }
 
     function syncContactConsent() {
       if (!contactSubmitBtn || !contactConsent) return;
@@ -513,6 +536,19 @@
       if (honeypot && honeypot.value) {
         logEvent("warn", "Contact blocked by honeypot");
         return; // bot
+      }
+      if (contactFormStartedAt) {
+        var contactElapsed =
+          Date.now() - Number(contactFormStartedAt.value || 0);
+        if (!contactElapsed || contactElapsed < MIN_FORM_TIME_MS) {
+          logEvent("warn", "Contact blocked by timing");
+          showMessage(
+            feedback,
+            "Please wait a moment and try again.",
+            true
+          );
+          return;
+        }
       }
       if (!name || !email || !message) {
         logEvent("warn", "Contact missing fields");
