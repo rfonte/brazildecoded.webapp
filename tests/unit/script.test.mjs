@@ -34,11 +34,18 @@ function getLogs() {
   return JSON.parse(localStorage.getItem(logKey) || "[]");
 }
 
-function submitForm(formId) {
+function submitForm(formId, options = {}) {
   const form = document.getElementById(formId);
-  form.dispatchEvent(
-    new Event("submit", { bubbles: true, cancelable: true })
-  );
+  const startedAt =
+    formId === "starterKitForm"
+      ? document.getElementById("starterFormStartedAt")
+      : formId === "contactForm"
+      ? document.getElementById("contactFormStartedAt")
+      : null;
+  if (startedAt && !options.skipTiming) {
+    startedAt.value = String(Date.now() - 4000);
+  }
+  form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
 }
 
 function dispatchClick(el) {
@@ -72,6 +79,7 @@ beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
   delete window.BDStarterKit;
+  delete window.__bdGtmLoaded;
   setLocation("/index.html");
   stubUrlHelpers();
   window.alert = vi.fn();
@@ -87,6 +95,192 @@ describe("script.js", () => {
     );
   });
 
+  it("loads GTM when cookie consent is accepted", async () => {
+    localStorage.setItem(
+      "brazildecoded_cookie_consent",
+      JSON.stringify({ status: "accepted", analytics: true, marketing: true })
+    );
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    await loadScript();
+    const gtmScript = Array.from(document.getElementsByTagName("script")).find(
+      (node) => (node.src || "").includes("googletagmanager.com/gtm.js?id=GTM-TEST")
+    );
+    expect(gtmScript).toBeTruthy();
+  });
+
+  it("stores custom cookie preferences and hides the banner", async () => {
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    await loadScript();
+    document.getElementById("cookieAnalytics").checked = true;
+    dispatchClick(document.getElementById("cookieSave"));
+    const stored = JSON.parse(
+      localStorage.getItem("brazildecoded_cookie_consent") || "{}"
+    );
+    expect(stored.status).toBe("custom");
+    expect(stored.analytics).toBe(true);
+    expect(document.getElementById("cookieBanner").classList.contains("is-hidden")).toBe(
+      true
+    );
+  });
+
+  it("toggles cookie settings and clears unchecked preferences when no consent", async () => {
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel" class="cookie-banner__settings"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    const settingsPanel = document.getElementById("cookieSettingsPanel");
+    const settingsBtn = document.getElementById("cookieSettings");
+    const analytics = document.getElementById("cookieAnalytics");
+    const marketing = document.getElementById("cookieMarketing");
+    analytics.checked = true;
+    marketing.checked = true;
+    dispatchClick(settingsBtn);
+    expect(settingsPanel.classList.contains("is-visible")).toBe(true);
+    expect(settingsBtn.getAttribute("aria-expanded")).toBe("true");
+    expect(settingsPanel.getAttribute("aria-hidden")).toBe("false");
+    expect(analytics.checked).toBe(false);
+    expect(marketing.checked).toBe(false);
+  });
+
+  it("rejects cookies and stores the decision", async () => {
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    dispatchClick(document.getElementById("cookieReject"));
+    const stored = JSON.parse(
+      localStorage.getItem("brazildecoded_cookie_consent") || "{}"
+    );
+    expect(stored.status).toBe("rejected");
+    expect(stored.analytics).toBe(false);
+    expect(document.getElementById("cookieBanner").classList.contains("is-hidden")).toBe(
+      true
+    );
+  });
+
+  it("accepts cookies and stores the decision", async () => {
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    dispatchClick(document.getElementById("cookieAccept"));
+    const stored = JSON.parse(
+      localStorage.getItem("brazildecoded_cookie_consent") || "{}"
+    );
+    expect(stored.status).toBe("accepted");
+    expect(stored.marketing).toBe(true);
+    expect(document.getElementById("cookieBanner").classList.contains("is-hidden")).toBe(
+      true
+    );
+  });
+
+  it("parses legacy cookie consent strings", async () => {
+    localStorage.setItem("brazildecoded_cookie_consent", "accepted");
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    expect(document.getElementById("cookieAnalytics").checked).toBe(true);
+    expect(document.getElementById("cookieMarketing").checked).toBe(true);
+    expect(document.getElementById("cookieBanner").classList.contains("is-hidden")).toBe(
+      true
+    );
+  });
+
+  it("handles invalid cookie consent values safely", async () => {
+    localStorage.setItem("brazildecoded_cookie_consent", "{");
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner" class="is-hidden">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    expect(document.getElementById("cookieBanner").classList.contains("is-hidden")).toBe(
+      false
+    );
+  });
+
+  it("loads GTM when consent exists and the banner is missing", async () => {
+    localStorage.setItem(
+      "brazildecoded_cookie_consent",
+      JSON.stringify({ status: "accepted", analytics: true, marketing: false })
+    );
+    setHtml(`<script></script>`);
+    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    await loadScript();
+    const gtmScript = Array.from(document.getElementsByTagName("script")).find(
+      (node) => (node.src || "").includes("googletagmanager.com/gtm.js?id=GTM-TEST")
+    );
+    expect(gtmScript).toBeTruthy();
+  });
+
   it("handles starter kit form consent and invalid email", async () => {
     setLocation("/pages/cadastro.html");
     setHtml(`
@@ -94,6 +288,7 @@ describe("script.js", () => {
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="text" name="name" id="leadName" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -181,6 +376,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -217,6 +413,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -236,6 +433,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -261,6 +459,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" value="bot" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -271,6 +470,27 @@ describe("script.js", () => {
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
     expect(window.fetch).not.toHaveBeenCalled();
+  });
+
+  it("blocks starter kit submission when submitted too quickly", async () => {
+    setLocation("/pages/cadastro.html");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    document.getElementById("starterFormStartedAt").value = String(Date.now());
+    submitForm("starterKitForm", { skipTiming: true });
+    expect(document.querySelector("[data-status]").textContent).toBe(
+      "Please wait a moment and try again."
+    );
   });
 
   it("uses starterKitUtils.getUTM when buildPayload is missing", async () => {
@@ -284,6 +504,7 @@ describe("script.js", () => {
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -319,6 +540,7 @@ describe("script.js", () => {
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -349,6 +571,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -382,6 +605,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -404,6 +628,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -435,6 +660,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -467,6 +693,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -502,6 +729,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <p data-status></p>
       </form>
@@ -543,6 +771,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -572,6 +803,7 @@ describe("script.js", () => {
     );
 
     document.getElementById("contactEmail").value = "user@example.com";
+    document.getElementById("contactConsent").checked = true;
     submitForm("contactForm");
     await flushPromises();
     await flushPromises();
@@ -588,6 +820,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" value="bot" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -602,6 +837,55 @@ describe("script.js", () => {
     expect(window.fetch).not.toHaveBeenCalled();
   });
 
+  it("blocks contact submission when consent is missing", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" />
+        <input type="email" id="contactEmail" />
+        <textarea id="contactMessage"></textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" /></label>
+        <p id="contactConsentHelper"></p>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    document.getElementById("contactName").value = "User";
+    document.getElementById("contactEmail").value = "user@example.com";
+    document.getElementById("contactMessage").value = "Hi";
+    submitForm("contactForm");
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "You must accept the consent to enable the button."
+    );
+  });
+
+  it("blocks contact submission when submitted too quickly", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" />
+        <input type="email" id="contactEmail" />
+        <textarea id="contactMessage"></textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    document.getElementById("contactName").value = "User";
+    document.getElementById("contactEmail").value = "user@example.com";
+    document.getElementById("contactMessage").value = "Hi";
+    document.getElementById("contactFormStartedAt").value = String(Date.now());
+    submitForm("contactForm", { skipTiming: true });
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Please wait a moment and try again."
+    );
+  });
+
   it("handles missing contact webhook URL", async () => {
     setHtml(`
       <form id="contactForm" data-make-url="">
@@ -609,6 +893,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -630,6 +917,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" value="user@example.com" />
         <textarea id="contactMessage">Test</textarea>
         <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -652,6 +942,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" />
         <textarea id="contactMessage"></textarea>
         <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -682,6 +975,9 @@ describe("script.js", () => {
         <input type="email" id="contactEmail" value="user@example.com" />
         <textarea id="contactMessage">Test</textarea>
         <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
         <p id="contactFeedback"></p>
         <button id="contactSubmit" type="submit"></button>
       </form>
@@ -949,6 +1245,7 @@ describe("script.js", () => {
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -980,6 +1277,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -1002,6 +1300,7 @@ describe("script.js", () => {
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
