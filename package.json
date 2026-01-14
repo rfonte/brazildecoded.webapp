@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
-    "prepush": "npm run test:unit && npm run test:unit:coverage",
+    "sonar": "sonar-scanner",
+    "prepush": "npm run test:unit && npm run test:unit:coverage && npm run sonar",
     "test:e2e": "playwright test",
     "docs": "jsdoc -c jsdoc.json",
     "postinstall": "playwright install --with-deps"
@@ -31,6 +32,7 @@
     "prettier": "^3.3.3",
     "stylelint": "^16.9.0",
     "stylelint-config-standard": "^36.0.0",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.17",
+    "sonar-scanner": "^3.1.0"
   }
 }

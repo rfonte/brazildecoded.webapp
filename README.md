@@ -65,6 +65,20 @@ npm run test:unit
 npm run test:unit:coverage
 ```
 
+- SonarCloud (vulnerabilities scan):
+
+```powershell
+# set your token (PowerShell)
+$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
+npm run sonar
+```
+
+- Pre-push hook (runs unit tests, coverage, and SonarCloud when `SONAR_TOKEN` is set):
+
+```powershell
+npm run prepush
+```
+
 - E2E (Playwright):
 
 ```powershell

@@ -2,4 +2,10 @@
 set -e
 
 echo "Running unit tests and coverage before push..."
+if [ -z "$SONAR_TOKEN" ]; then
+  echo "SONAR_TOKEN is not set. Skipping SonarCloud scan."
+  npm run test:unit
+  npm run test:unit:coverage
+  exit 0
+fi
 npm run prepush
