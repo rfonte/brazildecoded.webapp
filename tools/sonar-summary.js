@@ -54,9 +54,45 @@ function requestJson(url, token) {
   });
 }
 
+async function fetchAllIssues(baseUrl, token) {
+  const results = [];
+  let page = 1;
+  while (true) {
+    const pageUrl = `${baseUrl}&p=${page}`;
+    const payload = await requestJson(pageUrl, token);
+    const issues = payload.issues || [];
+    results.push(...issues);
+    const paging = payload.paging || {};
+    const total = paging.total || results.length;
+    const pageSize = paging.pageSize || issues.length;
+    if (!issues.length || results.length >= total || pageSize === 0) break;
+    page += 1;
+  }
+  return results;
+}
+
+async function fetchAllHotspots(baseUrl, token) {
+  const results = [];
+  let page = 1;
+  while (true) {
+    const pageUrl = `${baseUrl}&p=${page}`;
+    const payload = await requestJson(pageUrl, token);
+    const hotspots = payload.hotspots || [];
+    results.push(...hotspots);
+    const paging = payload.paging || {};
+    const total = paging.total || results.length;
+    const pageSize = paging.pageSize || hotspots.length;
+    if (!hotspots.length || results.length >= total || pageSize === 0) break;
+    page += 1;
+  }
+  return results;
+}
+
 function formatMarkdown(summary) {
   const metrics = summary.metrics || {};
   const issues = summary.issues || [];
+  const codeSmells = summary.codeSmells || [];
+  const hotspots = summary.hotspots || [];
   return [
     "# SonarCloud Summary",
     "",
@@ -80,10 +116,38 @@ function formatMarkdown(summary) {
       ? issues
           .map(
             (issue) =>
-              `- [${issue.severity}] ${issue.rule} — ${issue.component}:${issue.line} — ${issue.message}`
+              `- [${issue.severity}] ${issue.rule} - ${issue.component}:${issue.line} - ${issue.message}`
           )
           .join("\n")
       : "- No open issues returned.",
+    "",
+    `Total issues listed: ${issues.length}`,
+    "",
+    "## Code Smells",
+    "",
+    codeSmells.length
+      ? codeSmells
+          .map(
+            (issue) =>
+              `- [${issue.severity}] ${issue.rule} - ${issue.component}:${issue.line} - ${issue.message}`
+          )
+          .join("\n")
+      : "- No open code smells returned.",
+    "",
+    `Total code smells listed: ${codeSmells.length}`,
+    "",
+    "## Security Hotspots (To Review)",
+    "",
+    hotspots.length
+      ? hotspots
+          .map(
+            (hotspot) =>
+              `- [${hotspot.vulnerabilityProbability}] ${hotspot.securityCategory} - ${hotspot.component}:${hotspot.line} - ${hotspot.message}`
+          )
+          .join("\n")
+      : "- No security hotspots returned.",
+    "",
+    `Total hotspots listed: ${hotspots.length}`,
     "",
   ].join("\n");
 }
@@ -108,10 +172,14 @@ async function main() {
   )}&metricKeys=bugs,vulnerabilities,security_hotspots,code_smells,coverage,duplicated_lines_density`;
   const issuesUrl = `${apiBase}/issues/search?componentKeys=${encodeURIComponent(
     projectKey
-  )}&statuses=OPEN&ps=10&s=SEVERITY`;
+  )}&statuses=OPEN&ps=500&s=SEVERITY`;
+  const hotspotsUrl = `${apiBase}/hotspots/search?projectKey=${encodeURIComponent(
+    projectKey
+  )}&status=TO_REVIEW&ps=500`;
 
   const measures = await requestJson(measuresUrl, token);
-  const issues = await requestJson(issuesUrl, token);
+  const issues = await fetchAllIssues(issuesUrl, token);
+  const hotspots = await fetchAllHotspots(hotspotsUrl, token);
 
   const metricMap = {};
   const measuresList = (measures.component && measures.component.measures) || [];
@@ -123,7 +191,7 @@ async function main() {
     projectKey,
     generatedAt: new Date().toISOString(),
     metrics: metricMap,
-    issues: (issues.issues || []).map((issue) => ({
+    issues: issues.map((issue) => ({
       key: issue.key,
       rule: issue.rule,
       severity: issue.severity,
@@ -131,6 +199,25 @@ async function main() {
       line: issue.line || 0,
       message: issue.message,
       type: issue.type,
+    })),
+    codeSmells: issues
+      .filter((issue) => issue.type === "CODE_SMELL")
+      .map((issue) => ({
+        key: issue.key,
+        rule: issue.rule,
+        severity: issue.severity,
+        component: issue.component,
+        line: issue.line || 0,
+        message: issue.message,
+        type: issue.type,
+      })),
+    hotspots: hotspots.map((hotspot) => ({
+      key: hotspot.key,
+      component: hotspot.component,
+      line: hotspot.line || 0,
+      message: hotspot.message,
+      securityCategory: hotspot.securityCategory,
+      vulnerabilityProbability: hotspot.vulnerabilityProbability,
     })),
   };
 
@@ -150,3 +237,4 @@ main().catch((err) => {
   console.error(err.message || err);
   process.exit(1);
 });
+

@@ -225,6 +225,27 @@ describe("script.js", () => {
     );
   });
 
+  it("handles cookie consent storage failures without crashing", async () => {
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+    const realSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = vi.fn(() => {
+      throw new Error("boom");
+    });
+    expect(() => dispatchClick(document.getElementById("cookieAccept"))).not.toThrow();
+    localStorage.setItem = realSetItem;
+  });
   it("parses legacy cookie consent strings", async () => {
     localStorage.setItem("brazildecoded_cookie_consent", "accepted");
     setHtml(`
@@ -427,7 +448,7 @@ describe("script.js", () => {
     );
   });
 
-  it("validates email with default regex when no helper is present", async () => {
+  it("validates email with default validator when no helper is present", async () => {
     setLocation("/pages/cadastro.html");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
@@ -935,6 +956,67 @@ describe("script.js", () => {
     expect(document.getElementById("contactSubmit").disabled).toBe(false);
   });
 
+  it("logs string errors when contact webhook rejects with a string", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    window.fetch = vi.fn(() => Promise.reject("fail"));
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    const logs = getLogs();
+    const match = logs.find((log) => log.message === "Contact webhook failed");
+    expect(match.meta.message).toBe("fail");
+  });
+
+  it("uses empty user_agent when navigator.userAgent is blank", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactConsentHelper"></p>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, "userAgent", {
+      value: "",
+      configurable: true,
+    });
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve("OK"),
+      })
+    );
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    const payload = JSON.parse(window.fetch.mock.calls[0][1].body);
+    expect(payload.user_agent).toBe("");
+    Object.defineProperty(navigator, "userAgent", {
+      value: originalUserAgent,
+      configurable: true,
+    });
+  });
   it("handles contact webhook failure", async () => {
     setHtml(`
       <form id="contactForm" data-make-url="https://example.com/webhook">
@@ -1177,9 +1259,12 @@ describe("script.js", () => {
     localStorage.setItem = realSetItem;
   });
 
-  it("handles regex email validation with no helper", async () => {
+  it("handles email validation with no helper", async () => {
     await loadScript();
     expect(window.BDApp.isValidEmail("bad-email")).toBe(false);
+    expect(window.BDApp.isValidEmail("user@@example.com")).toBe(false);
+    expect(window.BDApp.isValidEmail("user@.com")).toBe(false);
+    expect(window.BDApp.isValidEmail("user@example.com.")).toBe(false);
   });
 
   it("returns false when renderLeads has no element", async () => {

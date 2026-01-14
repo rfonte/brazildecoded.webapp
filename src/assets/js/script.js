@@ -253,7 +253,16 @@
     if (starterKitUtils.isValidEmail) {
       return starterKitUtils.isValidEmail(email);
     }
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email || "");
+    const value = (email || "").trim();
+    if (!value || value.length > 254) return false;
+    if (value.includes(" ")) return false;
+    const atIndex = value.indexOf("@");
+    if (atIndex <= 0) return false;
+    if (value.includes("@", atIndex + 1)) return false;
+    const domain = value.slice(atIndex + 1);
+    if (!domain?.includes(".")) return false;
+    if (domain?.startsWith(".") || domain?.endsWith(".")) return false;
+    return true;
   }
 
   var yearEl = document.getElementById("year");

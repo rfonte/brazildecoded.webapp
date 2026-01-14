@@ -13,6 +13,20 @@ describe("starter-kit utils", () => {
     expect(isValidEmail("bad-email")).toBe(false);
   });
 
+  it("rejects invalid email edge cases", () => {
+    expect(isValidEmail("user @example.com")).toBe(false);
+    expect(isValidEmail("user@@example.com")).toBe(false);
+    expect(isValidEmail("user@example")).toBe(false);
+    expect(isValidEmail("user@.com")).toBe(false);
+    expect(isValidEmail("user@example.com.")).toBe(false);
+  });
+
+  it("trims and rejects overly long emails", () => {
+    expect(isValidEmail(" user@example.com ")).toBe(true);
+    const longEmail = "a".repeat(250) + "@e.com";
+    expect(isValidEmail(longEmail)).toBe(false);
+  });
+
   it("parses UTM params", () => {
     const utm = getUTM("?utm_source=google&utm_medium=cpc&utm_campaign=promo");
     expect(utm).toEqual({
