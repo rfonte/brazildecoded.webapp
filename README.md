@@ -105,6 +105,11 @@ npm run format
 
 - Starter kit form requires explicit consent. Do not store or send data without consent.
 
+**Google Search Console**
+
+- DNS (recommended): add a TXT record for `brazildecoded.com.br` with value `google-site-verification=GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM`.
+- Meta tag: the site includes `google-site-verification` with token `GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM` in `src/_includes/layout.njk`; keep it in sync if it changes.
+
 **Deploy**
 
 - GitHub Pages via GitHub Actions, publishing `dist/`.
@@ -118,3 +123,5 @@ GitHub Pages ignores `_headers`, so you need a CDN like Cloudflare if you want c
   - `*/*` -> Cache HTML with "Bypass cache" or short TTL.
 - `/assets/*` -> Cache Everything, Edge TTL 1 year.
 - Keep cache busting with `site.buildVersion` for CSS/JS.
+
+
