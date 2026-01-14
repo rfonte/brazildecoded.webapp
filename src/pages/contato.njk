@@ -92,6 +92,25 @@ permalink: "/pages/contato.html"
           aria-hidden="true"
         />
 
+        <label>
+          <input
+            type="checkbox"
+            id="contactConsent"
+            name="contactConsent"
+            required
+          />
+          I agree to the processing of my personal data as described in the
+          <a href="/pages/privacy.html">Privacy Policy</a>.
+        </label>
+        <p
+          id="contactConsentHelper"
+          class="form-helper"
+          role="status"
+          aria-live="polite"
+        >
+          You must accept the consent to enable the button.
+        </p>
+
         <button class="cta primary" id="contactSubmit" type="submit">
           Send message
         </button>

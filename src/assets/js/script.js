@@ -479,6 +479,25 @@
   // Contact form
   var contactForm = document.getElementById("contactForm");
   if (contactForm) {
+    var contactConsent = document.getElementById("contactConsent");
+    var contactConsentHelper = document.getElementById("contactConsentHelper");
+    var contactSubmitBtn = document.getElementById("contactSubmit");
+
+    function syncContactConsent() {
+      if (!contactSubmitBtn || !contactConsent) return;
+      setButtonState(contactSubmitBtn, contactConsent.checked);
+      if (contactConsentHelper) {
+        contactConsentHelper.textContent = contactConsent.checked
+          ? "Thanks! You can submit the form now."
+          : "You must accept the consent to enable the button.";
+      }
+    }
+
+    if (contactConsent) {
+      contactConsent.addEventListener("change", syncContactConsent);
+    }
+    syncContactConsent();
+
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
       var name = (document.getElementById("contactName").value || "").trim();
@@ -503,6 +522,16 @@
       if (!isValidEmail(email)) {
         logEvent("warn", "Contact invalid email", { email: email });
         showMessage(feedback, "Invalid email.", true);
+        return;
+      }
+      if (contactConsent && !contactConsent.checked) {
+        logEvent("warn", "Contact missing consent");
+        showMessage(
+          feedback,
+          "You must accept the consent to enable the button.",
+          true
+        );
+        contactConsent.focus();
         return;
       }
       if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {

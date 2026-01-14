@@ -75,12 +75,5 @@
 - Partnerships and affiliates with UTM tracking.
 
 ## LGPD
-- termom de aceite cookies
-- no rodapé, página de ccokies, privacy e terms and conditions
-https://help.x.com/rules-and-policies/twitter-cookies
-https://x.com/privacy
-https://x.com/tos
-- política de privacidade texto: A Bancorbrás valoriza sua privacidade e usará seus dados exclusivamente para fins de marketing, conforme a Política de Privacidade. 
-https://www.bancorbras.com.br/politica-de-privacidade/
 chkbox: Concordo com o tratamento dos meus dados pessoais conforme descrito.
 - desafio ou cloudflare ou google para evitar robos
