@@ -394,6 +394,8 @@ button.cta:disabled {
 
 .card-subtitle {
   color: var(--muted);
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
 }
 
 /* Feature grid */
@@ -627,10 +629,6 @@ button.cta:disabled {
   line-height: 1.5;
 }
 
-.card-subtitle {
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-}
 
 .card-note {
   font-size: 0.85rem;
@@ -639,6 +637,7 @@ button.cta:disabled {
   padding-top: 0.75rem;
   margin-top: 0.75rem;
 }
+
 .card-steps li::before {
   content: "→";
   color: var(--accent);

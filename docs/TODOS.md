@@ -2,6 +2,7 @@
 - Consolidate scripts (remove legacy JS and keep one form/webhook flow).
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).
+- Ajustar a execução do deploy barrando com gates de qualdiade
 
 # Business and product improvements
 

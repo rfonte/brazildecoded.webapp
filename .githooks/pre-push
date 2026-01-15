@@ -1,7 +1,8 @@
 #!/bin/sh
 set -e
 
-echo "Running tests and coverage before push..."
+echo "Running lint, tests and coverage before push..."
+npm run lint
 if [ -z "$SONAR_TOKEN" ]; then
   echo "SONAR_TOKEN is not set. Skipping SonarCloud scan."
   npm run test:unit
