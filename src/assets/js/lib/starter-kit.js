@@ -1,5 +1,12 @@
 (function (root, factory) {
   /* c8 ignore start */
+  if (typeof module === "object" && module.exports) {
+    module.exports = factory();
+  } else {
+    root.BDStarterKit = factory();
+  }
+  /* c8 ignore end */
+})(this, function () {
   function isValidEmail(email) {
     const value = (email || "").trim();
     if (!value || value.length > 254) return false;
@@ -37,13 +44,6 @@
     };
   }
 
-  if (typeof module === "object" && module.exports) {
-    module.exports = factory();
-  } else {
-    root.BDStarterKit = factory();
-  }
-  /* c8 ignore end */
-})(this, function () {
   return {
     isValidEmail: isValidEmail,
     getUTM: getUTM,
