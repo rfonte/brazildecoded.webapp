@@ -1,4 +1,4 @@
-( unction (root, factory) {
+(function (root, factory) {
   /* c8 ignore start */
   function isValidEmail(email) {
     const value = (email || "").trim();

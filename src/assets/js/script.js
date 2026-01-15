@@ -79,9 +79,7 @@
         timestamp: new Date().toISOString(),
       };
       existing.push(entry);
-      if (existing.length > 200) {
-        existing = existing.slice(existing.length - 200);
-      }
+      existing.splice(0, existing.length - 200);
       localStorage.setItem(LOG_KEY, JSON.stringify(existing));
     } catch {
       // Do not throw while logging.
