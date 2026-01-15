@@ -120,6 +120,31 @@ describe("script.js", () => {
     expect(gtmScript).toBeTruthy();
   });
 
+  it("logs invalid GTM IDs and does not insert the script", async () => {
+    localStorage.setItem(
+      "brazildecoded_cookie_consent",
+      JSON.stringify({ status: "accepted", analytics: true, marketing: true })
+    );
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    document.body.setAttribute("data-gtm-id", "GTM 123");
+    await loadScript();
+    const gtmScript = Array.from(document.getElementsByTagName("script")).find(
+      (node) => (node.src || "").includes("googletagmanager.com/gtm.js")
+    );
+    expect(gtmScript).toBeFalsy();
+    expect(getLogs().some((log) => log.message === "Invalid GTM ID")).toBe(true);
+  });
   it("stores custom cookie preferences and hides the banner", async () => {
     setHtml(`
       <script></script>

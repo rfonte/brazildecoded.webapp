@@ -480,112 +480,20 @@
     starterForm.addEventListener("submit", function (e) {
       e.preventDefault();
       try {
-        var honeypot = starterForm.querySelector('input[name="company_hp"]');
-        if (honeypot && honeypot.value) {
-          logEvent("warn", "Starter kit blocked by honeypot");
-          return;
-        }
-        if (starterFormStartedAt) {
-          var elapsed = Date.now() - Number(starterFormStartedAt.value || 0);
-          if (!elapsed || elapsed < MIN_FORM_TIME_MS) {
-            logEvent("warn", "Starter kit blocked by timing");
-            showMessage(
-              statusEl,
-              "Please wait a moment and try again.",
-              true
-            );
-            return;
-          }
-        }
+        const result = validateStarterForm(starterForm, statusEl, submitBtn);
+        if (!result) return;
 
-        var emailField = starterForm.querySelector('input[name="email"]');
-        var nameField = starterForm.querySelector('input[name="name"]');
-        var email = ((emailField && emailField.value) || "").trim();
-        var name = ((nameField && nameField.value) || "").trim();
-        var makeUrl = starterForm.getAttribute("data-make-url") || "";
-
-        if (!emailField) {
-          logEvent("error", "Starter kit email field missing");
-          return;
-        }
-
-        if (!isValidEmail(email)) {
-          logEvent("warn", "Starter kit invalid email", { email: email });
-          showMessage(statusEl, "Please enter a valid email.", true);
-          emailField.focus();
-          return;
-        }
-        if (consent && !consent.checked) {
-          logEvent("warn", "Starter kit missing consent");
-          showMessage(
-            statusEl,
-            "You must accept the consent to enable the button.",
-            true
-          );
-          consent.focus();
-          return;
-        }
-        if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
-          logEvent("error", "Starter kit webhook missing");
-          showMessage(
-            statusEl,
-            "Missing Make webhook URL. Please update the form settings.",
-            true
-          );
-          return;
-        }
-
-        showMessage(statusEl, "Sending...");
-        logEvent("info", "Starter kit submit started");
-        setButtonState(submitBtn, false);
-
-        var payload = buildPayload({
-          email: email,
-          name: name,
+        const payload = buildPayload({
+          email: result.email,
+          name: result.name,
           page: window.location.pathname,
           referrer: document.referrer || "",
           userAgent: navigator.userAgent || "",
           queryString: window.location.search,
           utils: starterKitUtils,
         });
-
-        logEvent("info", "Fetching Make webhook");
-        fetch(makeUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        })
-          .then(function (res) {
-            logEvent("info", "Make webhook response received");
-            return res.text().then(function (text) {
-              return { ok: res.ok, status: res.status, text: text };
-            });
-          })
-          .then(function (result) {
-            if (!result.ok) {
-              logEvent("error", "Make webhook returned an error", result);
-              throw new Error("Request failed");
-            }
-            logEvent("info", "Starter kit webhook success", {
-              status: result.status,
-            });
-            showMessage(statusEl, "Sending...");
-            setTimeout(function () {
-              logEvent("info", "Redirecting to success page");
-              window.location.href = "/pages/contato-sucesso.html";
-            }, 800);
-          })
-          .catch(function (err) {
-            logEvent("error", "Starter kit webhook failed", {
-              message: err && err.message ? err.message : String(err || ""),
-            });
-            showMessage(
-              statusEl,
-              "Something went wrong. Please try again.",
-              true
-            );
-            setButtonState(submitBtn, consent && consent.checked);
-          });
+        payload.makeUrl = result.makeUrl;
+        sendStarterWebhook(payload, statusEl, submitBtn, consent);
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
           message: err && err.message ? err.message : String(err || ""),
