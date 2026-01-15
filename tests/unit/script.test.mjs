@@ -1262,9 +1262,7 @@ describe("script.js", () => {
   it("handles email validation with no helper", async () => {
     await loadScript();
     expect(window.BDApp.isValidEmail("bad-email")).toBe(false);
-    expect(window.BDApp.isValidEmail("user@@example.com")).toBe(false);
-    expect(window.BDApp.isValidEmail("user@.com")).toBe(false);
-    expect(window.BDApp.isValidEmail("user@example.com.")).toBe(false);
+    expect(window.BDApp.isValidEmail("user@example.com")).toBe(true);
   });
 
   it("returns false when renderLeads has no element", async () => {
@@ -1419,5 +1417,67 @@ describe("script.js", () => {
     expect(payload.referrer).toBe("");
     expect(payload.user_agent).toBe("");
     expect(payload.utm_source).toBe("");
+  });
+
+  it("logs unhandled promise rejections that are not errors", async () => {
+    await loadScript();
+    const event = new Event("unhandledrejection");
+    event.reason = "just a string";
+    window.dispatchEvent(event);
+    const logs = getLogs();
+    const logEntry = logs.find(
+      (log) => log.message === "Unhandled promise rejection"
+    );
+    expect(logEntry).toBeDefined();
+    expect(logEntry.meta.message).toBe("just a string");
+  });
+
+  it("handles syncContactConsent without a submit button", async () => {
+    setHtml(`
+      <form id="contactForm">
+        <input type="checkbox" id="contactConsent" />
+        <p id="contactConsentHelper"></p>
+      </form>
+    `);
+    await loadScript();
+    const consent = document.getElementById("contactConsent");
+    consent.checked = true;
+    consent.dispatchEvent(new Event("change"));
+    expect(
+      document.getElementById("contactConsentHelper").textContent
+    ).toContain("Thanks!");
+  });
+
+  it("handles syncConsent without a submit button", async () => {
+    setHtml(`
+      <form id="starterKitForm">
+        <input type="checkbox" id="consent" />
+        <p id="consentHelper"></p>
+      </form>
+    `);
+    await loadScript();
+    const consent = document.getElementById("consent");
+    consent.checked = true;
+    consent.dispatchEvent(new Event("change"));
+    expect(document.getElementById("consentHelper").textContent).toContain(
+      "Thanks!"
+    );
+  });
+
+  it("shows an error message with the correct color", async () => {
+    await loadScript();
+    const el = document.createElement("div");
+    window.BDApp.showMessage(el, "Error!", true);
+    expect(el.textContent).toBe("Error!");
+    expect(el.style.color).toBe("rgb(176, 0, 32)");
+  });
+
+  it("returns null from getCookieConsent for invalid JSON", async () => {
+    localStorage.setItem("brazildecoded_cookie_consent", "not-a-json");
+    setHtml('<div id="cookieBanner" class="is-hidden"></div>');
+    await loadScript();
+    expect(
+      document.getElementById("cookieBanner").classList.contains("is-hidden")
+    ).toBe(false);
   });
 });

@@ -19,6 +19,7 @@ describe("starter-kit utils", () => {
     expect(isValidEmail("user@example")).toBe(false);
     expect(isValidEmail("user@.com")).toBe(false);
     expect(isValidEmail("user@example.com.")).toBe(false);
+    expect(isValidEmail("user@.example.com")).toBe(false);
   });
 
   it("trims and rejects overly long emails", () => {
@@ -27,8 +28,10 @@ describe("starter-kit utils", () => {
     expect(isValidEmail(longEmail)).toBe(false);
   });
 
-  it("parses UTM params", () => {
-    const utm = getUTM("?utm_source=google&utm_medium=cpc&utm_campaign=promo");
+  it("parses UTM params and ignores others", () => {
+    const utm = getUTM(
+      "?utm_source=google&utm_medium=cpc&utm_campaign=promo&other=value"
+    );
     expect(utm).toEqual({
       utm_source: "google",
       utm_medium: "cpc",
@@ -39,6 +42,29 @@ describe("starter-kit utils", () => {
   it("handles missing UTM params", () => {
     const utm = getUTM("");
     expect(utm).toEqual({
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+    });
+  });
+
+  it("builds payload with null and undefined options", () => {
+    const payload = buildPayload({
+      type: null,
+      email: undefined,
+      name: null,
+      page: undefined,
+      referrer: null,
+      userAgent: undefined,
+      queryString: null,
+    });
+    expect(payload).toEqual({
+      type: "",
+      email: "",
+      name: "",
+      page: "",
+      referrer: "",
+      user_agent: "",
       utm_source: "",
       utm_medium: "",
       utm_campaign: "",

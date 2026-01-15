@@ -373,8 +373,10 @@
     }
 
     function syncConsent() {
-      if (!submitBtn || !consent) return;
-      setButtonState(submitBtn, consent.checked);
+      if (!consent) return;
+      if (submitBtn) {
+        setButtonState(submitBtn, consent.checked);
+      }
       if (consentHelper) {
         consentHelper.textContent = consent.checked
           ? "Thanks! You can submit the form now."
@@ -516,8 +518,10 @@
     }
 
     function syncContactConsent() {
-      if (!contactSubmitBtn || !contactConsent) return;
-      setButtonState(contactSubmitBtn, contactConsent.checked);
+      if (!contactConsent) return;
+      if (contactSubmitBtn) {
+        setButtonState(contactSubmitBtn, contactConsent.checked);
+      }
       if (contactConsentHelper) {
         contactConsentHelper.textContent = contactConsent.checked
           ? "Thanks! You can submit the form now."
