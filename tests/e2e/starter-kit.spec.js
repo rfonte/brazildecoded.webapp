@@ -10,11 +10,21 @@ test("starter kit form submits and redirects", async ({ page }) => {
   });
 
   await page.goto("/pages/cadastro.html");
+  await page.evaluate(() => {
+    const startedAt = document.getElementById("starterFormStartedAt");
+    if (startedAt) {
+      startedAt.value = String(Date.now() - 4000);
+    }
+  });
   await page.getByLabel("Your email").fill("user@example.com");
   await page
-    .getByLabel("I agree to receive BrazilDecoded emails and offers.")
+    .getByRole("checkbox", {
+      name: /i agree to the processing of my personal data/i,
+    })
     .check();
   await page.getByRole("button", { name: "Send me the Starter Kit" }).click();
+
+  await page.waitForTimeout(2000); // wait for redirect
 
   await expect(page).toHaveURL(/\/pages\/contato-sucesso\.html$/);
 });

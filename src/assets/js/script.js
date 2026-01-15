@@ -461,23 +461,29 @@
           utils: starterKitUtils,
         });
 
+        logEvent("info", "Fetching Make webhook");
         fetch(makeUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
           .then(function (res) {
+            logEvent("info", "Make webhook response received");
             return res.text().then(function (text) {
               return { ok: res.ok, status: res.status, text: text };
             });
           })
           .then(function (result) {
-            if (!result.ok) throw new Error("Request failed");
+            if (!result.ok) {
+              logEvent("error", "Make webhook returned an error", result);
+              throw new Error("Request failed");
+            }
             logEvent("info", "Starter kit webhook success", {
               status: result.status,
             });
             showMessage(statusEl, "Sending...");
             setTimeout(function () {
+              logEvent("info", "Redirecting to success page");
               window.location.href = "/pages/contato-sucesso.html";
             }, 800);
           })
