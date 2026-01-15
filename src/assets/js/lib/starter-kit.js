@@ -1,12 +1,5 @@
-(function (root, factory) {
+( unction (root, factory) {
   /* c8 ignore start */
-  if (typeof module === "object" && module.exports) {
-    module.exports = factory();
-  } else {
-    root.BDStarterKit = factory();
-  }
-  /* c8 ignore end */
-})(this, function () {
   function isValidEmail(email) {
     const value = (email || "").trim();
     if (!value || value.length > 254) return false;
@@ -21,7 +14,7 @@
   }
 
   function getUTM(queryString) {
-    var p = new URLSearchParams(queryString || "");
+    const p = new URLSearchParams(queryString || "");
     return {
       utm_source: p.get("utm_source") || "",
       utm_medium: p.get("utm_medium") || "",
@@ -30,7 +23,7 @@
   }
 
   function buildPayload(options) {
-    var utm = getUTM(options.queryString);
+    const utm = getUTM(options.queryString);
     return {
       type: options.type || "",
       email: options.email || "",
@@ -44,6 +37,13 @@
     };
   }
 
+  if (typeof module === "object" && module.exports) {
+    module.exports = factory();
+  } else {
+    root.BDStarterKit = factory();
+  }
+  /* c8 ignore end */
+})(this, function () {
   return {
     isValidEmail: isValidEmail,
     getUTM: getUTM,

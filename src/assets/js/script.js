@@ -1,7 +1,7 @@
 // Simple form handling for a static prototype.
 (function () {
-  var app = window.BDApp || {};
-  window.BDApp = app;
+  const app = globalThis.BDApp || {};
+  globalThis.BDApp = app;
 
   /**
    * Displays a message to the user in a specified element.
@@ -15,26 +15,31 @@
     el.style.color = isError ? "#b00020" : "";
   }
 
-  var starterKitUtils = window.BDStarterKit || {};
-  var LOG_KEY = "brazildecoded_logs";
-  var COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
-  var MIN_FORM_TIME_MS = 3000;
+  const starterKitUtils = globalThis.BDStarterKit || {};
+  const LOG_KEY = "brazildecoded_logs";
+  const COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
+  const MIN_FORM_TIME_MS = 3000;
 
   function loadGtm(gtmId) {
-    if (!gtmId || window.__bdGtmLoaded) return;
-    window.__bdGtmLoaded = true;
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-    var f = document.getElementsByTagName("script")[0];
-    var j = document.createElement("script");
+    if (!gtmId || globalThis.__bdGtmLoaded) return;
+    // Validate gtmId to ensure it's safe for URL construction
+    if (typeof gtmId !== "string" || !/^[A-Z0-9-]+$/i.test(gtmId)) {
+      logEvent("error", "Invalid GTM ID", { gtmId });
+      return;
+    }
+    globalThis.__bdGtmLoaded = true;
+    globalThis.dataLayer = globalThis.dataLayer || [];
+    globalThis.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+    const f = document.getElementsByTagName("script")[0];
+    const j = document.createElement("script");
     j.async = true;
-    j.src = "https://www.googletagmanager.com/gtm.js?id=" + gtmId;
+    j.src = "https://www.googletagmanager.com/gtm.js?id=" + encodeURIComponent(gtmId);
     f.parentNode.insertBefore(j, f);
   }
 
   function getCookieConsent() {
     try {
-      var raw = localStorage.getItem(COOKIE_CONSENT_KEY) || "";
+      const raw = localStorage.getItem(COOKIE_CONSENT_KEY) || "";
       if (!raw) return null;
       if (raw === "accepted" || raw === "rejected") {
         return {
@@ -43,7 +48,7 @@
           marketing: raw === "accepted",
         };
       }
-      var parsed = JSON.parse(raw);
+      const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== "object") return null;
       return {
         status: parsed.status || "custom",
@@ -65,12 +70,12 @@
 
   function logEvent(level, message, meta) {
     try {
-      var existing = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
-      var entry = {
+      const existing = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+      const entry = {
         level: level,
         message: message,
         meta: meta || {},
-        page: window.location.pathname,
+        page: globalThis.location.pathname,
         timestamp: new Date().toISOString(),
       };
       existing.push(entry);
@@ -90,11 +95,11 @@
   }
 
   function getUTM(search, utils) {
-    var helper = utils || starterKitUtils;
+    const helper = utils || starterKitUtils;
     if (helper.getUTM) {
       return helper.getUTM(search);
     }
-    var params = new URLSearchParams(search || "");
+    const params = new URLSearchParams(search || "");
     return {
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
@@ -103,7 +108,7 @@
   }
 
   function buildPayload(options) {
-    var helper = options.utils || starterKitUtils;
+    const helper = options.utils || starterKitUtils;
     if (helper.buildPayload) {
       return helper.buildPayload({
         type: "starter_kit",
@@ -115,7 +120,7 @@
         queryString: options.queryString || "",
       });
     }
-    var utm = getUTM(options.queryString || "", helper);
+    const utm = getUTM(options.queryString || "", helper);
     return {
       type: "starter_kit",
       email: options.email || "",
@@ -129,16 +134,101 @@
     };
   }
 
+  function validateStarterForm(form, statusEl, submitBtn) {
+    const honeypot = form.querySelector('input[name="company_hp"]');
+    if (honeypot && honeypot.value) {
+      logEvent("warn", "Starter kit blocked by honeypot");
+      return false;
+    }
+    const starterFormStartedAt = document.getElementById("starterFormStartedAt");
+    if (starterFormStartedAt) {
+      const elapsed = Date.now() - Number(starterFormStartedAt.value || 0);
+      if (!elapsed || elapsed < MIN_FORM_TIME_MS) {
+        logEvent("warn", "Starter kit blocked by timing");
+        showMessage(statusEl, "Please wait a moment and try again.", true);
+        return false;
+      }
+    }
+    const emailField = form.querySelector('input[name="email"]');
+    const nameField = form.querySelector('input[name="name"]');
+    const consent = document.getElementById("consent");
+    const email = ((emailField && emailField.value) || "").trim();
+    const name = ((nameField && nameField.value) || "").trim();
+    const makeUrl = form.getAttribute("data-make-url") || "";
+
+    if (!emailField) {
+      logEvent("error", "Starter kit email field missing");
+      return false;
+    }
+
+    if (!isValidEmail(email)) {
+      logEvent("warn", "Starter kit invalid email", { email: email });
+      showMessage(statusEl, "Please enter a valid email.", true);
+      emailField.focus();
+      return false;
+    }
+    if (consent && !consent.checked) {
+      logEvent("warn", "Starter kit missing consent");
+      showMessage(statusEl, "You must accept the consent to enable the button.", true);
+      consent.focus();
+      return false;
+    }
+    if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+      logEvent("error", "Starter kit webhook missing");
+      showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
+      return false;
+    }
+    return { email, name, makeUrl };
+  }
+
+  function sendStarterWebhook(payload, statusEl, submitBtn, consent) {
+    showMessage(statusEl, "Sending...");
+    logEvent("info", "Starter kit submit started");
+    setButtonState(submitBtn, false);
+
+    logEvent("info", "Fetching Make webhook");
+    fetch(payload.makeUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then(function (res) {
+        logEvent("info", "Make webhook response received");
+        return res.text().then(function (text) {
+          return { ok: res.ok, status: res.status, text: text };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          logEvent("error", "Make webhook returned an error", result);
+          throw new Error("Request failed");
+        }
+        logEvent("info", "Starter kit webhook success", { status: result.status });
+        showMessage(statusEl, "Sending...");
+        setTimeout(function () {
+          logEvent("info", "Redirecting to success page");
+          globalThis.location.href = "/pages/contato-sucesso.html";
+        }, 800);
+      })
+      .catch(function (err) {
+        logEvent("error", "Starter kit webhook failed", {
+          message: err && err.message ? err.message : String(err || ""),
+        });
+        showMessage(statusEl, "Something went wrong. Please try again.", true);
+        setButtonState(submitBtn, consent && consent.checked);
+      });
+  }
+
   function renderLeads(listEl) {
     if (!listEl) return false;
-    var leads = JSON.parse(
+    const leads = JSON.parse(
       localStorage.getItem("brazildecoded_leads") || "[]"
     );
     if (!leads.length) {
       listEl.innerHTML = "<p>No leads found.</p>";
       return false;
     }
-    var rows = leads
+    const rows = leads
       .map(function (l, i) {
         return (
           "<tr><td>" +
@@ -161,23 +251,23 @@
   }
 
   function exportLeads() {
-    var leads = JSON.parse(localStorage.getItem("brazildecoded_leads") || "[]");
+    const leads = JSON.parse(localStorage.getItem("brazildecoded_leads") || "[]");
     if (!leads.length) {
       alert("No leads to export.");
       return false;
     }
-    var csv =
+    const csv =
       "name,email,date\n" +
       leads
         .map(function (l) {
-          var name = (l.name || "").replace(/"/g, '""');
-          var email = (l.email || "").replace(/"/g, '""');
+          const name = (l.name || "").replace(/"/g, '""');
+          const email = (l.email || "").replace(/"/g, '""');
           return '"' + name + '","' + email + '",' + l.date;
         })
         .join("\n");
-    var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
     a.href = url;
     a.download = "brazildecoded_leads.csv";
     a.click();
