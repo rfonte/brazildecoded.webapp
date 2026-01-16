@@ -5,6 +5,16 @@ module.exports = function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("src/_headers");
   eleventyConfig.addPassthroughCopy("src/CNAME");
 
+  // Add dynamic build version using git commit hash
+  eleventyConfig.addGlobalData("buildVersion", () => {
+    try {
+      return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
+    } catch (error) {
+      // Fallback to timestamp if git is not available
+      return Date.now().toString();
+    }
+  });
+
   eleventyConfig.addTransform("htmlmin", function (content, outputPath) {
     if (outputPath && outputPath.endsWith(".html")) {
       return htmlmin.minify(content, {
