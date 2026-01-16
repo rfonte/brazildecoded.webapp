@@ -156,9 +156,8 @@ permalink: "/pages/cadastro.html"
   "name": "Brazil Travel Starter Kit - BrazilDecoded",
   "description": "PDF guide with safety tips, etiquette guidance, and a travel checklist for Brazil.",
   "brand": {
-    "@type": "Organization",
-    "name": "BrazilDecoded",
-    "url": "{{ site.baseUrl }}"
+    "@type": "Brand",
+    "name": "BrazilDecoded"
   },
   "offers": {
     "@type": "Offer",
@@ -166,7 +165,35 @@ permalink: "/pages/cadastro.html"
     "price": "0.00",
     "priceCurrency": "BRL",
     "availability": "https://schema.org/InStock",
-    "category": "Digital"
+    "category": "Digital",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0.00",
+        "currency": "BRL"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+      "applicableCountry": "BR"
+    }
   }
 }
 </script>

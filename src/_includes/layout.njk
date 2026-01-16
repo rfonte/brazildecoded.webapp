@@ -38,7 +38,7 @@
       href="/assets/css/style.css?v={{ site.buildVersion }}"
     />
 
-    {# JSON-LD: WebSite and Organization to help Google understand the brand #}
+    {# JSON-LD: WebSite, Organization, and Product for rich snippets #}
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -58,8 +58,50 @@
           "@type": "Organization",
           "name": "{{ site.brand }}",
           "url": "{{ site.baseUrl }}"
-          {% if site.logo %},"logo":"{{ site.baseUrl }}{{ site.logo }}"{% endif %}
+          {% if site.logo %},"logo":"{{ site.baseUrl }}{{ site.logo }}","image":"{{ site.baseUrl }}{{ site.logo }}"{% endif %}
         }
+        {% if pageKey == "home" %},
+        {
+          "@type": "Product",
+          "name": "BrazilDecoded: Secrets to a Perfect Vacation",
+          "description": "A practical travel guide created by a Brazilian to help you explore Brazil with more confidence, safety, and cultural insight.",
+          "image": "{{ site.baseUrl }}/assets/cover.png",
+          "brand": {
+            "@type": "Brand",
+            "name": "{{ site.brand }}"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": "14.00",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "priceValidUntil": "2025-12-31",
+            "url": "{{ site.baseUrl }}",
+            "seller": {
+              "@type": "Organization",
+              "name": "{{ site.brand }}"
+            }
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5.0",
+            "reviewCount": "1"
+          },
+          "review": {
+            "@type": "Review",
+            "author": {
+              "@type": "Person",
+              "name": "Rodrigo Cafonte"
+            },
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": "5",
+              "bestRating": "5"
+            },
+            "reviewBody": "As a Brazilian travel enthusiast, I created this guide to share authentic insights that help international visitors experience Brazil safely and confidently."
+          }
+        }
+        {% endif %}
       ]
     }
     </script>
