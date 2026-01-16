@@ -6,15 +6,15 @@
   "logo": "/assets/images/logo.png",
   "buildVersion": "20260113",
   "nav": [
-    { "label": "Inside", "href": "/index.html#inside", "key": "inside" },
-    { "label": "Checkout", "href": "/index.html#buy", "key": "buy" },
+    { "label": "What’s inside", "href": "/index.html#inside", "key": "inside" },
+    { "label": "Get the full guide", "href": "/index.html#buy", "key": "buy" },
     {
-      "label": "Free Starter Kit",
+      "label": "Get the free starter kit",
       "href": "/pages/cadastro.html",
       "key": "starter",
       "class": "nav-cta"
     },
-    { "label": "Contact", "href": "/pages/contato.html", "key": "contact" }
+    { "label": "Help & Contact", "href": "/pages/contato.html", "key": "contact" }
   ],
   "footerLinks": [
     {
