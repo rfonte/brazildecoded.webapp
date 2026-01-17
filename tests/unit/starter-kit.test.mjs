@@ -123,7 +123,8 @@ describe("starter-kit utils", () => {
     };
     sandbox.window = sandbox;
     const context = createContext(sandbox);
-    const script = new Script(code, { filename: scriptPath });
+    // Test-only: execute local fixture code inside a VM sandbox.
+    const script = new Script(code, { filename: scriptPath }); // NOSONAR
     script.runInContext(context);
     expect(context.BDStarterKit).toBeTruthy();
     expect(typeof context.BDStarterKit.isValidEmail).toBe("function");
