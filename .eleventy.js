@@ -15,6 +15,10 @@ module.exports = function (eleventyConfig) {
     }
   });
 
+  eleventyConfig.addGlobalData("buildDate", () => {
+    return new Date().toISOString().slice(0, 10);
+  });
+
   eleventyConfig.addTransform("htmlmin", function (content, outputPath) {
     if (outputPath && outputPath.endsWith(".html")) {
       return htmlmin.minify(content, {
