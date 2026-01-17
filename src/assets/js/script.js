@@ -134,7 +134,7 @@
 
   function validateStarterForm(form, statusEl, submitBtn) {
     const honeypot = form.querySelector('input[name="company_hp"]');
-    if (honeypot && honeypot.value) {
+    if (honeypot?.value) {
       logEvent("warn", "Starter kit blocked by honeypot");
       return { ok: false };
     }
@@ -150,9 +150,9 @@
     const emailField = form.querySelector('input[name="email"]');
     const nameField = form.querySelector('input[name="name"]');
     const consent = document.getElementById("consent");
-    const email = ((emailField && emailField.value) || "").trim();
-    const name = ((nameField && nameField.value) || "").trim();
-    const makeUrl = form.getAttribute("data-make-url") || "";
+    const email = (emailField?.value || "").trim();
+    const name = (nameField?.value || "").trim();
+    const makeUrl = form.dataset.makeUrl || "";
 
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
@@ -165,13 +165,13 @@
       emailField.focus();
       return { ok: false };
     }
-    if (consent && !consent.checked) {
+    if (!consent?.checked) {
       logEvent("warn", "Starter kit missing consent");
       showMessage(statusEl, "You must accept the consent to enable the button.", true);
-      consent.focus();
+      consent?.focus();
       return { ok: false };
     }
-    if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+    if (!makeUrl || makeUrl.includes("COLE_AQUI")) {
       logEvent("error", "Starter kit webhook missing");
       showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
       return { ok: false };
@@ -210,7 +210,7 @@
       })
       .catch(function (err) {
         logEvent("error", "Starter kit webhook failed", {
-          message: err?.message ? err.message : String(err || ""),
+          message: err?.message ?? String(err || ""),
         });
         showMessage(statusEl, "Something went wrong. Please try again.", true);
         setButtonState(submitBtn, !!consent?.checked);
@@ -258,8 +258,8 @@
       "name,email,date\n" +
       leads
         .map(function (l) {
-          const name = (l.name || "").replace(/"/g, '""');
-          const email = (l.email || "").replace(/"/g, '""');
+          const name = (l.name || "").replaceAll('"', '""');
+          const email = (l.email || "").replaceAll('"', '""');
           return '"' + name + '","' + email + '",' + l.date;
         })
         .join("\n");
@@ -285,16 +285,16 @@
   }
 
   function exportLogs() {
-    var logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+    const logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
     if (!logs.length) {
       alert("No logs to export.");
       return false;
     }
-    var blob = new Blob([JSON.stringify(logs, null, 2)], {
+    const blob = new Blob([JSON.stringify(logs, null, 2)], {
       type: "application/json;charset=utf-8;",
     });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
     a.href = url;
     a.download = "brazildecoded_logs.json";
     a.click();
@@ -322,7 +322,7 @@
   app.clearLogs = clearLogs;
   app.LOG_KEY = LOG_KEY;
 
-  window.addEventListener("error", function (event) {
+  globalThis.addEventListener("error", function (event) {
     logEvent("error", event.message || "Script error", {
       filename: event.filename || "",
       lineno: event.lineno || 0,
@@ -330,14 +330,14 @@
     });
   });
 
-  window.addEventListener("unhandledrejection", function (event) {
-    var reason = event.reason;
+  globalThis.addEventListener("unhandledrejection", function (event) {
+    const reason = event.reason;
     logEvent("error", "Unhandled promise rejection", {
-      message: reason?.message ? reason.message : String(reason || ""),
+      message: reason?.message ?? String(reason || ""),
     });
   });
   function isValidEmail(email) {
-    if (starterKitUtils.isValidEmail) {
+    if (starterKitUtils?.isValidEmail) {
       return starterKitUtils.isValidEmail(email);
     }
     const value = (email || "").trim();
@@ -352,7 +352,7 @@
     return true;
   }
 
-  var yearEl = document.getElementById("year");
+  const yearEl = document.getElementById("year");
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
   }
@@ -557,9 +557,9 @@
       var honeypot = document.getElementById("hp_contact");
       var feedback = document.getElementById("contactFeedback");
       var submitBtn = document.getElementById("contactSubmit");
-      var makeUrl = contactForm.getAttribute("data-make-url") || "";
+      var makeUrl = contactForm.dataset.makeUrl || "";
 
-      if (honeypot && honeypot.value) {
+      if (honeypot?.value) {
         logEvent("warn", "Contact blocked by honeypot");
         return; // bot
       }
@@ -586,17 +586,17 @@
         showMessage(feedback, "Invalid email.", true);
         return;
       }
-      if (contactConsent && !contactConsent.checked) {
+      if (!contactConsent?.checked) {
         logEvent("warn", "Contact missing consent");
         showMessage(
           feedback,
           "You must accept the consent to enable the button.",
           true
         );
-        contactConsent.focus();
+        contactConsent?.focus();
         return;
       }
-      if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
+      if (!makeUrl || makeUrl.includes("COLE_AQUI")) {
         logEvent("error", "Contact webhook missing");
         showMessage(
           feedback,
