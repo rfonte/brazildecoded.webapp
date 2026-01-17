@@ -92,23 +92,17 @@
     button.setAttribute("aria-disabled", button.disabled ? "true" : "false");
   }
 
-  function getUTM(search, utils) {
-    const helper = utils || starterKitUtils;
-    if (helper.getUTM) {
-      return helper.getUTM(search);
+  function getUTM(search) {
+    if (starterKitUtils?.getUTM) {
+      return starterKitUtils.getUTM(search);
     }
-    const params = new URLSearchParams(search || "");
-    return {
-      utm_source: params.get("utm_source") || "",
-      utm_medium: params.get("utm_medium") || "",
-      utm_campaign: params.get("utm_campaign") || "",
-    };
+    logEvent("error", "Starter kit utils missing getUTM");
+    return { utm_source: "", utm_medium: "", utm_campaign: "" };
   }
 
   function buildPayload(options) {
-    const helper = options.utils || starterKitUtils;
-    if (helper.buildPayload) {
-      return helper.buildPayload({
+    if (starterKitUtils?.buildPayload) {
+      return starterKitUtils.buildPayload({
         type: "starter_kit",
         email: options.email || "",
         name: options.name || "",
@@ -118,7 +112,7 @@
         queryString: options.queryString || "",
       });
     }
-    const utm = getUTM(options.queryString || "", helper);
+    logEvent("error", "Starter kit utils missing buildPayload");
     return {
       type: "starter_kit",
       email: options.email || "",
@@ -126,9 +120,9 @@
       page: options.page || "",
       referrer: options.referrer || "",
       user_agent: options.userAgent || "",
-      utm_source: utm.utm_source,
-      utm_medium: utm.utm_medium,
-      utm_campaign: utm.utm_campaign,
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
     };
   }
 
@@ -340,16 +334,8 @@
     if (starterKitUtils?.isValidEmail) {
       return starterKitUtils.isValidEmail(email);
     }
-    const value = (email || "").trim();
-    if (!value || value.length > 254) return false;
-    if (value.includes(" ")) return false;
-    const atIndex = value.indexOf("@");
-    if (atIndex <= 0) return false;
-    if (value.includes("@", atIndex + 1)) return false;
-    const domain = value.slice(atIndex + 1);
-    if (!domain?.includes(".")) return false;
-    if (domain?.startsWith(".") || domain?.endsWith(".")) return false;
-    return true;
+    logEvent("error", "Starter kit utils missing isValidEmail");
+    return false;
   }
 
   const yearEl = document.getElementById("year");
@@ -500,7 +486,6 @@
           referrer: document.referrer || "",
           userAgent: navigator.userAgent || "",
           queryString: globalThis.location.search,
-          utils: starterKitUtils,
         });
         payload.makeUrl = result.makeUrl;
         sendStarterWebhook(payload, statusEl, submitBtn, consent);
@@ -609,7 +594,7 @@
       showMessage(feedback, "Sending...");
       setButtonState(submitBtn, false);
 
-      const utm = getUTM(globalThis.location.search, starterKitUtils);
+      const utm = getUTM(globalThis.location.search);
       const payload = {
         type: "contact",
         name: name,
