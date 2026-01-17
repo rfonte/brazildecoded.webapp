@@ -9,7 +9,7 @@ test("starter kit form submits and redirects", async ({ page }) => {
     });
   });
 
-  await page.goto("/pages/cadastro.html");
+  await page.goto("/free-starter-kit");
   await page.evaluate(() => {
     const startedAt = document.getElementById("starterFormStartedAt");
     if (startedAt) {
