@@ -17,6 +17,7 @@ describe("starter-kit utils", () => {
     expect(isValidEmail("user @example.com")).toBe(false);
     expect(isValidEmail("user@@example.com")).toBe(false);
     expect(isValidEmail("user@example")).toBe(false);
+    expect(isValidEmail("user@")).toBe(false);
     expect(isValidEmail("user@.com")).toBe(false);
     expect(isValidEmail("user@example.com.")).toBe(false);
     expect(isValidEmail("user@.example.com")).toBe(false);
