@@ -13,8 +13,8 @@ Static site for BrazilDecoded, built with Eleventy. This repo includes templates
 **Structure**
 
 - `src/index.njk` - home page
-- `src/pages/cadastro.njk` - starter kit form (lead capture)
-- `src/pages/contato.njk` - support form (localStorage prototype)
+- `src/pages/free-starter-kit.njk` - starter kit form (lead capture)
+- `src/pages/contact.njk` - support form (localStorage prototype)
 - `src/pages/leads.njk` - admin page to view/export leads
 - `src/pages/thank-you.njk` - confirmation page
 - `src/pages/contato-sucesso.njk` - starter kit success page
@@ -68,7 +68,7 @@ npm run test:unit:coverage
 - SonarCloud (vulnerabilities scan):
 
 ```powershell
-# set your token (PowerShell)
+# set your token for this session (PowerShell)
 $env:SONAR_TOKEN="YOUR_TOKEN_HERE"
 npm run sonar
 ```
@@ -79,6 +79,14 @@ npm run sonar
 $env:SONAR_TOKEN="YOUR_TOKEN_HERE"
 npm run sonar:summary
 ```
+
+- Persist Sonar token locally (PowerShell, current user):
+
+```powershell
+setx SONAR_TOKEN "YOUR_TOKEN_HERE"
+```
+
+Open a new terminal session after running `setx`.
 
 - Pre-push hook (runs unit tests, coverage, and SonarCloud when `SONAR_TOKEN` is set):
 
@@ -111,14 +119,14 @@ npm run format
 
 **Sensitive configuration (webhook, consent, privacy)**
 
-- `data-make-url` in `src/pages/cadastro.njk` is a sensitive webhook endpoint. Keep it out of public docs and rotate it if exposed.
+- `data-make-url` in `src/pages/free-starter-kit.njk` is a sensitive webhook endpoint. Keep it out of public docs and rotate it if exposed.
 - Consent checkbox (`#consent`) must remain required before any webhook submission.
 - Do not store or transmit personal data without consent, and keep privacy messaging aligned with local regulations.
 
 **Make webhook setup**
 
 - Create a scenario with a **Custom webhook** trigger.
-- Copy the webhook URL into `data-make-url` in `src/pages/cadastro.njk`.
+- Copy the webhook URL into `data-make-url` in `src/pages/free-starter-kit.njk`.
 - Activate the scenario (Run once to test, then switch ON).
 - Add downstream modules (Google Sheets, Mailchimp, email, etc.).
 
