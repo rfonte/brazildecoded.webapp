@@ -144,7 +144,8 @@ describe("starter-kit utils", () => {
     };
     sandbox.window = sandbox;
     const context = createContext(sandbox);
-    const script = new Script(code, { filename: scriptPath });
+    // Test-only: execute local fixture code inside a VM sandbox.
+    const script = new Script(code, { filename: scriptPath }); // NOSONAR
     script.runInContext(context);
     expect(context.module.exports).toBeTruthy();
     expect(typeof context.module.exports.isValidEmail).toBe("function");
