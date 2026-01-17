@@ -235,8 +235,12 @@ async function writeReportFiles(outJson, outMd, summary) {
   console.log(`Saved ${outMd}`);
 }
 
-main().catch((err) => {
-  console.error(err.message || err);
-  process.exit(1);
-});
+(async () => {
+  try {
+    await main();
+  } catch (err) {
+    console.error(err.message || err);
+    process.exit(1);
+  }
+})();
 

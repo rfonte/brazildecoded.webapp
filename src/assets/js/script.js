@@ -496,10 +496,10 @@
         const payload = buildPayload({
           email: result.email,
           name: result.name,
-          page: window.location.pathname,
+          page: globalThis.location.pathname,
           referrer: document.referrer || "",
           userAgent: navigator.userAgent || "",
-          queryString: window.location.search,
+          queryString: globalThis.location.search,
           utils: starterKitUtils,
         });
         payload.makeUrl = result.makeUrl;
@@ -609,13 +609,13 @@
       showMessage(feedback, "Sending...");
       setButtonState(submitBtn, false);
 
-      const utm = getUTM(window.location.search, starterKitUtils);
+      const utm = getUTM(globalThis.location.search, starterKitUtils);
       const payload = {
         type: "contact",
         name: name,
         email: email,
         message: message,
-        page: window.location.pathname,
+        page: globalThis.location.pathname,
         referrer: document.referrer || "",
         user_agent: navigator.userAgent || "",
         utm_source: utm.utm_source,

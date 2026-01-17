@@ -61,17 +61,19 @@ async function flushPromises() {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
+function ensureMock(fn, fallback) {
+  if (!fn || !vi.isMockFunction(fn)) {
+    return fallback();
+  }
+  return fn;
+}
+
 function stubUrlHelpers() {
-  if (!URL.createObjectURL) {
-    URL.createObjectURL = vi.fn(() => "blob:mock");
-  } else if (!vi.isMockFunction(URL.createObjectURL)) {
-    URL.createObjectURL = vi.fn(() => "blob:mock");
-  }
-  if (!URL.revokeObjectURL) {
-    URL.revokeObjectURL = vi.fn();
-  } else if (!vi.isMockFunction(URL.revokeObjectURL)) {
-    URL.revokeObjectURL = vi.fn();
-  }
+  URL.createObjectURL = ensureMock(
+    URL.createObjectURL,
+    () => vi.fn(() => "blob:mock")
+  );
+  URL.revokeObjectURL = ensureMock(URL.revokeObjectURL, () => vi.fn());
   if (!HTMLAnchorElement.prototype.click) {
     HTMLAnchorElement.prototype.click = vi.fn();
   } else {
@@ -1008,6 +1010,95 @@ describe("script.js", () => {
     const logs = getLogs();
     const match = logs.find((log) => log.message === "Contact webhook failed");
     expect(match.meta.message).toBe("fail");
+  });
+
+  it("blocks contact submission when timing is missing", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    document.getElementById("contactFormStartedAt").value = "0";
+    await loadScript();
+    submitForm("contactForm", { skipTiming: true });
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Please wait a moment and try again."
+    );
+  });
+
+  it("blocks contact submission when consent is missing", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    submitForm("contactForm");
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "You must accept the consent to enable the button."
+    );
+  });
+
+  it("blocks contact submission when webhook url is missing", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="COLE_AQUI">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    submitForm("contactForm");
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Missing Make webhook URL. Please update the form settings."
+    );
+  });
+
+  it("handles contact webhook non-200 response", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    window.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: false,
+        status: 500,
+        text: () => Promise.resolve("fail"),
+      })
+    );
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Something went wrong. Please try again."
+    );
   });
 
   it("uses empty user_agent when navigator.userAgent is blank", async () => {
