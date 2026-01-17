@@ -23,42 +23,23 @@ function extractJsonLd(html) {
 }
 
 function checkObject(obj, fileReport) {
-  const type = obj['@type'] || obj['type'] || (Array.isArray(obj['@graph']) ? 'Graph' : undefined);
+  const type = getObjectType(obj);
   if (!type) {
     fileReport.warnings.push('JSON-LD missing @type');
     return;
   }
-  if (Array.isArray(type)) {
-    // first type
-  }
   const t = Array.isArray(type) ? type[0] : type;
-  if (/Website/i.test(t)) {
-    if (!obj.name) fileReport.errors.push('WebSite: missing `name`');
-    if (!obj.url) fileReport.errors.push('WebSite: missing `url`');
-  }
-  if (/Organization/i.test(t)) {
-    if (!obj.name) fileReport.errors.push('Organization: missing `name`');
-    if (!obj.url) fileReport.errors.push('Organization: missing `url`');
-    if (!obj.logo) fileReport.warnings.push('Organization: missing `logo` (recommended)');
-  }
-  if (/Product/i.test(t)) {
-    if (!obj.name) fileReport.errors.push('Product: missing `name`');
-    if (!obj.description) fileReport.warnings.push('Product: missing `description` (recommended)');
-    if (!obj.offers) fileReport.errors.push('Product: missing `offers`');
-    else {
-      const offer = obj.offers;
-      const of = Array.isArray(offer) ? offer[0] : offer;
-      if ((of.price === undefined || of.price === null) && of.price !== 0) fileReport.errors.push('Offer: missing `price`');
-      if (!of.priceCurrency) fileReport.errors.push('Offer: missing `priceCurrency`');
-      if (!of.availability) fileReport.warnings.push('Offer: missing `availability` (recommended)');
+  const checks = [
+    { match: /Website/i, fn: checkWebsite },
+    { match: /Organization/i, fn: checkOrganization },
+    { match: /Product/i, fn: checkProduct },
+    { match: /Offer/i, fn: checkOffer },
+    { match: /BreadcrumbList/i, fn: checkBreadcrumbList },
+  ];
+  for (const entry of checks) {
+    if (entry.match.test(t)) {
+      entry.fn(obj, fileReport);
     }
-  }
-  if (/Offer/i.test(t)) {
-    if ((obj.price === undefined || obj.price === null) && obj.price !== 0) fileReport.errors.push('Offer: missing `price`');
-    if (!obj.priceCurrency) fileReport.errors.push('Offer: missing `priceCurrency`');
-  }
-  if (/BreadcrumbList/i.test(t)) {
-    if (!obj.itemListElement || !Array.isArray(obj.itemListElement)) fileReport.warnings.push('BreadcrumbList: `itemListElement` should be an array');
   }
 }
 
@@ -75,18 +56,62 @@ function analyzeFile(file) {
     try {
       const parsed = JSON.parse(raw);
       report.parsed++;
-      if (Array.isArray(parsed)) {
-        parsed.forEach(p => checkObject(p, report));
-      } else if (parsed['@graph'] && Array.isArray(parsed['@graph'])) {
-        parsed['@graph'].forEach(p => checkObject(p, report));
-      } else {
-        checkObject(parsed, report);
-      }
+      const nodes = normalizeJsonLdNodes(parsed);
+      nodes.forEach((node) => checkObject(node, report));
     } catch (err) {
-      report.errors.push(`JSON parse error in block ${i+1}: ${err.message}`);
+      report.errors.push(`JSON parse error in block ${i + 1}: ${err.message}`);
     }
   }
   return report;
+}
+
+function getObjectType(obj) {
+  if (obj['@type'] || obj.type) return obj['@type'] || obj.type;
+  if (Array.isArray(obj['@graph'])) return 'Graph';
+  return undefined;
+}
+
+function normalizeJsonLdNodes(parsed) {
+  if (Array.isArray(parsed)) return parsed;
+  if (parsed['@graph'] && Array.isArray(parsed['@graph'])) return parsed['@graph'];
+  return [parsed];
+}
+
+function checkWebsite(obj, fileReport) {
+  if (!obj.name) fileReport.errors.push('WebSite: missing `name`');
+  if (!obj.url) fileReport.errors.push('WebSite: missing `url`');
+}
+
+function checkOrganization(obj, fileReport) {
+  if (!obj.name) fileReport.errors.push('Organization: missing `name`');
+  if (!obj.url) fileReport.errors.push('Organization: missing `url`');
+  if (!obj.logo) fileReport.warnings.push('Organization: missing `logo` (recommended)');
+}
+
+function checkProduct(obj, fileReport) {
+  if (!obj.name) fileReport.errors.push('Product: missing `name`');
+  if (!obj.description) fileReport.warnings.push('Product: missing `description` (recommended)');
+  if (!obj.offers) {
+    fileReport.errors.push('Product: missing `offers`');
+    return;
+  }
+  const offer = obj.offers;
+  const of = Array.isArray(offer) ? offer[0] : offer;
+  checkOffer(of, fileReport);
+  if (!of.availability) fileReport.warnings.push('Offer: missing `availability` (recommended)');
+}
+
+function checkOffer(obj, fileReport) {
+  if ((obj.price === undefined || obj.price === null) && obj.price !== 0) {
+    fileReport.errors.push('Offer: missing `price`');
+  }
+  if (!obj.priceCurrency) fileReport.errors.push('Offer: missing `priceCurrency`');
+}
+
+function checkBreadcrumbList(obj, fileReport) {
+  if (!obj.itemListElement || !Array.isArray(obj.itemListElement)) {
+    fileReport.warnings.push('BreadcrumbList: `itemListElement` should be an array');
+  }
 }
 
 function run(root) {

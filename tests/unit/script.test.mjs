@@ -112,7 +112,7 @@ describe("script.js", () => {
         <button id="cookieSave" type="button"></button>
       </div>
     `);
-    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    document.body.dataset.gtmId = "GTM-TEST";
     await loadScript();
     const gtmScript = Array.from(document.getElementsByTagName("script")).find(
       (node) => (node.src || "").includes("googletagmanager.com/gtm.js?id=GTM-TEST")
@@ -137,7 +137,7 @@ describe("script.js", () => {
         <button id="cookieSave" type="button"></button>
       </div>
     `);
-    document.body.setAttribute("data-gtm-id", "GTM 123");
+    document.body.dataset.gtmId = "GTM 123";
     await loadScript();
     const gtmScript = Array.from(document.getElementsByTagName("script")).find(
       (node) => (node.src || "").includes("googletagmanager.com/gtm.js")
@@ -158,7 +158,7 @@ describe("script.js", () => {
         <button id="cookieSave" type="button"></button>
       </div>
     `);
-    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    document.body.dataset.gtmId = "GTM-TEST";
     await loadScript();
     document.getElementById("cookieAnalytics").checked = true;
     dispatchClick(document.getElementById("cookieSave"));
@@ -319,7 +319,7 @@ describe("script.js", () => {
       JSON.stringify({ status: "accepted", analytics: true, marketing: false })
     );
     setHtml(`<script></script>`);
-    document.body.setAttribute("data-gtm-id", "GTM-TEST");
+    document.body.dataset.gtmId = "GTM-TEST";
     await loadScript();
     const gtmScript = Array.from(document.getElementsByTagName("script")).find(
       (node) => (node.src || "").includes("googletagmanager.com/gtm.js?id=GTM-TEST")
@@ -995,7 +995,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject("fail"));
+    window.fetch = vi.fn(() => Promise.reject(new Error("fail")));
     await loadScript();
     submitForm("contactForm");
     await flushPromises();
@@ -1391,7 +1391,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject("fail"));
+    window.fetch = vi.fn(() => Promise.reject(new Error("fail")));
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");

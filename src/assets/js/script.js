@@ -358,16 +358,16 @@
   }
 
   // Cookie consent banner (LGPD)
-  var cookieBanner = document.getElementById("cookieBanner");
-  var cookieAccept = document.getElementById("cookieAccept");
-  var cookieReject = document.getElementById("cookieReject");
-  var cookieSettings = document.getElementById("cookieSettings");
-  var cookieSave = document.getElementById("cookieSave");
-  var cookieSettingsPanel = document.getElementById("cookieSettingsPanel");
-  var cookieAnalytics = document.getElementById("cookieAnalytics");
-  var cookieMarketing = document.getElementById("cookieMarketing");
-  var gtmId = document.body ? document.body.getAttribute("data-gtm-id") : "";
-  var consent = getCookieConsent();
+  const cookieBanner = document.getElementById("cookieBanner");
+  const cookieAccept = document.getElementById("cookieAccept");
+  const cookieReject = document.getElementById("cookieReject");
+  const cookieSettings = document.getElementById("cookieSettings");
+  const cookieSave = document.getElementById("cookieSave");
+  const cookieSettingsPanel = document.getElementById("cookieSettingsPanel");
+  const cookieAnalytics = document.getElementById("cookieAnalytics");
+  const cookieMarketing = document.getElementById("cookieMarketing");
+  const gtmId = document.body?.getAttribute("data-gtm-id") || "";
+  let consent = getCookieConsent();
 
   function shouldLoadGtm(consentState) {
     return (
@@ -405,7 +405,7 @@
 
   function toggleSettingsPanel() {
     if (!cookieSettingsPanel || !cookieSettings) return;
-    var isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
+    const isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
     cookieSettings.setAttribute("aria-expanded", isExpanded ? "true" : "false");
     cookieSettingsPanel.setAttribute(
       "aria-hidden",
@@ -456,14 +456,14 @@
   initCookieBanner();
 
   function initStarterForm() {
-    var starterForm = document.getElementById("starterKitForm");
+    const starterForm = document.getElementById("starterKitForm");
     if (!starterForm) return;
 
-    var submitBtn = document.getElementById("leadSubmit");
-    var consent = document.getElementById("consent");
-    var consentHelper = document.getElementById("consentHelper");
-    var statusEl = starterForm.querySelector("[data-status]");
-    var starterFormStartedAt = document.getElementById("starterFormStartedAt");
+    const submitBtn = document.getElementById("leadSubmit");
+    const consent = document.getElementById("consent");
+    const consentHelper = document.getElementById("consentHelper");
+    const statusEl = starterForm.querySelector("[data-status]");
+    const starterFormStartedAt = document.getElementById("starterFormStartedAt");
     logEvent("info", "Starter kit form ready");
 
     if (starterFormStartedAt) {
@@ -518,13 +518,13 @@
   }
 
   function initContactForm() {
-    var contactForm = document.getElementById("contactForm");
+    const contactForm = document.getElementById("contactForm");
     if (!contactForm) return;
 
-    var contactConsent = document.getElementById("contactConsent");
-    var contactConsentHelper = document.getElementById("contactConsentHelper");
-    var contactSubmitBtn = document.getElementById("contactSubmit");
-    var contactFormStartedAt = document.getElementById("contactFormStartedAt");
+    const contactConsent = document.getElementById("contactConsent");
+    const contactConsentHelper = document.getElementById("contactConsentHelper");
+    const contactSubmitBtn = document.getElementById("contactSubmit");
+    const contactFormStartedAt = document.getElementById("contactFormStartedAt");
 
     if (contactFormStartedAt) {
       contactFormStartedAt.value = String(Date.now());
@@ -549,22 +549,22 @@
 
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var name = (document.getElementById("contactName").value || "").trim();
-      var email = (document.getElementById("contactEmail").value || "").trim();
-      var message = (
+      const name = (document.getElementById("contactName").value || "").trim();
+      const email = (document.getElementById("contactEmail").value || "").trim();
+      const message = (
         document.getElementById("contactMessage").value || ""
       ).trim();
-      var honeypot = document.getElementById("hp_contact");
-      var feedback = document.getElementById("contactFeedback");
-      var submitBtn = document.getElementById("contactSubmit");
-      var makeUrl = contactForm.dataset.makeUrl || "";
+      const honeypot = document.getElementById("hp_contact");
+      const feedback = document.getElementById("contactFeedback");
+      const submitBtn = document.getElementById("contactSubmit");
+      const makeUrl = contactForm.dataset.makeUrl || "";
 
       if (honeypot?.value) {
         logEvent("warn", "Contact blocked by honeypot");
         return; // bot
       }
       if (contactFormStartedAt) {
-        var contactElapsed =
+        const contactElapsed =
           Date.now() - Number(contactFormStartedAt.value || 0);
         if (!contactElapsed || contactElapsed < MIN_FORM_TIME_MS) {
           logEvent("warn", "Contact blocked by timing");
@@ -609,8 +609,8 @@
       showMessage(feedback, "Sending...");
       setButtonState(submitBtn, false);
 
-      var utm = getUTM(window.location.search, starterKitUtils);
-      var payload = {
+      const utm = getUTM(window.location.search, starterKitUtils);
+      const payload = {
         type: "contact",
         name: name,
         email: email,
@@ -656,14 +656,14 @@
   }
 
   function initAdmin() {
-    var leadsList = document.getElementById("leadsList");
+    const leadsList = document.getElementById("leadsList");
     if (!leadsList) return;
 
-    var btnExport = document.getElementById("exportLeads");
-    var btnClear = document.getElementById("clearLeads");
-    var btnExportLogs = document.getElementById("exportLogs");
-    var btnClearLogs = document.getElementById("clearLogs");
-    var renderLeadsBound = function () {
+    const btnExport = document.getElementById("exportLeads");
+    const btnClear = document.getElementById("clearLeads");
+    const btnExportLogs = document.getElementById("exportLogs");
+    const btnClearLogs = document.getElementById("clearLogs");
+    const renderLeadsBound = function () {
       return renderLeads(leadsList);
     };
 
