@@ -1,45 +1,74 @@
 {
   "brand": "BrazilDecoded",
-  "description": "Practical Brazil travel guide with safety tips, local etiquette, transportation, and essential itineraries.",
-  "gtmId": "GTM-PS36XKLG",
+  "description": "Practical Brazil travel guide with safety tips, transportation advice, must-see places, and itineraries. Buy the eBook or download the free Starter Kit.",
   "baseUrl": "https://brazildecoded.com.br",
   "logo": "/assets/images/logo.png",
-  "buildVersion": "20260113",
+  "lang": "en",
+  "buildVersion": "1.0.0",
+  "gtmId": "GTM-XXXXXXX",
+  "twitter": "@brazildecoded",
   "nav": [
-    { "label": "What’s inside", "href": "/index.html#inside", "key": "inside" },
-    { "label": "Get the full guide", "href": "/index.html#buy", "key": "buy" },
     {
-      "label": "Get the free starter kit",
-      "href": "/pages/cadastro.html",
-      "key": "starter",
-      "class": "nav-cta"
+      "label": "Home",
+      "href": "/",
+      "key": "home"
     },
-    { "label": "Help & Contact", "href": "/pages/contato.html", "key": "contact" }
+    {
+      "label": "Free Starter Kit",
+      "href": "/free-starter-kit",
+      "key": "starter"
+    },
+    {
+      "label": "The Guide",
+      "href": "/the-guide",
+      "key": "guide"
+    },
+    {
+      "label": "About",
+      "href": "/about-the-author",
+      "key": "author"
+    }
   ],
+  "ctaButton": {
+    "label": "Get Free Starter Kit",
+    "href": "/free-starter-kit"
+  },
   "footerLinks": [
     {
-      "label": "Instagram",
-      "href": "https://www.instagram.com/visitbrazil.guide"
+      "label": "Home",
+      "href": "/"
     },
     {
-      "label": "Pinterest",
-      "href": "https://www.pinterest.com/rodcafonte"
+      "label": "Free Starter Kit",
+      "href": "/free-starter-kit"
     },
     {
-      "label": "Linktree",
-      "href": "https://linktr.ee/brazildecoded"
+      "label": "The Guide",
+      "href": "/the-guide"
     },
     {
-      "label": "Privacy",
-      "href": "/pages/privacy.html"
+      "label": "About",
+      "href": "/about-the-author"
     },
     {
-      "label": "Terms",
-      "href": "/pages/terms.html"
+      "label": "Contact",
+      "href": "/contact"
+    },
+    {
+      "label": "Guarantee",
+      "href": "/guarantee"
+    },
+    {
+      "label": "Privacy Policy",
+      "href": "/privacy"
     },
     {
       "label": "Cookies",
-      "href": "/pages/cookies.html"
+      "href": "/cookies"
+    },
+    {
+      "label": "Terms of Use",
+      "href": "/terms"
     }
   ]
 }

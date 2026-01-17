@@ -6,10 +6,14 @@
     <title>{{ title }}</title>
     <meta name="description" content="{{ description | default(site.description) }}" />
     <meta name="google-site-verification" content="GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM" />
-    <link rel="canonical" href="{{ site.baseUrl }}{{ page.url }}" />
-    <meta name="robots" content="index, follow" />
+    <link
+      rel="canonical"
+      href="{% if page.url == '/' %}{{ site.baseUrl }}/{% else %}{{ site.baseUrl }}{{ page.url }}{% endif %}"
+    />
     {% if noindex %}
     <meta name="robots" content="noindex, nofollow" />
+    {% else %}
+    <meta name="robots" content="index, follow" />
     {% endif %}
     <meta property="og:type" content="{{ ogType | default('website') }}" />
     {% if ogTitle %}
@@ -24,6 +28,8 @@
     {% endif %}
     {% if ogImage %}
     <meta property="og:image" content="{{ ogImage }}" />
+    {% elif site.logo %}
+    <meta property="og:image" content="{{ site.baseUrl }}{{ site.logo }}" />
     {% endif %}
     <meta name="twitter:card" content="summary_large_image" />
     {% if site.twitter %}
@@ -146,22 +152,65 @@
       </div>
     </header>
 
+    {% if pageKey != "home" %}
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="/">Home</a></li>
+        {% if pageKey == "starter" %}
+        <li aria-current="page">Free Starter Kit</li>
+        {% elif pageKey == "guide" %}
+        <li aria-current="page">The Guide</li>
+        {% elif pageKey == "author" %}
+        <li aria-current="page">About</li>
+        {% elif pageKey == "contact" %}
+        <li aria-current="page">Contact</li>
+        {% elif pageKey == "guarantee" %}
+        <li aria-current="page">Guarantee</li>
+        {% elif pageKey == "privacy" %}
+        <li aria-current="page">Privacy Policy</li>
+        {% elif pageKey == "cookies" %}
+        <li aria-current="page">Cookies</li>
+        {% elif pageKey == "terms" %}
+        <li aria-current="page">Terms of Use</li>
+        {% endif %}
+      </ol>
+    </nav>
+    {% endif %}
+
     <main id="maincontent" role="main">
       {{ content | safe }}
     </main>
 
     <footer class="site-footer">
       <div class="container footer-grid">
-        <p>
-          &copy; <span id="year"></span> {{ site.brand }}. All rights reserved.
-        </p>
-        <div class="footer-links">
-          {% for link in site.footerLinks %}
-          <a href="{{ link.href }}" target="_blank" rel="noopener noreferrer"
-            >{{ link.label }}</a
-          >
-          {% endfor %}
+        <div class="footer-brand">
+          <div class="footer-title">{{ site.brand }}</div>
+          <p class="footer-tagline">Travel tips for Brazil • Made for foreigners</p>
         </div>
+
+        <nav class="footer-col" aria-label="Explore">
+          <div class="footer-heading">Explore</div>
+          <ul class="footer-links">
+            <li><a href="/free-starter-kit">Free Starter Kit</a></li>
+            <li><a href="/the-guide">The Guide</a></li>
+            <li><a href="/about-the-author">About</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </nav>
+
+        <nav class="footer-col" aria-label="Legal">
+          <div class="footer-heading">Legal</div>
+          <ul class="footer-links">
+            <li><a href="/guarantee">Guarantee</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/cookies">Cookies</a></li>
+            <li><a href="/terms">Terms of Use</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="container footer-bottom">
+        <span>&copy; <span id="year"></span> {{ site.brand }}. All rights reserved.</span>
       </div>
     </footer>
 
@@ -179,7 +228,7 @@
           experience.
         </p>
         <div class="cookie-banner-actions">
-          <a class="cta ghost" href="/pages/cookies.html">View policy</a>
+          <a class="cta ghost" href="/cookies">View policy</a>
           <button
             class="cta ghost"
             id="cookieSettings"
@@ -223,5 +272,3 @@
     <script src="/assets/js/script.js?v={{ site.buildVersion }}"></script>
   </body>
 </html>
-
-

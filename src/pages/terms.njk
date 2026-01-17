@@ -2,8 +2,31 @@
 title: "Terms and Conditions - BrazilDecoded"
 description: "Terms and conditions for using the BrazilDecoded website."
 layout: "layout.njk"
-permalink: "/pages/terms.html"
+pageKey: "terms"
+permalink: "/terms"
 ---
+{# JSON-LD: Breadcrumbs for SEO #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ site.baseUrl }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Terms of Use",
+      "item": "{{ site.baseUrl }}{{ page.url }}"
+    }
+  ]
+}
+</script>
+
 <section class="section" aria-labelledby="terms-title">
   <div class="container">
     <h1 class="section-title" id="terms-title">Terms and Conditions</h1>
