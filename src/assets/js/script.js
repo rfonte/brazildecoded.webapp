@@ -29,7 +29,7 @@
     }
     globalThis.__bdGtmLoaded = true;
     globalThis.dataLayer = globalThis.dataLayer || [];
-    globalThis.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+    globalThis.dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
     const f = document.getElementsByTagName("script")[0];
     const j = document.createElement("script");
     j.async = true;
@@ -136,7 +136,7 @@
     const honeypot = form.querySelector('input[name="company_hp"]');
     if (honeypot && honeypot.value) {
       logEvent("warn", "Starter kit blocked by honeypot");
-      return false;
+      return { ok: false };
     }
     const starterFormStartedAt = document.getElementById("starterFormStartedAt");
     if (starterFormStartedAt) {
@@ -144,7 +144,7 @@
       if (!elapsed || elapsed < MIN_FORM_TIME_MS) {
         logEvent("warn", "Starter kit blocked by timing");
         showMessage(statusEl, "Please wait a moment and try again.", true);
-        return false;
+        return { ok: false };
       }
     }
     const emailField = form.querySelector('input[name="email"]');
@@ -156,27 +156,27 @@
 
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
-      return false;
+      return { ok: false };
     }
 
     if (!isValidEmail(email)) {
       logEvent("warn", "Starter kit invalid email", { email: email });
       showMessage(statusEl, "Please enter a valid email.", true);
       emailField.focus();
-      return false;
+      return { ok: false };
     }
     if (consent && !consent.checked) {
       logEvent("warn", "Starter kit missing consent");
       showMessage(statusEl, "You must accept the consent to enable the button.", true);
       consent.focus();
-      return false;
+      return { ok: false };
     }
     if (!makeUrl || makeUrl.indexOf("COLE_AQUI") !== -1) {
       logEvent("error", "Starter kit webhook missing");
       showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
-      return false;
+      return { ok: false };
     }
-    return { email, name, makeUrl };
+    return { ok: true, email, name, makeUrl };
   }
 
   function sendStarterWebhook(payload, statusEl, submitBtn, consent) {
@@ -210,10 +210,10 @@
       })
       .catch(function (err) {
         logEvent("error", "Starter kit webhook failed", {
-          message: err && err.message ? err.message : String(err || ""),
+          message: err?.message ? err.message : String(err || ""),
         });
         showMessage(statusEl, "Something went wrong. Please try again.", true);
-        setButtonState(submitBtn, consent && consent.checked);
+        setButtonState(submitBtn, !!consent?.checked);
       });
   }
 
@@ -333,8 +333,7 @@
   window.addEventListener("unhandledrejection", function (event) {
     var reason = event.reason;
     logEvent("error", "Unhandled promise rejection", {
-      message:
-        reason && reason.message ? reason.message : String(reason || ""),
+      message: reason?.message ? reason.message : String(reason || ""),
     });
   });
   function isValidEmail(email) {
@@ -389,66 +388,77 @@
     }
   }
 
-  if (cookieBanner) {
-    applyConsent(consent);
+  function syncCookieInputs(consentState) {
+    if (cookieAnalytics && consentState) {
+      cookieAnalytics.checked = consentState.analytics;
+    }
+    if (cookieMarketing && consentState) {
+      cookieMarketing.checked = consentState.marketing;
+    }
+  }
 
-    if (cookieAnalytics && consent) {
-      cookieAnalytics.checked = consent.analytics;
+  function setConsentState(state) {
+    setCookieConsent(state);
+    consent = state;
+    applyConsent(state);
+  }
+
+  function toggleSettingsPanel() {
+    if (!cookieSettingsPanel || !cookieSettings) return;
+    var isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
+    cookieSettings.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+    cookieSettingsPanel.setAttribute(
+      "aria-hidden",
+      isExpanded ? "false" : "true"
+    );
+    if (cookieAnalytics && !consent) cookieAnalytics.checked = false;
+    if (cookieMarketing && !consent) cookieMarketing.checked = false;
+  }
+
+  function initCookieBanner() {
+    if (!cookieBanner) {
+      if (consent && shouldLoadGtm(consent)) {
+        loadGtm(gtmId);
+      }
+      return;
     }
-    if (cookieMarketing && consent) {
-      cookieMarketing.checked = consent.marketing;
-    }
+
+    applyConsent(consent);
+    syncCookieInputs(consent);
 
     if (cookieAccept) {
       cookieAccept.addEventListener("click", function () {
-        var state = { status: "accepted", analytics: true, marketing: true };
-        setCookieConsent(state);
-        consent = state;
-        applyConsent(state);
+        setConsentState({ status: "accepted", analytics: true, marketing: true });
       });
     }
 
     if (cookieReject) {
       cookieReject.addEventListener("click", function () {
-        var state = { status: "rejected", analytics: false, marketing: false };
-        setCookieConsent(state);
-        consent = state;
-        applyConsent(state);
+        setConsentState({ status: "rejected", analytics: false, marketing: false });
       });
     }
 
     if (cookieSettings && cookieSettingsPanel) {
-      cookieSettings.addEventListener("click", function () {
-        var isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
-        cookieSettings.setAttribute("aria-expanded", isExpanded ? "true" : "false");
-        cookieSettingsPanel.setAttribute(
-          "aria-hidden",
-          isExpanded ? "false" : "true"
-        );
-        if (cookieAnalytics && !consent) cookieAnalytics.checked = false;
-        if (cookieMarketing && !consent) cookieMarketing.checked = false;
-      });
+      cookieSettings.addEventListener("click", toggleSettingsPanel);
     }
 
     if (cookieSave) {
       cookieSave.addEventListener("click", function () {
-        var state = {
+        setConsentState({
           status: "custom",
           analytics: !!(cookieAnalytics && cookieAnalytics.checked),
           marketing: !!(cookieMarketing && cookieMarketing.checked),
-        };
-        setCookieConsent(state);
-        consent = state;
-        applyConsent(state);
+        });
       });
     }
-  } else if (consent && shouldLoadGtm(consent)) {
-    loadGtm(gtmId);
   }
 
-  // Starter kit form (Make webhook)
-  var starterForm = document.getElementById("starterKitForm");
-  if (starterForm) {
+  initCookieBanner();
+
+  function initStarterForm() {
+    var starterForm = document.getElementById("starterKitForm");
+    if (!starterForm) return;
+
     var submitBtn = document.getElementById("leadSubmit");
     var consent = document.getElementById("consent");
     var consentHelper = document.getElementById("consentHelper");
@@ -481,7 +491,7 @@
       e.preventDefault();
       try {
         const result = validateStarterForm(starterForm, statusEl, submitBtn);
-        if (!result) return;
+        if (!result.ok) return;
 
         const payload = buildPayload({
           email: result.email,
@@ -496,7 +506,7 @@
         sendStarterWebhook(payload, statusEl, submitBtn, consent);
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
-          message: err && err.message ? err.message : String(err || ""),
+          message: err?.message ? err.message : String(err || ""),
         });
         showMessage(
           statusEl,
@@ -507,9 +517,10 @@
     });
   }
 
-  // Contact form
-  var contactForm = document.getElementById("contactForm");
-  if (contactForm) {
+  function initContactForm() {
+    var contactForm = document.getElementById("contactForm");
+    if (!contactForm) return;
+
     var contactConsent = document.getElementById("contactConsent");
     var contactConsentHelper = document.getElementById("contactConsentHelper");
     var contactSubmitBtn = document.getElementById("contactSubmit");
@@ -632,7 +643,7 @@
         })
         .catch(function (err) {
           logEvent("error", "Contact webhook failed", {
-            message: err && err.message ? err.message : String(err || ""),
+            message: err?.message ? err.message : String(err || ""),
           });
           showMessage(
             feedback,
@@ -644,9 +655,10 @@
     });
   }
 
-  // Admin: leads viewer (leads.html)
-  var leadsList = document.getElementById("leadsList");
-  if (leadsList) {
+  function initAdmin() {
+    var leadsList = document.getElementById("leadsList");
+    if (!leadsList) return;
+
     var btnExport = document.getElementById("exportLeads");
     var btnClear = document.getElementById("clearLeads");
     var btnExportLogs = document.getElementById("exportLogs");
@@ -677,4 +689,8 @@
 
     renderLeads(leadsList);
   }
+
+  initStarterForm();
+  initContactForm();
+  initAdmin();
 })();
