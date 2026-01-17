@@ -8,8 +8,11 @@
     <meta name="google-site-verification" content="GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM" />
     <link
       rel="canonical"
-      href="{% if page.url == '/' %}{{ site.baseUrl }}/{% else %}{{ site.baseUrl }}{{ page.url }}{% endif %}"
+      href="{% if canonicalUrl %}{{ site.baseUrl }}{{ canonicalUrl }}{% elif page.url == '/' %}{{ site.baseUrl }}/{% else %}{{ site.baseUrl }}{{ page.url }}{% endif %}"
     />
+    {% if metaRefresh %}
+    <meta http-equiv="refresh" content="{{ metaRefresh }}" />
+    {% endif %}
     {% if noindex %}
     <meta name="robots" content="noindex, nofollow" />
     {% else %}
@@ -83,6 +86,34 @@
             "availability": "https://schema.org/InStock",
             "priceValidUntil": "2025-12-31",
             "url": "{{ site.baseUrl }}",
+            "shippingDetails": {
+              "@type": "OfferShippingDetails",
+              "shippingRate": {
+                "@type": "MonetaryAmount",
+                "value": "0.00",
+                "currency": "USD"
+              },
+              "deliveryTime": {
+                "@type": "ShippingDeliveryTime",
+                "handlingTime": {
+                  "@type": "QuantitativeValue",
+                  "minValue": 0,
+                  "maxValue": 0,
+                  "unitCode": "DAY"
+                },
+                "transitTime": {
+                  "@type": "QuantitativeValue",
+                  "minValue": 0,
+                  "maxValue": 0,
+                  "unitCode": "DAY"
+                }
+              }
+            },
+            "hasMerchantReturnPolicy": {
+              "@type": "MerchantReturnPolicy",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+              "applicableCountry": "BR"
+            },
             "seller": {
               "@type": "Organization",
               "name": "{{ site.brand }}"
