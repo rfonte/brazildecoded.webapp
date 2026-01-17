@@ -1,0 +1,200 @@
+---
+title: "BrazilDecoded - Free Brazil Starter Kit"
+description: "Get the BrazilDecoded starter kit by email with safety tips, etiquette guidance, and a travel checklist."
+layout: "layout.njk"
+pageKey: "starter"
+permalink: "/free-starter-kit"
+---
+<section class="hero" aria-labelledby="starter-title">
+  <div class="container hero-grid">
+    <div class="stack">
+      <p class="eyebrow">Free download</p>
+      <h1 id="starter-title">Brazil Travel Starter Kit</h1>
+      <p class="lead measure">
+        A practical PDF guide with safety tips, local etiquette, and a quick
+        checklist to plan your trip to Brazil. Delivered by email.
+      </p>
+      <ul class="hero-highlights" aria-label="Kit highlights">
+        <li>Quick planning checklist</li>
+        <li>Safety and etiquette tips</li>
+        <li>Ideal for first-time visitors</li>
+      </ul>
+    </div>
+
+    <aside class="card" aria-label="Starter kit summary">
+      <h2 class="card-title">What happens next?</h2>
+
+      <p class="card-subtitle">
+        Fill out the form below and we’ll email you the <strong>Brazil Starter Kit</strong>.
+      </p>
+
+      <ol class="card-steps" aria-label="Next steps">
+        <li>Enter your email and submit the form.</li>
+        <li>Check your inbox (and spam/promotions, just in case).</li>
+        <li>Open the kit and start planning with confidence.</li>
+      </ol>
+
+      <p class="card-note">
+        No spam, only the Starter Kit and occasional BrazilDecoded updates.
+      </p>
+    </aside>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="form-title">
+  <div class="container">
+    <div class="card">
+      <h2 class="section-title" id="form-title">Get the starter kit</h2>
+      <p class="section-note">Use a valid email to receive the material.</p>
+
+      <form
+        class="lead-form"
+        id="starterKitForm"
+        action="#"
+        method="post"
+        novalidate
+        data-make-url="https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm"
+      >
+        <label for="leadName">Your name (optional)</label>
+        <input
+          type="text"
+          id="leadName"
+          name="name"
+          autocomplete="name"
+          placeholder="John"
+          class="form-input"
+        />
+
+        <label for="leadEmail">Your email</label>
+        <input
+          type="email"
+          id="leadEmail"
+          name="email"
+          autocomplete="email"
+          placeholder="you@email.com"
+          required
+          aria-describedby="email-helper"
+          class="form-input"
+        />
+        <p class="form-helper" id="email-helper">
+          We will only send the starter kit and BrazilDecoded updates.
+        </p>
+
+        <label class="visually-hidden" for="hp_lead"
+          >Leave this field blank</label
+        >
+        <input
+          type="text"
+          id="hp_lead"
+          name="company_hp"
+          class="visually-hidden"
+          tabindex="-1"
+          autocomplete="new-password"
+          aria-hidden="true"
+        />
+        <input
+          type="hidden"
+          id="starterFormStartedAt"
+          name="form_started_at"
+        />
+
+        <label>
+          <input type="checkbox" id="consent" name="consent" required />
+          I agree to the processing of my personal data as described in the
+          <a href="/privacy">Privacy Policy</a> and consent to receive
+          BrazilDecoded emails and offers.
+        </label>
+        <p
+          id="consentHelper"
+          class="form-helper"
+          role="status"
+          aria-live="polite"
+        >
+          You must accept the consent to enable the button.
+        </p>
+
+        <button class="cta primary" id="leadSubmit" type="submit">
+          Send me the Starter Kit
+        </button>
+
+        <p
+          id="leadFeedback"
+          class="form-feedback"
+          role="status"
+          data-status
+        ></p>
+      </form>
+    </div>
+
+    <div class="cta-row section">
+      <a
+        class="cta primary"
+        href="https://pay.hotmart.com/L98856517I"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Buy on Hotmart
+      </a>
+      <a
+        class="cta secondary"
+        href="https://cafonte.gumroad.com/l/brazildecoded"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Buy on Gumroad
+      </a>
+      <a class="cta ghost" href="/index.html">Back home</a>
+    </div>
+  </div>
+</section>
+
+{# JSON-LD: Product (digital starter kit) to improve appearance in search results #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Brazil Travel Starter Kit - BrazilDecoded",
+  "description": "PDF guide with safety tips, etiquette guidance, and a travel checklist for Brazil.",
+  "image": "{{ site.baseUrl }}/assets/cover.png",
+  "brand": {
+    "@type": "Brand",
+    "name": "BrazilDecoded"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ site.baseUrl }}{{ page.url }}",
+    "price": "0.00",
+    "priceCurrency": "BRL",
+    "availability": "https://schema.org/InStock",
+    "category": "Digital",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0.00",
+        "currency": "BRL"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+      "applicableCountry": "BR"
+    }
+  }
+}
+</script>
