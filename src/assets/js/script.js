@@ -366,7 +366,7 @@
   const cookieSettingsPanel = document.getElementById("cookieSettingsPanel");
   const cookieAnalytics = document.getElementById("cookieAnalytics");
   const cookieMarketing = document.getElementById("cookieMarketing");
-  const gtmId = document.body?.getAttribute("data-gtm-id") || "";
+  const gtmId = document.body?.dataset.gtmId || "";
   let consent = getCookieConsent();
 
   function shouldLoadGtm(consentState) {
@@ -623,36 +623,46 @@
         utm_campaign: utm.utm_campaign,
       };
 
-      fetch(makeUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-        .then(function (res) {
-          return res.text().then(function (text) {
-            return { ok: res.ok, status: res.status, text: text };
-          });
-        })
-        .then(function (result) {
-          if (!result.ok) throw new Error("Request failed");
-          logEvent("info", "Contact webhook success", {
-            status: result.status,
-          });
-          showMessage(feedback, "Message sent. Thank you!");
-          contactForm.reset();
-        })
-        .catch(function (err) {
-          logEvent("error", "Contact webhook failed", {
-            message: err?.message ? err.message : String(err || ""),
-          });
-          showMessage(
-            feedback,
-            "Something went wrong. Please try again.",
-            true
-          );
-          setButtonState(submitBtn, true);
-        });
+      sendContactWebhook({
+        makeUrl: makeUrl,
+        payload: payload,
+        feedback: feedback,
+        submitBtn: submitBtn,
+        form: contactForm,
+      });
     });
+  }
+
+  function sendContactWebhook(options) {
+    fetch(options.makeUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(options.payload),
+    })
+      .then(function (res) {
+        return res.text().then(function (text) {
+          return { ok: res.ok, status: res.status, text: text };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) throw new Error("Request failed");
+        logEvent("info", "Contact webhook success", {
+          status: result.status,
+        });
+        showMessage(options.feedback, "Message sent. Thank you!");
+        options.form.reset();
+      })
+      .catch(function (err) {
+        logEvent("error", "Contact webhook failed", {
+          message: err?.message ?? String(err || ""),
+        });
+        showMessage(
+          options.feedback,
+          "Something went wrong. Please try again.",
+          true
+        );
+        setButtonState(options.submitBtn, true);
+      });
   }
 
   function initAdmin() {

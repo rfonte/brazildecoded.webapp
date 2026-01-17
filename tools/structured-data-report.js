@@ -120,34 +120,42 @@ function run(root) {
     process.exit(2);
   }
   const files = findHtmlFiles(root);
-  const results = [];
-  for (const f of files) {
-    results.push(analyzeFile(f));
-  }
+  const results = files.map((file) => analyzeFile(file));
   // Print human-friendly report
   console.log('\nStructured Data Report');
   console.log('Root:', root);
   console.log('Scanned files:', files.length, '\n');
-  let totalErrors = 0, totalWarnings = 0;
-  for (const r of results) {
-    console.log('File:', path.relative(process.cwd(), r.file));
-    console.log('  JSON-LD blocks:', r.blocks, 'parsed:', r.parsed);
-    if (r.errors.length) {
-      totalErrors += r.errors.length;
-      for (const e of r.errors) console.log('    ERROR:', e);
-    }
-    if (r.warnings.length) {
-      totalWarnings += r.warnings.length;
-      for (const w of r.warnings) console.log('    WARN :', w);
-    }
-    if (!r.errors.length && !r.warnings.length) console.log('    OK: no issues found');
-    console.log('');
-  }
-  console.log('Summary:');
-  console.log('  total files:', results.length);
-  console.log('  total errors:', totalErrors);
-  console.log('  total warnings:', totalWarnings);
-  if (totalErrors > 0) process.exitCode = 3;
+  const totals = results.reduce(
+    (acc, report) => {
+      const counts = printReport(report);
+      return {
+        errors: acc.errors + counts.errors,
+        warnings: acc.warnings + counts.warnings,
+      };
+    },
+    { errors: 0, warnings: 0 }
+  );
+  printSummary(results.length, totals);
+  if (totals.errors > 0) process.exitCode = 3;
 }
 
 run(path.join(process.cwd(),'dist'));
+
+function printReport(report) {
+  console.log('File:', path.relative(process.cwd(), report.file));
+  console.log('  JSON-LD blocks:', report.blocks, 'parsed:', report.parsed);
+  for (const e of report.errors) console.log('    ERROR:', e);
+  for (const w of report.warnings) console.log('    WARN :', w);
+  if (!report.errors.length && !report.warnings.length) {
+    console.log('    OK: no issues found');
+  }
+  console.log('');
+  return { errors: report.errors.length, warnings: report.warnings.length };
+}
+
+function printSummary(totalFiles, totals) {
+  console.log('Summary:');
+  console.log('  total files:', totalFiles);
+  console.log('  total errors:', totals.errors);
+  console.log('  total warnings:', totals.warnings);
+}
