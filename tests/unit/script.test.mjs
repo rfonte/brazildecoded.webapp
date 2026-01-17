@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import starterKit from "../../src/assets/js/lib/starter-kit.js";
 
 const scriptPath = "../../src/assets/js/script.js";
 const logKey = "brazildecoded_logs";
@@ -85,7 +86,7 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.restoreAllMocks();
-  delete window.BDStarterKit;
+  window.BDStarterKit = starterKit;
   delete window.__bdGtmLoaded;
   setLocation("/index.html");
   stubUrlHelpers();
@@ -481,6 +482,7 @@ describe("script.js", () => {
   });
 
   it("validates email with default validator when no helper is present", async () => {
+    delete window.BDStarterKit;
     setLocation("/pages/cadastro.html");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
@@ -503,7 +505,10 @@ describe("script.js", () => {
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
     await flushPromises();
-    expect(window.fetch).toHaveBeenCalled();
+    expect(window.fetch).not.toHaveBeenCalled();
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing isValidEmail")).toBe(
+      true
+    );
   });
 
   it("skips submission when honeypot is filled", async () => {
@@ -576,9 +581,11 @@ describe("script.js", () => {
     submitForm("starterKitForm");
     await flushPromises();
     await flushPromises();
-    expect(window.BDStarterKit.getUTM).toHaveBeenCalled();
     const payload = JSON.parse(window.fetch.mock.calls[0][1].body);
     expect(payload.user_agent).toBeTruthy();
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing buildPayload")).toBe(
+      true
+    );
   });
 
   it("submits the starter kit with buildPayload and disables submit", async () => {
@@ -1303,8 +1310,9 @@ describe("script.js", () => {
   });
 
   it("builds payload with helper and fallback UTM", async () => {
-    await loadScript();
     const helper = { buildPayload: vi.fn(() => ({ ok: true })) };
+    window.BDStarterKit = helper;
+    await loadScript();
     const helperPayload = window.BDApp.buildPayload({
       email: "",
       name: "",
@@ -1312,7 +1320,6 @@ describe("script.js", () => {
       referrer: "",
       userAgent: "",
       queryString: "",
-      utils: helper,
     });
     expect(helper.buildPayload).toHaveBeenCalled();
     expect(helper.buildPayload.mock.calls[0][0]).toMatchObject({
@@ -1326,6 +1333,8 @@ describe("script.js", () => {
     });
     expect(helperPayload.ok).toBe(true);
 
+    window.BDStarterKit = null;
+    await loadScript();
     const fallbackPayload = window.BDApp.buildPayload({
       email: "user@example.com",
       name: "User",
@@ -1333,14 +1342,15 @@ describe("script.js", () => {
       referrer: "",
       userAgent: "ua",
       queryString: "?utm_source=src&utm_medium=med&utm_campaign=cmp",
-      utils: {},
     });
-    expect(fallbackPayload.utm_source).toBe("src");
+    expect(fallbackPayload.utm_source).toBe("");
     expect(fallbackPayload.user_agent).toBe("ua");
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing buildPayload")).toBe(
+      true
+    );
   });
 
   it("getUTM uses helper or falls back to URLSearchParams", async () => {
-    await loadScript();
     const helper = {
       getUTM: vi.fn(() => ({
         utm_source: "x",
@@ -1348,14 +1358,19 @@ describe("script.js", () => {
         utm_campaign: "z",
       })),
     };
-    const helperUtm = window.BDApp.getUTM("?utm_source=a", helper);
+    window.BDStarterKit = helper;
+    await loadScript();
+    const helperUtm = window.BDApp.getUTM("?utm_source=a");
     expect(helper.getUTM).toHaveBeenCalled();
     expect(helperUtm.utm_source).toBe("x");
 
-    const fallbackUtm = window.BDApp.getUTM(
-      "?utm_source=src&utm_medium=med&utm_campaign=cmp"
+    window.BDStarterKit = null;
+    await loadScript();
+    const fallbackUtm = window.BDApp.getUTM("?utm_source=src&utm_medium=med&utm_campaign=cmp");
+    expect(fallbackUtm.utm_campaign).toBe("");
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing getUTM")).toBe(
+      true
     );
-    expect(fallbackUtm.utm_campaign).toBe("cmp");
   });
 
   it("setButtonState toggles aria-disabled and handles null", async () => {
@@ -1381,9 +1396,13 @@ describe("script.js", () => {
   });
 
   it("handles email validation with no helper", async () => {
+    delete window.BDStarterKit;
     await loadScript();
     expect(window.BDApp.isValidEmail("bad-email")).toBe(false);
-    expect(window.BDApp.isValidEmail("user@example.com")).toBe(true);
+    expect(window.BDApp.isValidEmail("user@example.com")).toBe(false);
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing isValidEmail")).toBe(
+      true
+    );
   });
 
   it("returns false when renderLeads has no element", async () => {
@@ -1530,7 +1549,6 @@ describe("script.js", () => {
       referrer: undefined,
       userAgent: null,
       queryString: undefined,
-      utils: {},
     });
     expect(payload.email).toBe("");
     expect(payload.name).toBe("");
