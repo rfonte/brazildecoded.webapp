@@ -1,6 +1,6 @@
-const fs = require("fs");
-const https = require("https");
-const path = require("path");
+const fs = require("node:fs");
+const https = require("node:https");
+const path = require("node:path");
 
 const projectRoot = process.cwd();
 const propsPath = path.join(projectRoot, "sonar-project.properties");
@@ -182,7 +182,7 @@ async function main() {
   const hotspots = await fetchAllHotspots(hotspotsUrl, token);
 
   const metricMap = {};
-  const measuresList = (measures.component && measures.component.measures) || [];
+  const measuresList = measures.component?.measures || [];
   measuresList.forEach((m) => {
     metricMap[m.metric] = m.value || "0";
   });
@@ -222,13 +222,15 @@ async function main() {
   };
 
   const reportsDir = path.join(projectRoot, "reports", "sonar");
-  if (!fs.existsSync(reportsDir)) {
-    fs.mkdirSync(reportsDir, { recursive: true });
-  }
+  fs.mkdirSync(reportsDir, { recursive: true });
   const outJson = path.join(reportsDir, "sonar-summary.json");
   const outMd = path.join(reportsDir, "sonar-summary.md");
-  fs.writeFileSync(outJson, JSON.stringify(summary, null, 2));
-  fs.writeFileSync(outMd, formatMarkdown(summary));
+  await writeReportFiles(outJson, outMd, summary);
+}
+
+async function writeReportFiles(outJson, outMd, summary) {
+  await fs.promises.writeFile(outJson, JSON.stringify(summary, null, 2));
+  await fs.promises.writeFile(outMd, formatMarkdown(summary));
   console.log(`Saved ${outJson}`);
   console.log(`Saved ${outMd}`);
 }

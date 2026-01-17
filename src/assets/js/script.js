@@ -446,8 +446,8 @@
       cookieSave.addEventListener("click", function () {
         setConsentState({
           status: "custom",
-          analytics: !!(cookieAnalytics && cookieAnalytics.checked),
-          marketing: !!(cookieMarketing && cookieMarketing.checked),
+          analytics: !!cookieAnalytics?.checked,
+          marketing: !!cookieMarketing?.checked,
         });
       });
     }

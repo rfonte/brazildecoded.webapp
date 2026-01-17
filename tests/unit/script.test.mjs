@@ -34,14 +34,19 @@ function getLogs() {
   return JSON.parse(localStorage.getItem(logKey) || "[]");
 }
 
+function getStartedAtField(formId) {
+  if (formId === "starterKitForm") {
+    return document.getElementById("starterFormStartedAt");
+  }
+  if (formId === "contactForm") {
+    return document.getElementById("contactFormStartedAt");
+  }
+  return null;
+}
+
 function submitForm(formId, options = {}) {
   const form = document.getElementById(formId);
-  const startedAt =
-    formId === "starterKitForm"
-      ? document.getElementById("starterFormStartedAt")
-      : formId === "contactForm"
-      ? document.getElementById("contactFormStartedAt")
-      : null;
+  const startedAt = getStartedAtField(formId);
   if (startedAt && !options.skipTiming) {
     startedAt.value = String(Date.now() - 4000);
   }
@@ -1417,7 +1422,7 @@ describe("script.js", () => {
     await loadScript();
     const form = document.getElementById("starterKitForm");
     form.querySelector = () => {
-      throw "boom";
+      throw new Error("boom");
     };
     submitForm("starterKitForm");
     const logs = getLogs();
