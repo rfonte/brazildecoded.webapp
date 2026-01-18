@@ -1,6 +1,6 @@
 ---
-title: "BrazilDecoded - Free Brazil Starter Kit"
-description: "Get the BrazilDecoded starter kit by email with safety tips, etiquette guidance, and a travel checklist."
+title: "Free Brazil Travel Starter Kit | Checklist & Safety Tips"
+description: "Free Brazil travel starter kit with safety tips, etiquette guidance, and a printable travel checklist. Get it by email in minutes."
 layout: "layout.njk"
 pageKey: "starter"
 permalink: "/free-starter-kit/"
@@ -9,7 +9,7 @@ permalink: "/free-starter-kit/"
   <div class="container hero-grid">
     <div class="stack">
       <p class="eyebrow">Free download</p>
-      <h1 id="starter-title">Brazil Travel Starter Kit</h1>
+      <h1 id="starter-title">Free Brazil Travel Starter Kit</h1>
       <p class="lead measure">
         A practical PDF guide with safety tips, local etiquette, and a quick
         checklist to plan your trip to Brazil. Delivered by email.
@@ -41,10 +41,32 @@ permalink: "/free-starter-kit/"
   </div>
 </section>
 
+{# JSON-LD: Breadcrumbs for SEO #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ site.baseUrl }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Free Starter Kit",
+      "item": "{{ site.baseUrl }}{{ page.url }}"
+    }
+  ]
+}
+</script>
+
 <section class="section" aria-labelledby="form-title">
   <div class="container">
     <div class="card">
-      <h2 class="section-title" id="form-title">Get the starter kit</h2>
+      <h2 class="section-title" id="form-title">Get the Brazil travel starter kit</h2>
       <p class="section-note">Use a valid email to receive the material.</p>
 
       <form

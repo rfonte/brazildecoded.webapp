@@ -1,6 +1,6 @@
 ---
-title: "Contact - BrazilDecoded | Partnerships and Support"
-description: "Contact BrazilDecoded for partnerships, customer support, or questions about the travel guide. We will reply as soon as possible."
+title: "Contact | Brazil Travel Guide Support"
+description: "Contact BrazilDecoded for support, partnerships, or questions about the Brazil travel guide. We reply as soon as possible."
 layout: "layout.njk"
 pageKey: "contact"
 permalink: "/contact/"
@@ -9,7 +9,7 @@ permalink: "/contact/"
   <div class="container hero-grid">
     <div class="stack">
       <p class="eyebrow">Contact</p>
-      <h1 id="contact-title">Contact BrazilDecoded</h1>
+      <h1 id="contact-title">Contact BrazilDecoded for Brazil travel guide support</h1>
       <p class="lead measure">
         Have questions about the guide, partnership ideas, or need support?
         Send a message and we will reply as soon as possible.
@@ -51,10 +51,32 @@ permalink: "/contact/"
   </div>
 </section>
 
+{# JSON-LD: Breadcrumbs for SEO #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ site.baseUrl }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Contact",
+      "item": "{{ site.baseUrl }}{{ page.url }}"
+    }
+  ]
+}
+</script>
+
 <section class="section" aria-labelledby="message-title">
   <div class="container">
     <div class="card">
-      <h2 class="section-title" id="message-title">Send your message</h2>
+      <h2 class="section-title" id="message-title">Contact the Brazil travel guide team</h2>
       <p class="section-note">
         By submitting this form, you acknowledge our
         <a href="/privacy">Privacy Policy</a>.
