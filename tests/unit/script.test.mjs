@@ -336,7 +336,7 @@ describe("script.js", () => {
   });
 
   it("handles starter kit form consent and invalid email", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="">
         <input type="email" name="email" id="leadEmail" />
@@ -413,7 +413,7 @@ describe("script.js", () => {
   });
 
   it("handles missing consent elements gracefully", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm">
         <input type="email" name="email" id="leadEmail" />
@@ -445,7 +445,7 @@ describe("script.js", () => {
   });
 
   it("handles missing webhook and missing email field without crashing", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm">
         <input type="text" name="company_hp" />
@@ -483,7 +483,7 @@ describe("script.js", () => {
 
   it("validates email with default validator when no helper is present", async () => {
     delete window.BDStarterKit;
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
@@ -531,7 +531,7 @@ describe("script.js", () => {
   });
 
   it("blocks starter kit submission when submitted too quickly", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
@@ -589,7 +589,7 @@ describe("script.js", () => {
   });
 
   it("submits the starter kit with buildPayload and disables submit", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     window.BDStarterKit = {
       getUTM: () => ({ utm_source: "src", utm_medium: "med", utm_campaign: "cmp" }),
       buildPayload: vi.fn(() => ({ type: "starter_kit" })),
@@ -683,7 +683,7 @@ describe("script.js", () => {
   });
 
   it("handles webhook failures and re-enables submit", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
@@ -784,7 +784,7 @@ describe("script.js", () => {
   });
 
   it("handles webhook failure when submit button is missing", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
@@ -1495,7 +1495,7 @@ describe("script.js", () => {
   });
 
   it("logs string errors when webhook rejects with a string", async () => {
-    setLocation("/pages/cadastro.html");
+    setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />

@@ -1,6 +1,10 @@
 # brazildecoded.webapp
 
-![Deploy Eleventy to GitHub Pages](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/pages.yml/badge.svg)
+[![Deploy Eleventy to GitHub Pages](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/pages.yml/badge.svg)](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/pages.yml)
+[![Unit Tests](https://img.shields.io/github/actions/workflow/status/rfonte/brazildecoded.webapp/ci.yml?label=unit%20tests)](https://github.com/rfonte/brazildecoded.webapp/actions/workflows/ci.yml)
+[![SEO Structured Data](https://img.shields.io/badge/SEO-structured%20data-green)](docs/SEO.md)
+[![SonarCloud Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
+[![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
 
 Static site for BrazilDecoded, built with Eleventy. This repo includes templates, styles, and scripts for the lead capture prototype and support pages.
 

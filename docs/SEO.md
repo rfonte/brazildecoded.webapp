@@ -10,7 +10,7 @@ Goal: improve organic ranking and conversion with a focus on eBook sales and lea
   - Suggested meta title: "BrazilDecoded - Brazil Travel Guide | Tips, Safety, Itineraries"
   - Suggested meta description: "Practical Brazil travel guide with safety tips, transportation advice, must-see places, and itineraries. Buy the eBook or download the free Starter Kit."
 
-- Starter Kit (`/pages/cadastro.html`)
+- Starter Kit (`/free-starter-kit/`)
   - Primary: "Brazil starter kit", "free Brazil travel kit", "Brazil travel checklist"
   - Secondary: "free travel guide Brazil", "Brazil travel PDF"
   - Title: "BrazilDecoded - Free Brazil Starter Kit"
@@ -29,8 +29,8 @@ Goal: improve organic ranking and conversion with a focus on eBook sales and lea
 
 2) Changes applied in this update
 
-- Titles and descriptions standardized to English for: `index.njk`, `cadastro.njk`, `contato.njk`, `thank-you.njk`.
-- `cadastro.njk` includes `Product` JSON-LD for rich results.
+- Titles and descriptions standardized to English for: `index.njk`, `free-starter-kit.njk`, `contact.njk`, `thank-you.njk`.
+- `free-starter-kit.njk` includes `Product` JSON-LD for rich results.
 - `src/_data/site.json` updated with English description and nav labels.
 - `src/_includes/layout.njk` provides WebSite and Organization JSON-LD plus OG/Twitter defaults.
 - `src/sitemap.xml.njk` includes changefreq and priority metadata.
