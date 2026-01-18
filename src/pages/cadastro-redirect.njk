@@ -25,3 +25,56 @@ noindex: true
     window.location.replace("/free-starter-kit");
   }, 200);
 </script>
+{# JSON-LD: Product for legacy URL crawls #}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Brazil Travel Starter Kit - BrazilDecoded",
+  "description": "PDF guide with safety tips, etiquette guidance, and a travel checklist for Brazil.",
+  "image": "{{ site.baseUrl }}/assets/cover.png",
+  "brand": {
+    "@type": "Organization",
+    "name": "BrazilDecoded",
+    "url": "{{ site.baseUrl }}",
+    "image": "{{ site.baseUrl }}/assets/cover.png"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ site.baseUrl }}/free-starter-kit/",
+    "price": "0.00",
+    "priceCurrency": "BRL",
+    "availability": "https://schema.org/InStock",
+    "priceValidUntil": "2026-12-31",
+    "category": "Digital",
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0.00",
+        "currency": "BRL"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    },
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+      "applicableCountry": "BR"
+    }
+  }
+}
+</script>
