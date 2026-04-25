@@ -21,13 +21,13 @@ function setLocation(pathname) {
     search: "",
   };
   try {
-    Object.defineProperty(window, "location", {
+    Object.defineProperty(globalThis, "location", {
       configurable: true,
       writable: true,
       value: locationMock,
     });
   } catch (err) {
-    window.location = locationMock;
+    globalThis.location = locationMock;
   }
 }
 
@@ -86,12 +86,12 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.restoreAllMocks();
-  window.BDStarterKit = starterKit;
-  delete window.__bdGtmLoaded;
+  globalThis.BDStarterKit = starterKit;
+  delete globalThis.__bdGtmLoaded;
   setLocation("/index.html");
   stubUrlHelpers();
-  window.alert = vi.fn();
-  window.confirm = vi.fn();
+  globalThis.alert = vi.fn();
+  globalThis.confirm = vi.fn();
 });
 
 describe("script.js", () => {
@@ -482,7 +482,7 @@ describe("script.js", () => {
   });
 
   it("validates email with default validator when no helper is present", async () => {
-    delete window.BDStarterKit;
+    delete globalThis.BDStarterKit;
     setLocation("/free-starter-kit/");
     setHtml(`
       <form id="starterKitForm" data-make-url="https://example.com/webhook">
@@ -494,7 +494,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -505,7 +505,7 @@ describe("script.js", () => {
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
     await flushPromises();
-    expect(window.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
     expect(getLogs().some((log) => log.message === "Starter kit utils missing isValidEmail")).toBe(
       true
     );
@@ -523,11 +523,11 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
-    expect(window.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("blocks starter kit submission when submitted too quickly", async () => {
@@ -553,7 +553,7 @@ describe("script.js", () => {
 
   it("uses starterKitUtils.getUTM when buildPayload is missing", async () => {
     setLocation("/free-starter-kit");
-    window.BDStarterKit = {
+    globalThis.BDStarterKit = {
       getUTM: vi.fn(() => ({ utm_source: "a", utm_medium: "b", utm_campaign: "c" })),
       isValidEmail: () => true,
     };
@@ -568,7 +568,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -581,7 +581,7 @@ describe("script.js", () => {
     submitForm("starterKitForm");
     await flushPromises();
     await flushPromises();
-    const payload = JSON.parse(window.fetch.mock.calls[0][1].body);
+    const payload = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
     expect(payload.user_agent).toBeTruthy();
     expect(getLogs().some((log) => log.message === "Starter kit utils missing buildPayload")).toBe(
       true
@@ -590,7 +590,7 @@ describe("script.js", () => {
 
   it("submits the starter kit with buildPayload and disables submit", async () => {
     setLocation("/free-starter-kit/");
-    window.BDStarterKit = {
+    globalThis.BDStarterKit = {
       getUTM: () => ({ utm_source: "src", utm_medium: "med", utm_campaign: "cmp" }),
       buildPayload: vi.fn(() => ({ type: "starter_kit" })),
       isValidEmail: () => true,
@@ -606,7 +606,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -620,9 +620,9 @@ describe("script.js", () => {
     await flushPromises();
     await flushPromises();
     await flushPromises();
-    expect(window.fetch).toHaveBeenCalled();
+    expect(globalThis.fetch).toHaveBeenCalled();
     expect(document.getElementById("leadSubmit").disabled).toBe(true);
-    expect(window.BDStarterKit.buildPayload).toHaveBeenCalled();
+    expect(globalThis.BDStarterKit.buildPayload).toHaveBeenCalled();
   });
 
   it("redirects to success page after successful webhook", async () => {
@@ -637,7 +637,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -647,16 +647,16 @@ describe("script.js", () => {
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     // make setTimeout run immediately to trigger the redirect synchronously
-    const realSetTimeout = window.setTimeout;
-    window.setTimeout = function (fn) {
-      try { fn(); } catch (e) { /* ignore */ }
+    const realSetTimeout = globalThis.setTimeout;
+    globalThis.setTimeout = function (fn) {
+      fn();
       return 0;
     };
     submitForm("starterKitForm");
     await flushPromises();
     await flushPromises();
-    expect(window.location.href).toContain("/pages/contato-sucesso.html");
-    window.setTimeout = realSetTimeout;
+    expect(globalThis.location.href).toContain("/pages/contato-sucesso.html");
+    globalThis.setTimeout = realSetTimeout;
   });
 
   it("logs and displays an error if submit handler throws", async () => {
@@ -795,7 +795,7 @@ describe("script.js", () => {
       </form>
     `);
     // simulate server failure
-    window.fetch = vi.fn(() => Promise.reject(new Error('boom')));
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error('boom')));
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
@@ -838,7 +838,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -867,7 +867,7 @@ describe("script.js", () => {
     submitForm("contactForm");
     await flushPromises();
     await flushPromises();
-    expect(window.fetch).toHaveBeenCalled();
+    expect(globalThis.fetch).toHaveBeenCalled();
     expect(document.getElementById("contactFeedback").textContent).toBe(
       "Message sent. Thank you!"
     );
@@ -887,14 +887,14 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
     await loadScript();
     document.getElementById("contactName").value = "User";
     document.getElementById("contactEmail").value = "user@example.com";
     document.getElementById("contactMessage").value = "Hi";
     submitForm("contactForm");
     expect(document.getElementById("contactFeedback").textContent).toBe("");
-    expect(window.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("blocks contact submission when consent is missing", async () => {
@@ -984,7 +984,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("Network error")));
     await loadScript();
     submitForm("contactForm");
     await flushPromises();
@@ -1009,7 +1009,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject(new Error("fail")));
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("fail")));
     await loadScript();
     submitForm("contactForm");
     await flushPromises();
@@ -1127,7 +1127,7 @@ describe("script.js", () => {
       value: "",
       configurable: true,
     });
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
@@ -1138,7 +1138,7 @@ describe("script.js", () => {
     submitForm("contactForm");
     await flushPromises();
     await flushPromises();
-    const payload = JSON.parse(window.fetch.mock.calls[0][1].body);
+    const payload = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
     expect(payload.user_agent).toBe("");
     Object.defineProperty(navigator, "userAgent", {
       value: originalUserAgent,
@@ -1293,27 +1293,27 @@ describe("script.js", () => {
     expect(logs.length).toBeGreaterThan(1);
   });
 
-  it("exposes helper API on window.BDApp", async () => {
+  it("exposes helper API on globalThis.BDApp", async () => {
     await loadScript();
-    expect(window.BDApp).toBeTruthy();
-    expect(typeof window.BDApp.logEvent).toBe("function");
-    expect(typeof window.BDApp.getUTM).toBe("function");
-    expect(typeof window.BDApp.buildPayload).toBe("function");
-    expect(typeof window.BDApp.renderLeads).toBe("function");
+    expect(globalThis.BDApp).toBeTruthy();
+    expect(typeof globalThis.BDApp.logEvent).toBe("function");
+    expect(typeof globalThis.BDApp.getUTM).toBe("function");
+    expect(typeof globalThis.BDApp.buildPayload).toBe("function");
+    expect(typeof globalThis.BDApp.renderLeads).toBe("function");
   });
 
   it("uses helper email validator when provided", async () => {
-    window.BDStarterKit = { isValidEmail: vi.fn(() => true) };
+    globalThis.BDStarterKit = { isValidEmail: vi.fn(() => true) };
     await loadScript();
-    expect(window.BDApp.isValidEmail("user@example.com")).toBe(true);
-    expect(window.BDStarterKit.isValidEmail).toHaveBeenCalled();
+    expect(globalThis.BDApp.isValidEmail("user@example.com")).toBe(true);
+    expect(globalThis.BDStarterKit.isValidEmail).toHaveBeenCalled();
   });
 
   it("builds payload with helper and fallback UTM", async () => {
     const helper = { buildPayload: vi.fn(() => ({ ok: true })) };
-    window.BDStarterKit = helper;
+    globalThis.BDStarterKit = helper;
     await loadScript();
-    const helperPayload = window.BDApp.buildPayload({
+    const helperPayload = globalThis.BDApp.buildPayload({
       email: "",
       name: "",
       page: "",
@@ -1333,9 +1333,9 @@ describe("script.js", () => {
     });
     expect(helperPayload.ok).toBe(true);
 
-    window.BDStarterKit = null;
+    globalThis.BDStarterKit = null;
     await loadScript();
-    const fallbackPayload = window.BDApp.buildPayload({
+    const fallbackPayload = globalThis.BDApp.buildPayload({
       email: "user@example.com",
       name: "User",
       page: "/page",
@@ -1358,15 +1358,15 @@ describe("script.js", () => {
         utm_campaign: "z",
       })),
     };
-    window.BDStarterKit = helper;
+    globalThis.BDStarterKit = helper;
     await loadScript();
-    const helperUtm = window.BDApp.getUTM("?utm_source=a");
+    const helperUtm = globalThis.BDApp.getUTM("?utm_source=a");
     expect(helper.getUTM).toHaveBeenCalled();
     expect(helperUtm.utm_source).toBe("x");
 
-    window.BDStarterKit = null;
+    globalThis.BDStarterKit = null;
     await loadScript();
-    const fallbackUtm = window.BDApp.getUTM("?utm_source=src&utm_medium=med&utm_campaign=cmp");
+    const fallbackUtm = globalThis.BDApp.getUTM("?utm_source=src&utm_medium=med&utm_campaign=cmp");
     expect(fallbackUtm.utm_campaign).toBe("");
     expect(getLogs().some((log) => log.message === "Starter kit utils missing getUTM")).toBe(
       true
@@ -1376,13 +1376,13 @@ describe("script.js", () => {
   it("setButtonState toggles aria-disabled and handles null", async () => {
     await loadScript();
     const button = document.createElement("button");
-    window.BDApp.setButtonState(button, true);
+    globalThis.BDApp.setButtonState(button, true);
     expect(button.disabled).toBe(false);
     expect(button.getAttribute("aria-disabled")).toBe("false");
-    window.BDApp.setButtonState(button, false);
+    globalThis.BDApp.setButtonState(button, false);
     expect(button.disabled).toBe(true);
     expect(button.getAttribute("aria-disabled")).toBe("true");
-    window.BDApp.setButtonState(null, true);
+    globalThis.BDApp.setButtonState(null, true);
   });
 
   it("logEvent handles storage failures safely", async () => {
@@ -1391,15 +1391,15 @@ describe("script.js", () => {
     localStorage.setItem = vi.fn(() => {
       throw new Error("boom");
     });
-    expect(() => window.BDApp.logEvent("info", "test")).not.toThrow();
+    expect(() => globalThis.BDApp.logEvent("info", "test")).not.toThrow();
     localStorage.setItem = realSetItem;
   });
 
   it("handles email validation with no helper", async () => {
-    delete window.BDStarterKit;
+    delete globalThis.BDStarterKit;
     await loadScript();
-    expect(window.BDApp.isValidEmail("bad-email")).toBe(false);
-    expect(window.BDApp.isValidEmail("user@example.com")).toBe(false);
+    expect(globalThis.BDApp.isValidEmail("bad-email")).toBe(false);
+    expect(globalThis.BDApp.isValidEmail("user@example.com")).toBe(false);
     expect(getLogs().some((log) => log.message === "Starter kit utils missing isValidEmail")).toBe(
       true
     );
@@ -1407,7 +1407,7 @@ describe("script.js", () => {
 
   it("returns false when renderLeads has no element", async () => {
     await loadScript();
-    expect(window.BDApp.renderLeads(null)).toBe(false);
+    expect(globalThis.BDApp.renderLeads(null)).toBe(false);
   });
 
   it("clears leads and invokes render callback when confirmed", async () => {
@@ -1416,9 +1416,9 @@ describe("script.js", () => {
       "brazildecoded_leads",
       JSON.stringify([{ name: "User", email: "u@e.com", date: "now" }])
     );
-    window.confirm = vi.fn(() => true);
+    globalThis.confirm = vi.fn(() => true);
     const renderSpy = vi.fn();
-    expect(window.BDApp.clearLeads(renderSpy)).toBe(true);
+    expect(globalThis.BDApp.clearLeads(renderSpy)).toBe(true);
     expect(renderSpy).toHaveBeenCalled();
   });
 
@@ -1430,21 +1430,21 @@ describe("script.js", () => {
         { name: 'User "Quote"', email: 'a"b@example.com', date: "now" },
       ])
     );
-    expect(window.BDApp.exportLeads()).toBe(true);
+    expect(globalThis.BDApp.exportLeads()).toBe(true);
     expect(URL.createObjectURL).toHaveBeenCalled();
   });
 
   it("export and clear helpers return expected results", async () => {
     setHtml('<div id="leadsList"></div>');
     await loadScript();
-    window.alert = vi.fn();
-    window.confirm = vi.fn(() => false);
+    globalThis.alert = vi.fn();
+    globalThis.confirm = vi.fn(() => false);
     localStorage.removeItem("brazildecoded_leads");
     localStorage.removeItem(logKey);
-    expect(window.BDApp.exportLeads()).toBe(false);
-    expect(window.BDApp.exportLogs()).toBe(false);
-    expect(window.BDApp.clearLeads(() => {})).toBe(false);
-    expect(window.BDApp.clearLogs()).toBe(false);
+    expect(globalThis.BDApp.exportLeads()).toBe(false);
+    expect(globalThis.BDApp.exportLogs()).toBe(false);
+    expect(globalThis.BDApp.clearLeads(() => {})).toBe(false);
+    expect(globalThis.BDApp.clearLogs()).toBe(false);
 
     localStorage.setItem(
       "brazildecoded_leads",
@@ -1454,11 +1454,11 @@ describe("script.js", () => {
       logKey,
       JSON.stringify([{ level: "info", message: "log", timestamp: "now" }])
     );
-    window.confirm = vi.fn(() => true);
-    expect(window.BDApp.exportLeads()).toBe(true);
-    expect(window.BDApp.exportLogs()).toBe(true);
-    expect(window.BDApp.clearLeads(() => {})).toBe(true);
-    expect(window.BDApp.clearLogs()).toBe(true);
+    globalThis.confirm = vi.fn(() => true);
+    expect(globalThis.BDApp.exportLeads()).toBe(true);
+    expect(globalThis.BDApp.exportLogs()).toBe(true);
+    expect(globalThis.BDApp.clearLeads(() => {})).toBe(true);
+    expect(globalThis.BDApp.clearLogs()).toBe(true);
   });
 
   it("passes userAgent and queryString when submitting with buildPayload", async () => {
