@@ -19,7 +19,7 @@ test("starter kit form submits and redirects", async ({ page }) => {
   await page.getByLabel("Your email").fill("user@example.com");
   await page
     .getByRole("checkbox", {
-      name: /i agree to the processing of my personal data/i,
+      name: /receive the Starter Kit and occasional BrazilDecoded updates/i,
     })
     .check();
   await page.getByRole("button", { name: "Send me the Starter Kit" }).click();
