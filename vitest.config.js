@@ -8,8 +8,7 @@ const coverageDir = isCi
 
 module.exports = {
   test: {
-    pool: "forks",
-    singleFork: true,
+    pool: "threads",
     environment: "jsdom",
     include: ["tests/unit/**/*.mjs"],
     exclude: ["tests/e2e/**", "node_modules/**"],
