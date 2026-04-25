@@ -12,3 +12,4 @@ pnpm-debug.log*
 .pnpm-debug.log*
 pnpm-lock.yaml
 .DS_Store
+SECURITY_REPORT.md
