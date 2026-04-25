@@ -6,96 +6,67 @@
 [![SonarCloud Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
 [![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
 
-Static site for BrazilDecoded, built with Eleventy. This repo includes templates, styles, and scripts for the lead capture prototype and support pages.
+Static site for BrazilDecoded, built with Eleventy. This repository contains the Eleventy templates, CSS, JavaScript, and form flows for the Starter Kit lead capture prototype, support page, and local admin experience.
 
-**Project overview**
+## Visão geral
 
-- **Scope:** static site with email lead capture, support form, and local admin page (localStorage prototype).
-- **Strengths:** clear Eleventy structure, modern CSS, accessibility basics (skip link, focus states, ARIA).
-- **Current limits:** data persistence is local; external integrations (Make/Mailchimp/backend) require setup.
+- **Escopo:** site estático com captura de leads por email, formulário de contato, painel admin local e integrações de webhook.
+- **Diferenciais:** estrutura Eleventy simples, foco em acessibilidade básica (ARIA, labels, foco), e testes automatizados (Vitest + Playwright).
+- **Limitações:** os dados de lead são mantidos localmente no prototype; integração externa depende de webhook/Make e configuração adicional.
 
-**Structure**
+## Sumário
 
-- `src/index.njk` - home page
-- `src/pages/free-starter-kit.njk` - starter kit form (lead capture)
-- `src/pages/contact.njk` - support form (localStorage prototype)
-- `src/pages/leads.njk` - admin page to view/export leads
-- `src/pages/thank-you.njk` - confirmation page
-- `src/pages/contato-sucesso.njk` - starter kit success page
-- `src/_includes/layout.njk` - shared layout + script include
-- `src/assets/` - source CSS and JS
-- `src/assets/images` - logos and icons
-- `src/CNAME` - custom domain for GitHub Pages
-- `docs/` - project documentation (SEO and TODOs)
-- `dist/` - build output (not committed)
+- [Requisitos](#requisitos)
+- [Instalação](#instalação)
+- [Desenvolvimento local](#desenvolvimento-local)
+- [Build](#build)
+- [Testes](#testes)
+- [Lint e formatação](#lint-e-formatação)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Fluxo de formulários e leads](#fluxo-de-formulários-e-leads)
+- [Configuração sensível](#configuração-sensível)
+- [Deploy](#deploy)
+- [Contribuição](#contribuição)
+- [Links úteis](#links-úteis)
 
-**Local development**
+## Requisitos
+
+- Node.js 18+ recomendado
+- npm
+- Navegador moderno para testes Playwright
+
+## Instalação
 
 ```powershell
 npm install
+```
+
+## Desenvolvimento local
+
+```powershell
 npm run serve
 ```
 
-Open `http://localhost:8080/`.
+Abra `http://localhost:8080/` no navegador.
 
-Structured-data (JSON-LD) check
-
-After running a build, you can validate the generated JSON-LD blocks with the local checker:
-
-```powershell
-# build the site to `dist/`
-npm run build
-# run the structured-data report (or `node tools/structured-data-report.js`)
-npm run sd:report
-```
-
-**Build**
+## Build
 
 ```powershell
 npm run build
 ```
 
-**Tests**
+## Testes
 
-- Unit (Vitest):
+- Testes unitários (Vitest):
 
 ```powershell
 npm run test:unit
 ```
 
-- Unit with coverage:
+- Testes unitários com cobertura:
 
 ```powershell
 npm run test:unit:coverage
-```
-
-- SonarCloud (vulnerabilities scan):
-
-```powershell
-# set your token for this session (PowerShell)
-$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
-npm run sonar
-```
-
-- SonarCloud summary report (local files in `reports/sonar/`):
-
-```powershell
-$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
-npm run sonar:summary
-```
-
-- Persist Sonar token locally (PowerShell, current user):
-
-```powershell
-setx SONAR_TOKEN "YOUR_TOKEN_HERE"
-```
-
-Open a new terminal session after running `setx`.
-
-- Pre-push hook (runs unit tests, coverage, and SonarCloud when `SONAR_TOKEN` is set):
-
-```powershell
-npm run prepush
 ```
 
 - E2E (Playwright):
@@ -104,57 +75,104 @@ npm run prepush
 npm run test:e2e
 ```
 
-**Lint**
+- Relatório SonarCloud:
+
+```powershell
+$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
+npm run sonar:summary
+```
+
+- Executar SonarCloud diretamente:
+
+```powershell
+$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
+npm run sonar
+```
+
+- Gancho pre-push:
+
+```powershell
+npm run prepush
+```
+
+> Observação: `setx SONAR_TOKEN "YOUR_TOKEN_HERE"` grava a variável para o usuário atual, mas é necessário abrir um novo terminal para que ela tenha efeito.
+
+## Lint e formatação
 
 ```powershell
 npm run lint
-```
-
-**Formatting**
-
-```powershell
 npm run format
 ```
 
-**Forms and lead flow**
+## Estrutura do projeto
 
-- Starter kit form uses `data-make-url` to post to Make (webhook).
-- Local admin page: `http://localhost:8080/pages/leads.html`.
+- `src/index.njk` - página inicial
+- `src/pages/free-starter-kit.njk` - formulário de Starter Kit
+- `src/pages/contact.njk` - formulário de contato
+- `src/pages/leads.njk` - painel de leads local
+- `src/pages/thank-you.njk` - página de agradecimento
+- `src/pages/contato-sucesso.njk` - página de sucesso do Starter Kit
+- `src/_includes/layout.njk` - layout compartilhado e tags globais
+- `src/assets/css/` - CSS do site
+- `src/assets/js/` - JavaScript do site
+- `src/assets/images/` - imagens e ícones
+- `src/_data/site.json` - dados de navegação e site
+- `src/CNAME` - domínio customizado para GitHub Pages
+- `docs/` - documentação adicional (SEO, TODOs)
+- `tests/unit/` - testes de unidade (Vitest)
+- `tests/e2e/` - testes end-to-end (Playwright)
+- `tools/` - scripts utilitários (relatórios, Sonar)
 
-**Sensitive configuration (webhook, consent, privacy)**
+## Fluxo de formulários e leads
 
-- `data-make-url` in `src/pages/free-starter-kit.njk` is a sensitive webhook endpoint. Keep it out of public docs and rotate it if exposed.
-- Consent checkbox (`#consent`) must remain required before any webhook submission.
-- Do not store or transmit personal data without consent, and keep privacy messaging aligned with local regulations.
+- O Starter Kit usa `data-make-url` em `src/pages/free-starter-kit.njk` para apontar para um webhook Make.
+- O formulário exige consentimento explícito antes de enviar dados.
+- O admin local (`/pages/leads.html`) funciona como protótipo de exportação/visualização de leads.
 
-**Make webhook setup**
+## Configuração sensível
 
-- Create a scenario with a **Custom webhook** trigger.
-- Copy the webhook URL into `data-make-url` in `src/pages/free-starter-kit.njk`.
-- Activate the scenario (Run once to test, then switch ON).
-- Add downstream modules (Google Sheets, Mailchimp, email, etc.).
+- O webhook em `data-make-url` é uma configuração sensível. mantenha-o fora de repositórios públicos e rotacione se vazar.
+- O checkbox de consentimento (`#consent`) deve permanecer `required` antes de enviar o formulário.
+- Não armazene nem envie dados pessoais sem consentimento. Ajuste a mensagem de privacidade conforme a legislação aplicável.
 
-**Privacy and consent**
+## Make webhook
 
-- Starter kit form requires explicit consent. Do not store or send data without consent.
+1. Crie um cenário no Make com um gatilho **Custom webhook**.
+2. Copie a URL do webhook para `data-make-url` em `src/pages/free-starter-kit.njk`.
+3. Teste com **Run once** e, após validar, ative o cenário.
+4. Conecte os módulos downstream (Google Sheets, Mailchimp, email, etc.).
 
-**Google Search Console**
+## Deploy
 
-- DNS (recommended): add a TXT record for `brazildecoded.com.br` with value `google-site-verification=GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM`.
-- Meta tag: the site includes `google-site-verification` with token `GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM` in `src/_includes/layout.njk`; keep it in sync if it changes.
+- Publicação via GitHub Pages usando GitHub Actions.
+- O site é construído com Eleventy e deployado a partir de `dist/`.
 
-**Deploy**
+## GitHub Pages e cache
 
-- GitHub Pages via GitHub Actions, publishing `dist/`.
+- GitHub Pages não aplica `_headers`. Use Cloudflare se precisar de cabeçalhos de cache personalizados.
+- Exemplo de regra de cache:
+  - `*/*` -> Bypass cache ou TTL curto para HTML
+  - `/assets/*` -> Cache Everything, Edge TTL 1 ano
+- Use `site.buildVersion` para controle de cache em CSS/JS.
 
-**GitHub Pages caching (Cloudflare)**
+## Contribuição
 
-GitHub Pages ignores `_headers`, so you need a CDN like Cloudflare if you want custom cache headers:
+- Crie uma issue para bugs ou sugestões.
+- Abra um PR com uma descrição clara do problema e das mudanças.
+- Execute `npm run lint`, `npm run test:unit` e `npm run test:e2e` antes de submeter.
 
-- Add the custom domain in Cloudflare and set DNS to "proxied" (orange cloud).
-- Set cache rules:
-  - `*/*` -> Cache HTML with "Bypass cache" or short TTL.
-- `/assets/*` -> Cache Everything, Edge TTL 1 year.
-- Keep cache busting with `site.buildVersion` for CSS/JS.
+## Links úteis
+
+- Eleventy: https://www.11ty.dev/
+- Vitest: https://vitest.dev/
+- Playwright: https://playwright.dev/
+- SonarCloud: https://sonarcloud.io/
+- Structured data report: `docs/SEO.md`
+
+## Observações
+
+- A versão mínima recomendada do Node.js é 18.
+- Os arquivos gerados pela build não devem ser comitados se estiverem no `.gitignore`.
+- Mantenha o texto de consentimento do formulário sincronizado com as regras de privacidade.
 
 
