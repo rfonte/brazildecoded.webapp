@@ -75,10 +75,10 @@ function stubUrlHelpers() {
     () => vi.fn(() => "blob:mock")
   );
   URL.revokeObjectURL = ensureMock(URL.revokeObjectURL, () => vi.fn());
-  if (!HTMLAnchorElement.prototype.click) {
-    HTMLAnchorElement.prototype.click = vi.fn();
-  } else {
+  if (HTMLAnchorElement.prototype.click) {
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+  } else {
+    HTMLAnchorElement.prototype.click = vi.fn();
   }
 }
 
@@ -380,7 +380,7 @@ describe("script.js", () => {
     expect(getLogs().some((log) => log.message === "Starter kit invalid email")).toBe(true);
   });
 
-  it("logs window errors with full and default details", async () => {
+  it("logs globalThis errors with full and default details", async () => {
     await loadScript();
     const errEvent = new ErrorEvent("error", {
       message: "boom",
@@ -388,17 +388,17 @@ describe("script.js", () => {
       lineno: 1,
       colno: 2,
     });
-    window.dispatchEvent(errEvent);
+    globalThis.dispatchEvent(errEvent);
     const errEventDefault = new Event("error");
-    window.dispatchEvent(errEventDefault);
+    globalThis.dispatchEvent(errEventDefault);
     const logs = getLogs();
     expect(logs.some((log) => log.message === "Script error")).toBe(true);
   });
 
-  it("logs window errors with default values", async () => {
+  it("logs globalThis errors with default values", async () => {
     await loadScript();
     const errEvent = new Event("error");
-    window.dispatchEvent(errEvent);
+    globalThis.dispatchEvent(errEvent);
     const rejEvent =
       typeof PromiseRejectionEvent === "function"
         ? new PromiseRejectionEvent("unhandledrejection", { reason: null })
@@ -407,7 +407,7 @@ describe("script.js", () => {
             evt.reason = null;
             return evt;
           })();
-    window.dispatchEvent(rejEvent);
+    globalThis.dispatchEvent(rejEvent);
     const logs = getLogs();
     expect(logs.some((log) => log.message === "Script error")).toBe(true);
   });
@@ -694,7 +694,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         status: 500,
@@ -726,7 +726,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject(new Error("fail")));
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("fail")));
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
@@ -1092,7 +1092,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         status: 500,
@@ -1159,7 +1159,7 @@ describe("script.js", () => {
         <button id="contactSubmit" type="submit"></button>
       </form>
     `);
-    window.fetch = vi.fn(() =>
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
         status: 500,
@@ -1218,7 +1218,7 @@ describe("script.js", () => {
       logKey,
       JSON.stringify([{ level: "info", message: "test", timestamp: new Date().toISOString() }])
     );
-    window.confirm = vi.fn(() => true);
+    globalThis.confirm = vi.fn(() => true);
     await loadScript();
     expect(document.getElementById("leadsList").innerHTML).toContain("<table");
 
@@ -1256,19 +1256,19 @@ describe("script.js", () => {
       <button id="exportLogs"></button>
       <button id="clearLogs"></button>
     `);
-    window.confirm = vi.fn(() => false);
+    globalThis.confirm = vi.fn(() => false);
     await loadScript();
     expect(document.getElementById("leadsList").textContent).toContain(
       "No leads found."
     );
     dispatchClick(document.getElementById("exportLeads"));
     dispatchClick(document.getElementById("clearLeads"));
-    expect(window.alert).toHaveBeenCalled();
+    expect(globalThis.alert).toHaveBeenCalled();
     dispatchClick(document.getElementById("exportLogs"));
     dispatchClick(document.getElementById("clearLogs"));
   });
 
-  it("records window errors and unhandled rejections", async () => {
+  it("records globalThis errors and unhandled rejections", async () => {
     await loadScript();
     const errEvent = new ErrorEvent("error", {
       message: "boom",
@@ -1276,7 +1276,7 @@ describe("script.js", () => {
       lineno: 1,
       colno: 2,
     });
-    window.dispatchEvent(errEvent);
+    globalThis.dispatchEvent(errEvent);
 
     const rejEvent =
       typeof PromiseRejectionEvent === "function"
@@ -1288,7 +1288,7 @@ describe("script.js", () => {
             evt.reason = new Error("oops");
             return evt;
           })();
-    window.dispatchEvent(rejEvent);
+    globalThis.dispatchEvent(rejEvent);
     const logs = getLogs();
     expect(logs.length).toBeGreaterThan(1);
   });
@@ -1475,15 +1475,15 @@ describe("script.js", () => {
       </form>
     `);
     const payloadSpy = vi.fn(() => ({ ok: true }));
-    window.BDStarterKit = { buildPayload: payloadSpy, isValidEmail: () => true };
-    window.fetch = vi.fn(() =>
+    globalThis.BDStarterKit = { buildPayload: payloadSpy, isValidEmail: () => true };
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         status: 200,
         text: () => Promise.resolve("OK"),
       })
     );
-    window.location.search = "?utm_source=test";
+    globalThis.location.search = "?utm_source=test";
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
@@ -1506,7 +1506,7 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    window.fetch = vi.fn(() => Promise.reject(new Error("fail")));
+    globalThis.fetch = vi.fn(() => Promise.reject(new Error("fail")));
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     submitForm("starterKitForm");
@@ -1542,7 +1542,7 @@ describe("script.js", () => {
 
   it("builds payload with null and undefined options", async () => {
     await loadScript();
-    const payload = window.BDApp.buildPayload({
+    const payload = globalThis.BDApp.buildPayload({
       email: null,
       name: undefined,
       page: null,
@@ -1562,7 +1562,7 @@ describe("script.js", () => {
     await loadScript();
     const event = new Event("unhandledrejection");
     event.reason = "just a string";
-    window.dispatchEvent(event);
+    globalThis.dispatchEvent(event);
     const logs = getLogs();
     const logEntry = logs.find(
       (log) => log.message === "Unhandled promise rejection"
@@ -1606,7 +1606,7 @@ describe("script.js", () => {
   it("shows an error message with the correct color", async () => {
     await loadScript();
     const el = document.createElement("div");
-    window.BDApp.showMessage(el, "Error!", true);
+    globalThis.BDApp.showMessage(el, "Error!", true);
     expect(el.textContent).toBe("Error!");
     expect(el.style.color).toBe("rgb(176, 0, 32)");
   });

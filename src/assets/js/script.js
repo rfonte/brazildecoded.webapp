@@ -63,8 +63,8 @@
   function setCookieConsent(value) {
     try {
       localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(value));
-    } catch {
-      // Ignore storage failures.
+    } catch (err) {
+      logEvent("warn", "Cookie consent storage failed", { message: err?.message ?? String(err) });
     }
   }
 
@@ -81,8 +81,9 @@
       existing.push(entry);
       existing.splice(0, existing.length - 200);
       localStorage.setItem(LOG_KEY, JSON.stringify(existing));
-    } catch {
-      // Do not throw while logging.
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("logEvent failed:", err);
     }
   }
 
