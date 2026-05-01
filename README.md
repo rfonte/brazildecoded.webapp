@@ -75,6 +75,8 @@ npm run test:unit:coverage
 npm run test:e2e
 ```
 
+  - A suíte E2E atual inclui `tests/e2e/starter-kit.spec.js` e `tests/e2e/site.spec.js`, cobrindo o formulário do Starter Kit, páginas de SEO e o fluxo de contato.
+
 - Relatório SonarCloud:
 
 ```powershell
