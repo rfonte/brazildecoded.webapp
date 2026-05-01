@@ -82,7 +82,6 @@
       existing.splice(0, existing.length - 200);
       localStorage.setItem(LOG_KEY, JSON.stringify(existing));
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.error("logEvent failed:", err);
     }
   }

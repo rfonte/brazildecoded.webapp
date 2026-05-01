@@ -63,10 +63,10 @@ async function flushPromises() {
 }
 
 function ensureMock(fn, fallback) {
-  if (!fn || !vi.isMockFunction(fn)) {
-    return fallback();
+  if (fn && vi.isMockFunction(fn)) {
+    return fn;
   }
-  return fn;
+  return fallback();
 }
 
 function stubUrlHelpers() {
