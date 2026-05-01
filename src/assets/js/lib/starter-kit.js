@@ -14,9 +14,9 @@ function isValidEmail(email) {
 function getUTM(queryString) {
   const p = new URLSearchParams(queryString || "");
   return {
-    utm_source: p.get("utm_source") || "",
-    utm_medium: p.get("utm_medium") || "",
-    utm_campaign: p.get("utm_campaign") || "",
+    utm_source: (p.get("utm_source") || "").trim(),
+    utm_medium: (p.get("utm_medium") || "").trim(),
+    utm_campaign: (p.get("utm_campaign") || "").trim(),
   };
 }
 

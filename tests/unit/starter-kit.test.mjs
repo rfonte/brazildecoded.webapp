@@ -49,6 +49,7 @@ function runFileInSandbox(sandbox, filePath) {
   const fs = require("fs");
   const content = fs.readFileSync(code, "utf-8");
   runInContext(content, createContext(sandbox), { filename: code });
+  sandbox.globalThis.BDStarterKit = sandbox.module?.exports;
 }
 
 describe("starter-kit.js", () => {
@@ -68,6 +69,7 @@ describe("starter-kit.js", () => {
     const sandbox = createSandbox();
     runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
     const payload = sandbox.globalThis.BDStarterKit.buildPayload({
+      type: "starter_kit",
       email: "test@example.com",
       name: "User",
       page: "/free-starter-kit",
