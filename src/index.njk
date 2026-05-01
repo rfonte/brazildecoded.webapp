@@ -17,14 +17,29 @@ pageKey: "home"
       </p>
 
       <div class="hero-actions">
-        <a class="cta primary" href="/free-starter-kit">Get the Free Starter Kit</a>
-        <a class="cta secondary" href="/the-guide">Explore the Full Guide →</a>
+        <a class="cta primary" href="/free-starter-kit/">Get the Free Starter Kit</a>
+        <a class="cta secondary" href="/the-guide/">Explore the Full Guide →</a>
       </div>
 
       <p class="hero-trust">Free • No spam • Made for tourists</p>
     </div>
   </div>
 </section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ site.baseUrl }}/"
+    }
+  ]
+}
+</script>
 
 <section class="section" aria-labelledby="what-is-title">
   <div class="container stack">
@@ -56,7 +71,7 @@ pageKey: "home"
         <li>Cultural habits</li>
         <li>Money & transport tips</li>
       </ul>
-      <a class="cta primary" href="/free-starter-kit">Get the Free Starter Kit</a>
+      <a class="cta primary" href="/free-starter-kit/">Get the Free Starter Kit</a>
     </div>
   </div>
 </section>
@@ -76,7 +91,7 @@ pageKey: "home"
         <li>Daily life, payments, transport</li>
         <li>Written in clear, simple English</li>
       </ul>
-      <a class="cta secondary" href="/the-guide">Explore the Full Guide →</a>
+      <a class="cta secondary" href="/the-guide/">Explore the Full Guide →</a>
     </div>
   </div>
 </section>
@@ -94,7 +109,7 @@ pageKey: "home"
         This guide is based on real daily life,
         not exaggerated headlines or clichés.
       </p>
-      <a class="cta ghost" href="/about-the-author">Learn more about the author →</a>
+      <a class="cta ghost" href="/about-the-author/">Learn more about the author →</a>
     </div>
   </div>
 </section>
@@ -107,7 +122,7 @@ pageKey: "home"
         If the guide doesn't help you feel more confident
         about your trip, you're covered.
       </p>
-      <a class="cta ghost" href="/guarantee">Read the guarantee →</a>
+      <a class="cta ghost" href="/guarantee/">Read the guarantee →</a>
     </div>
   </div>
 </section>
@@ -154,5 +169,44 @@ pageKey: "home"
     </div>
   </div>
 </section>
-
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Brazil safe for tourists?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, when you travel smart. Brazil is generally safe for tourists who follow basic precautions and avoid high-risk areas at night."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this guide useful for first-time visitors?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Absolutely. It's designed specifically for people visiting Brazil for the first time, covering everything from arrival to departure."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does the Starter Kit replace the full guide?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No, it's complementary. The Starter Kit gives you the essentials quickly, while the full guide provides comprehensive coverage."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is the content updated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, regularly. Travel conditions change, and we keep the information current based on real traveler experiences."
+      }
+    }
+  ]
+}
+</script>
 

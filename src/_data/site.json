@@ -15,17 +15,17 @@
     },
     {
       "label": "Free Starter Kit",
-      "href": "/free-starter-kit",
+      "href": "/free-starter-kit/",
       "key": "starter"
     },
     {
       "label": "The Guide",
-      "href": "/the-guide",
+      "href": "/the-guide/",
       "key": "guide"
     },
     {
       "label": "About",
-      "href": "/about-the-author",
+      "href": "/about-the-author/",
       "key": "author"
     },
     {
@@ -45,35 +45,35 @@
     },
     {
       "label": "Free Starter Kit",
-      "href": "/free-starter-kit"
+      "href": "/free-starter-kit/"
     },
     {
       "label": "The Guide",
-      "href": "/the-guide"
+      "href": "/the-guide/"
     },
     {
       "label": "About",
-      "href": "/about-the-author"
+      "href": "/about-the-author/"
     },
     {
       "label": "Contact",
-      "href": "/contact"
+      "href": "/contact/"
     },
     {
       "label": "Guarantee",
-      "href": "/guarantee"
+      "href": "/guarantee/"
     },
     {
       "label": "Privacy Policy",
-      "href": "/privacy"
+      "href": "/privacy/"
     },
     {
       "label": "Cookies",
-      "href": "/cookies"
+      "href": "/cookies/"
     },
     {
       "label": "Terms of Use",
-      "href": "/terms"
+      "href": "/terms/"
     }
   ]
 }

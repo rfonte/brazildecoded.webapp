@@ -19,7 +19,7 @@ permalink: "/the-guide/"
 
       <div class="hero-actions">
         <a class="cta primary" href="#buy">Buy the Guide – $14</a>
-        <a class="cta secondary" href="/free-starter-kit">Start with the Free Starter Kit →</a>
+        <a class="cta secondary" href="/free-starter-kit/">Start with the Free Starter Kit →</a>
       </div>
 
       <p class="hero-trust">Instant download • Simple English • Made for tourists</p>
@@ -46,6 +46,28 @@ permalink: "/the-guide/"
       "item": "{{ site.baseUrl }}{{ page.url }}"
     }
   ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Brazil Decoded: Secrets to a Perfect Vacation",
+  "description": "Complete Brazil travel guide for first-time visitors: safety, culture, daily life, transport, and common mistakes explained by a Brazilian local.",
+  "image": "{{ site.baseUrl }}/assets/cover.png",
+  "brand": {
+    "@type": "Brand",
+    "name": "{{ site.brand }}"
+  },
+  "offers": {
+    "@type": "Offer",
+    "url": "{{ site.baseUrl }}{{ page.url }}",
+    "price": "14.00",
+    "priceCurrency": "USD",
+    "availability": "https://schema.org/InStock",
+    "priceValidUntil": "2026-12-31"
+  }
 }
 </script>
 
@@ -128,7 +150,7 @@ permalink: "/the-guide/"
         It's based on real daily life, not recycled headlines or outdated advice.
         The focus is always on what actually matters during your trip.
       </p>
-      <a class="cta ghost" href="/about-the-author">Learn more about the author →</a>
+      <a class="cta ghost" href="/about-the-author/">Learn more about the author →</a>
     </div>
   </div>
 </section>
@@ -178,7 +200,7 @@ permalink: "/the-guide/"
         If the guide doesn't help you feel more confident about your trip to Brazil,
         you're covered by a straightforward satisfaction guarantee.
       </p>
-      <a class="cta ghost" href="/guarantee">Read the full guarantee →</a>
+      <a class="cta ghost" href="/guarantee/">Read the full guarantee →</a>
     </div>
   </div>
 </section>
@@ -222,6 +244,47 @@ permalink: "/the-guide/"
     </div>
   </div>
 </section>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is Brazil safe for tourists?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Brazil can be safe when you understand how locals navigate daily life. This guide explains those patterns clearly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does this replace the Free Starter Kit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The Starter Kit is a short introduction. This guide goes deeper and covers real scenarios."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this guide updated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Content is reviewed and updated regularly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this guide city-specific?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. It focuses on behaviors and rules that apply across Brazil."
+      }
+    }
+  ]
+}
+</script>
 
 <section class="section" id="checkout" aria-labelledby="final-cta-title">
   <div class="container">
@@ -275,7 +338,7 @@ permalink: "/the-guide/"
     </div>
 
     <div class="cta-row">
-      <a class="cta ghost" href="/free-starter-kit">Or start with the Free Starter Kit →</a>
+      <a class="cta ghost" href="/free-starter-kit/">Or start with the Free Starter Kit →</a>
     </div>
   </div>
 </section>
