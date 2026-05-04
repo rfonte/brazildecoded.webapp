@@ -48,7 +48,6 @@
   }
 
   const LOG_KEY = "brazildecoded_logs";
-  const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm";
   const FORM_TOKEN = "bd_starterkit_v1";
   const STARTER_KIT_SOURCE = "free_starter_kit";
   const COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
@@ -193,6 +192,9 @@
       form_token: FORM_TOKEN,
       referrer: options.referrer || "",
       user_agent: options.userAgent || "",
+      form_started_at: options.formStartedAt || "",
+      consent: options.consent === true || options.consent === "on",
+      company: options.company || "",
       turnstile_token: options.turnstileToken || "",
       ...getUTM(options.queryString || ""),
     };
@@ -200,13 +202,19 @@
     if (helper && typeof helper.buildPayload === "function") {
       try {
         return helper.buildPayload({
-          type: "starter_kit",
+          type: "free_starter_kit",
           email: payload.email,
           name: payload.name,
           page: payload.page,
           referrer: payload.referrer,
           userAgent: payload.user_agent,
           queryString: options.queryString || "",
+          source: STARTER_KIT_SOURCE,
+          formToken: FORM_TOKEN,
+          formStartedAt: options.formStartedAt || "",
+          consent: options.consent,
+          company: options.company || "",
+          turnstileToken: options.turnstileToken || "",
         });
       } catch (err) {
         logEvent("error", "Starter kit helper buildPayload failed", {
@@ -234,16 +242,19 @@
       form.querySelector('input[name="company_hp"]');
     if (honeypot?.value.trim()) {
       logEvent("warn", "Starter kit blocked by honeypot");
+      showMessage(statusEl, "Thanks! Check your email for the download link.");
       return { ok: false };
     }
     const starterFormStartedAt = document.getElementById("starterFormStartedAt");
-    if (starterFormStartedAt) {
-      const elapsed = Date.now() - Number(starterFormStartedAt.value || 0);
-      if (!elapsed || elapsed < MIN_FORM_TIME_MS) {
-        logEvent("warn", "Starter kit blocked by timing");
-        showMessage(statusEl, "Please wait a moment and try again.", true);
-        return { ok: false };
-      }
+    const helper = getStarterKitUtils();
+    const humanTiming =
+      helper && typeof helper.isHumanTiming === "function"
+        ? helper.isHumanTiming(starterFormStartedAt?.value)
+        : Date.now() - Number(starterFormStartedAt?.value || 0) >= MIN_FORM_TIME_MS;
+    if (!humanTiming) {
+      logEvent("warn", "Starter kit blocked by timing");
+      showMessage(statusEl, "Please wait a moment and try again.", true);
+      return { ok: false };
     }
 
     const emailField = form.querySelector('input[name="email"]');
@@ -252,8 +263,7 @@
     const consent = document.getElementById("consent");
     const email = String(emailField?.value || "").trim().toLowerCase();
     const name = sanitizeText(nameField?.value || "");
-    const hasFormWebhook = form.hasAttribute("data-make-url");
-    const makeUrl = hasFormWebhook ? form.dataset.makeUrl : MAKE_WEBHOOK_URL;
+    const endpoint = form.dataset.endpoint || "";
 
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
@@ -277,13 +287,9 @@
       consent?.focus();
       return { ok: false };
     }
-    const missingWebhook =
-      !makeUrl ||
-      (hasFormWebhook && makeUrl.includes("COLE_AQUI")) ||
-      (!hasFormWebhook && MAKE_WEBHOOK_URL.includes("PASTE_MAKE_WEBHOOK_URL_HERE"));
-    if (missingWebhook) {
-      logEvent("error", "Starter kit webhook missing");
-      showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
+    if (!endpoint || endpoint.includes("COLE_AQUI")) {
+      logEvent("error", "Starter kit endpoint missing");
+      showMessage(statusEl, "Missing endpoint URL. Please update the form settings.", true);
       return { ok: false };
     }
 
@@ -296,63 +302,62 @@
       showMessage(statusEl, "⚠️ Aguarde a verificação anti-bot carregar.", true);
       return { ok: false };
     }
-    return { ok: true, email, name, makeUrl, redirectOnSuccess: hasFormWebhook };
+    return { ok: true, email, name, endpoint };
   }
 
   /**
-   * Sends the starter kit payload to the configured webhook endpoint.
-   * Updates UI state while the request is in progress and handles success or failure.
-   * @param {Object} payload The request payload to send to the Make webhook.
+   * Sends the starter kit payload to the Cloudflare Worker endpoint.
+   * Parses the JSON response ({sucesso, mensagem} or {sucesso, erro}) and updates the UI.
+   * @param {string} endpoint The Worker URL to POST to.
+   * @param {Object} payload The request payload.
    * @param {HTMLElement|null} statusEl The element used to display status messages.
    * @param {HTMLButtonElement|null} submitBtn The submit button to enable/disable.
    * @param {HTMLInputElement|null} consent The consent checkbox used to decide re-enable state.
+   * @param {HTMLInputElement|null} startedAtEl The hidden form_started_at field to refresh on completion.
    */
-  function sendStarterWebhook(payload, statusEl, submitBtn, consent) {
+  function sendStarterWebhook(endpoint, payload, statusEl, submitBtn, consent, startedAtEl) {
     showMessage(statusEl, "Sending...");
     logEvent("info", "Starter kit submit started");
     setButtonState(submitBtn, false);
 
-    const webhookUrl = payload.makeUrl || MAKE_WEBHOOK_URL;
-    fetch(webhookUrl, {
+    function resetAfterSubmit() {
+      if (globalThis.turnstile) {
+        globalThis.turnstile.reset();
+      }
+      if (startedAtEl) {
+        startedAtEl.value = String(Date.now());
+      }
+    }
+
+    fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
       .then(function (res) {
-        logEvent("info", "Make webhook response received", { status: res.status });
-        return res.text().then(function (text) {
-          return { ok: res.ok, status: res.status, text: text };
-        });
+        logEvent("info", "Worker response received", { status: res.status });
+        return res.json();
       })
-      .then(function (result) {
-        if (!result.ok) {
-          logEvent("error", "Starter kit webhook failed", result);
-          throw new Error("Request failed");
-        }
-        logEvent("info", "Starter kit webhook success", { status: result.status });
-        showMessage(statusEl, "Thanks! Check your email for the download link.");
-        fireGtagEvent("starter_kit_form_submit");
-        if (payload.redirectOnSuccess) {
-          setTimeout(function () {
-            logEvent("info", "Redirecting to success page");
-            globalThis.location.href = "/pages/contato-sucesso.html";
-          }, 800);
-        }
-        // Reset the Turnstile widget if available
-        if (globalThis.turnstile) {
-          globalThis.turnstile.reset();
+      .then(function (data) {
+        resetAfterSubmit();
+        if (data.sucesso === true) {
+          logEvent("info", "Starter kit submit success");
+          showMessage(statusEl, data.mensagem || "Thanks! Check your email for the download link.");
+          fireGtagEvent("starter_kit_form_submit");
+        } else {
+          logEvent("error", "Starter kit submit rejected", { erro: data.erro });
+          showMessage(statusEl, data.erro || "Something went wrong. Please try again.", true);
+          fireGtagEvent("starter_kit_form_error");
+          setButtonState(submitBtn, !!consent?.checked);
         }
       })
       .catch(function (err) {
+        resetAfterSubmit();
         logEvent("error", "Starter kit webhook failed", {
           message: err?.message ?? String(err || ""),
         });
         showMessage(statusEl, "Something went wrong. Please try again.", true);
         fireGtagEvent("starter_kit_form_error");
-        // Reset the Turnstile widget if available
-        if (globalThis.turnstile) {
-          globalThis.turnstile.reset();
-        }
         setButtonState(submitBtn, !!consent?.checked);
       });
   }
@@ -717,6 +722,11 @@
         const result = validateStarterForm(starterForm, statusEl, submitBtn);
         if (!result.ok) return;
 
+        const turnstileField = starterForm.querySelector('[name="cf-turnstile-response"]');
+        const turnstileToken =
+          turnstileField?.value ||
+          starterForm.querySelector('[name="turnstile_token"]')?.value ||
+          "";
         const payload = buildPayload({
           email: result.email,
           name: result.name,
@@ -724,11 +734,12 @@
           referrer: document.referrer || "",
           userAgent: navigator.userAgent || "",
           queryString: globalThis.location.search,
-          turnstileToken: document.querySelector('input[name="turnstile_token"]')?.value || "",
+          turnstileToken: turnstileToken,
+          formStartedAt: starterFormStartedAt?.value || "",
+          consent: document.getElementById("consent")?.checked,
+          company: starterForm.querySelector('[name="company"]')?.value || "",
         });
-        payload.makeUrl = result.makeUrl;
-        payload.redirectOnSuccess = result.redirectOnSuccess;
-        sendStarterWebhook(payload, statusEl, submitBtn, consent);
+        sendStarterWebhook(result.endpoint, payload, statusEl, submitBtn, consent, starterFormStartedAt);
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
           message: err?.message ? err.message : String(err || ""),

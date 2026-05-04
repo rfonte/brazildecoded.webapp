@@ -62,6 +62,51 @@ describe("starter-kit.js", () => {
     expect(payload.referrer).toBe("");
   });
 
+  it("buildPayload includes source, form_token, form_started_at, company and turnstile_token", () => {
+    const kit = loadStarterKit();
+    const payload = kit.buildPayload({
+      type: "free_starter_kit",
+      email: "a@b.com",
+      name: "A",
+      source: "free_starter_kit",
+      formToken: "bd_starterkit_v1",
+      formStartedAt: "1700000000000",
+      company: "",
+      turnstileToken: "tok_abc123",
+      queryString: "",
+    });
+    expect(payload.source).toBe("free_starter_kit");
+    expect(payload.form_token).toBe("bd_starterkit_v1");
+    expect(payload.form_started_at).toBe("1700000000000");
+    expect(payload.company).toBe("");
+    expect(payload.turnstile_token).toBe("tok_abc123");
+  });
+
+  it("buildPayload converts consent true to boolean true", () => {
+    const kit = loadStarterKit();
+    expect(kit.buildPayload({ consent: true }).consent).toBe(true);
+  });
+
+  it("buildPayload converts consent 'on' to boolean true", () => {
+    const kit = loadStarterKit();
+    expect(kit.buildPayload({ consent: "on" }).consent).toBe(true);
+  });
+
+  it("buildPayload converts consent false to boolean false", () => {
+    const kit = loadStarterKit();
+    expect(kit.buildPayload({ consent: false }).consent).toBe(false);
+  });
+
+  it("buildPayload converts consent undefined to boolean false", () => {
+    const kit = loadStarterKit();
+    expect(kit.buildPayload({ consent: undefined }).consent).toBe(false);
+  });
+
+  it("buildPayload converts consent 'off' to boolean false", () => {
+    const kit = loadStarterKit();
+    expect(kit.buildPayload({ consent: "off" }).consent).toBe(false);
+  });
+
   it("getUTM extracts utm params safely", () => {
     const kit = loadStarterKit();
     const utm = kit.getUTM("?utm_source=src&utm_medium=med&utm_campaign=cmp");
@@ -70,12 +115,21 @@ describe("starter-kit.js", () => {
     expect(utm.utm_campaign).toBe("cmp");
   });
 
+  it("getUTM extracts utm_content and utm_term", () => {
+    const kit = loadStarterKit();
+    const utm = kit.getUTM("?utm_content=cnt&utm_term=trm");
+    expect(utm.utm_content).toBe("cnt");
+    expect(utm.utm_term).toBe("trm");
+  });
+
   it("getUTM returns empty strings when query string is empty", () => {
     const kit = loadStarterKit();
     const utm = kit.getUTM("");
     expect(utm.utm_source).toBe("");
     expect(utm.utm_medium).toBe("");
     expect(utm.utm_campaign).toBe("");
+    expect(utm.utm_content).toBe("");
+    expect(utm.utm_term).toBe("");
   });
 
   it("getUTM trims whitespace", () => {
@@ -86,12 +140,58 @@ describe("starter-kit.js", () => {
     expect(utm.utm_campaign).toBe("cmp");
   });
 
+  it("buildPayload includes utm_content and utm_term from query string", () => {
+    const kit = loadStarterKit();
+    const payload = kit.buildPayload({
+      queryString: "?utm_content=banner&utm_term=brazil+travel",
+    });
+    expect(payload.utm_content).toBe("banner");
+    expect(payload.utm_term).toBe("brazil+travel");
+  });
+
+  it("isHumanTiming returns true when elapsed time is at or above minMs", () => {
+    const kit = loadStarterKit();
+    const now = 10000;
+    expect(kit.isHumanTiming(7000, 3000, now)).toBe(true);
+    expect(kit.isHumanTiming(7000, 3000, 10000)).toBe(true);
+  });
+
+  it("isHumanTiming returns false when elapsed time is below minMs", () => {
+    const kit = loadStarterKit();
+    expect(kit.isHumanTiming(9000, 3000, 10000)).toBe(false);
+  });
+
+  it("isHumanTiming uses 3000ms default when minMs is not provided", () => {
+    const kit = loadStarterKit();
+    const start = Date.now() - 4000;
+    expect(kit.isHumanTiming(start)).toBe(true);
+    const recent = Date.now() - 1000;
+    expect(kit.isHumanTiming(recent)).toBe(false);
+  });
+
+  it("isHumanTiming returns false when startedAt is empty string", () => {
+    const kit = loadStarterKit();
+    expect(kit.isHumanTiming("", 3000, 10000)).toBe(false);
+  });
+
+  it("isHumanTiming returns false when startedAt is NaN", () => {
+    const kit = loadStarterKit();
+    expect(kit.isHumanTiming(NaN, 3000, 10000)).toBe(false);
+  });
+
+  it("isHumanTiming returns false when startedAt is 0 or negative", () => {
+    const kit = loadStarterKit();
+    expect(kit.isHumanTiming(0, 3000, 10000)).toBe(false);
+    expect(kit.isHumanTiming(-1, 3000, 10000)).toBe(false);
+  });
+
   it("attaches BDStarterKit to globalThis", () => {
     const kit = loadStarterKit();
     expect(kit).toBeDefined();
     expect(kit.isValidEmail).toBeDefined();
     expect(kit.buildPayload).toBeDefined();
     expect(kit.getUTM).toBeDefined();
+    expect(kit.isHumanTiming).toBeDefined();
   });
 
   it("isValidEmail rejects email with more than 254 characters", () => {

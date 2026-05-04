@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-CimInstance Win32_Process | Where-Object { $_.Name -match \"node\" } | Select-Object ProcessId, @{N='Age\\(min\\)';E={[math]::Round\\(\\(\\(Get-Date\\) - $_.CreationDate\\).TotalMinutes,1\\)}}, CommandLine | Format-List)"
+    ]
+  }
+}

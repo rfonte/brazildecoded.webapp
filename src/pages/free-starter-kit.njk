@@ -78,6 +78,7 @@ permalink: "/free-starter-kit/"
         action="#"
         method="post"
         novalidate
+        data-endpoint="{{ site.apiUrl }}/cadastro"
       >
         <label for="leadName">Your name</label>
         <input
@@ -147,7 +148,7 @@ permalink: "/free-starter-kit/"
         </p>
 
         <!-- Widget Turnstile -->
-        <div class="cf-turnstile" data-sitekey="SUA_SITE_KEY" data-theme="auto"></div>
+        <div class="cf-turnstile" data-sitekey="{{ site.turnstileSiteKey }}" data-theme="auto"></div>
 
         <button class="cta primary" id="leadSubmit" type="submit">
           Send me the Starter Kit

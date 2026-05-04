@@ -5,6 +5,8 @@
   "logo": "/assets/images/logo.png",
   "lang": "en",
   "buildVersion": "1.0.0",
+  "turnstileSiteKey": "0x4AAAAAADI-xfkJmrxh3Tsw",
+  "apiUrl": "https://brazildecoded-api.rodcafonte.workers.dev",
   "gtmId": "GTM-PS36XKLG",
   "twitter": "@brazildecoded",
   "nav": [

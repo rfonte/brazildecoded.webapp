@@ -20,7 +20,7 @@ function isValidEmail(email) {
 /**
  * Extracts UTM tracking parameters from a query string.
  * @param {string} queryString The URL search portion, including leading ?.
- * @returns {{utm_source:string,utm_medium:string,utm_campaign:string}}
+ * @returns {{utm_source:string,utm_medium:string,utm_campaign:string,utm_content:string,utm_term:string}}
  */
 function getUTM(queryString) {
   const p = new URLSearchParams(queryString || "");
@@ -28,13 +28,32 @@ function getUTM(queryString) {
     utm_source: (p.get("utm_source") || "").trim(),
     utm_medium: (p.get("utm_medium") || "").trim(),
     utm_campaign: (p.get("utm_campaign") || "").trim(),
+    utm_content: (p.get("utm_content") || "").trim(),
+    utm_term: (p.get("utm_term") || "").trim(),
   };
+}
+
+/**
+ * Returns true when enough time has passed since the form was rendered,
+ * indicating a human rather than a bot filled it in.
+ * @param {number} startedAt Timestamp (ms) recorded when the form was shown.
+ * @param {number} [minMs=3000] Minimum required elapsed time in milliseconds.
+ * @param {number} [now] Current timestamp; injectable for testing (default: Date.now()).
+ * @returns {boolean}
+ */
+function isHumanTiming(startedAt, minMs, now) {
+  var ms = minMs === undefined ? 3000 : minMs;
+  var ts = Number(startedAt);
+  if (!ts || isNaN(ts) || ts <= 0) return false;
+  var current = now === undefined ? Date.now() : now;
+  return current - ts >= ms;
 }
 
 /**
  * Builds a normalized payload object for form submission.
  * This helper centralizes UTM and browser metadata extraction.
  * @param {Object} options The payload source values.
+ * @returns {Object} Normalized payload ready for JSON submission.
  */
 function buildPayload(options) {
   const utm = getUTM(options.queryString);
@@ -45,9 +64,17 @@ function buildPayload(options) {
     page: options.page || "",
     referrer: options.referrer || "",
     user_agent: options.userAgent || "",
+    source: options.source || "",
+    form_token: options.formToken || "",
+    form_started_at: options.formStartedAt || "",
+    consent: options.consent === true || options.consent === "on",
+    company: options.company || "",
+    turnstile_token: options.turnstileToken || "",
     utm_source: utm.utm_source,
     utm_medium: utm.utm_medium,
     utm_campaign: utm.utm_campaign,
+    utm_content: utm.utm_content,
+    utm_term: utm.utm_term,
   };
 }
 
@@ -68,6 +95,7 @@ function buildPayload(options) {
   return {
     isValidEmail: isValidEmail,
     getUTM: getUTM,
+    isHumanTiming: isHumanTiming,
     buildPayload: buildPayload,
   };
 });

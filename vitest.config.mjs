@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     pool: "forks",
-    singleFork: true,
     include: ["tests/unit/**/*.mjs"],
     exclude: ["tests/e2e/**", "node_modules/**"],
   },
