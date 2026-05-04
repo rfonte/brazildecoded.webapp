@@ -18,11 +18,35 @@
   function showMessage(el, msg, isError) {
     if (!el) return;
     el.textContent = msg;
-    el.style.color = isError ? "#b00020" : "";
+    el.classList.toggle("error", !!isError);
+    el.classList.toggle("success", !isError && !!msg);
+  }
+
+  function fireGtagEvent(eventName) {
+    try {
+      if (typeof gtag === "function") {
+        gtag("event", eventName);
+      }
+    } catch (err) {
+      logEvent("warn", "Gtag event failed", {
+        eventName: eventName,
+        message: err?.message || String(err || ""),
+      });
+    }
+  }
+
+  function sanitizeText(value) {
+    return String(value || "")
+      .trim()
+      .replace(/\r?\n+/g, " ")
+      .replace(/\s{2,}/g, " ");
   }
 
   const starterKitUtils = globalThis.BDStarterKit || {};
   const LOG_KEY = "brazildecoded_logs";
+  const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm";
+  const FORM_TOKEN = "bd_starterkit_v1";
+  const STARTER_KIT_SOURCE = "free_starter_kit";
   const COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
   const MIN_FORM_TIME_MS = 3000;
 
@@ -129,11 +153,27 @@
    * @returns {{utm_source:string,utm_medium:string,utm_campaign:string}}
    */
   function getUTM(search) {
-    if (starterKitUtils?.getUTM) {
-      return starterKitUtils.getUTM(search);
+    try {
+      const params = new URLSearchParams(search || "");
+      return {
+        utm_source: params.get("utm_source") || "",
+        utm_medium: params.get("utm_medium") || "",
+        utm_campaign: params.get("utm_campaign") || "",
+        utm_content: params.get("utm_content") || "",
+        utm_term: params.get("utm_term") || "",
+      };
+    } catch (err) {
+      logEvent("error", "Failed to parse UTM params", {
+        message: err?.message || String(err || ""),
+      });
+      return {
+        utm_source: "",
+        utm_medium: "",
+        utm_campaign: "",
+        utm_content: "",
+        utm_term: "",
+      };
     }
-    logEvent("error", "Starter kit utils missing getUTM");
-    return { utm_source: "", utm_medium: "", utm_campaign: "" };
   }
 
   /**
@@ -142,28 +182,20 @@
    * @param {Object} options Form metadata and tracking values.
    */
   function buildPayload(options) {
-    if (starterKitUtils?.buildPayload) {
-      return starterKitUtils.buildPayload({
-        type: "starter_kit",
-        email: options.email || "",
-        name: options.name || "",
-        page: options.page || "",
-        referrer: options.referrer || "",
-        userAgent: options.userAgent || "",
-        queryString: options.queryString || "",
-      });
-    }
-    logEvent("error", "Starter kit utils missing buildPayload");
+    const utm = getUTM(options.queryString || "");
     return {
-      type: "starter_kit",
-      email: options.email || "",
-      name: options.name || "",
+      name: sanitizeText(options.name || ""),
+      email: String(options.email || "").trim().toLowerCase(),
+      source: STARTER_KIT_SOURCE,
       page: options.page || "",
+      form_token: FORM_TOKEN,
       referrer: options.referrer || "",
       user_agent: options.userAgent || "",
-      utm_source: "",
-      utm_medium: "",
-      utm_campaign: "",
+      utm_source: utm.utm_source,
+      utm_medium: utm.utm_medium,
+      utm_campaign: utm.utm_campaign,
+      utm_content: utm.utm_content,
+      utm_term: utm.utm_term,
     };
   }
 
@@ -173,11 +205,11 @@
    * @param {HTMLFormElement} form The starter form element.
    * @param {HTMLElement|null} statusEl The element for status feedback.
    * @param {HTMLButtonElement|null} submitBtn The submit button element.
-   * @returns {Object} Validation results including ok, email, name, and makeUrl.
+   * @returns {Object} Validation results including ok, email, and name.
    */
   function validateStarterForm(form, statusEl, submitBtn) {
-    const honeypot = form.querySelector('input[name="company_hp"]');
-    if (honeypot?.value) {
+    const honeypot = form.querySelector('input[name="company"]');
+    if (honeypot?.value.trim()) {
       logEvent("warn", "Starter kit blocked by honeypot");
       return { ok: false };
     }
@@ -192,16 +224,32 @@
     }
     const emailField = form.querySelector('input[name="email"]');
     const nameField = form.querySelector('input[name="name"]');
+    const tokenField = form.querySelector('input[name="form_token"]');
     const consent = document.getElementById("consent");
-    const email = (emailField?.value || "").trim();
-    const name = (nameField?.value || "").trim();
-    const makeUrl = form.dataset.makeUrl || "";
+    const email = String(emailField?.value || "").trim().toLowerCase();
+    const name = sanitizeText(nameField?.value || "");
 
-    if (!emailField) {
-      logEvent("error", "Starter kit email field missing");
+    if (!nameField) {
+      logEvent("error", "Starter kit name field missing");
+      showMessage(statusEl, "Please enter your name.", true);
       return { ok: false };
     }
-
+    if (!emailField) {
+      logEvent("error", "Starter kit email field missing");
+      showMessage(statusEl, "Please enter your email.", true);
+      return { ok: false };
+    }
+    if (!tokenField || tokenField.value !== FORM_TOKEN) {
+      logEvent("error", "Starter kit token missing or invalid");
+      showMessage(statusEl, "Invalid form configuration. Please refresh the page.", true);
+      return { ok: false };
+    }
+    if (!name) {
+      logEvent("warn", "Starter kit missing name");
+      showMessage(statusEl, "Please enter your name.", true);
+      nameField.focus();
+      return { ok: false };
+    }
     if (!isValidEmail(email)) {
       logEvent("warn", "Starter kit invalid email", { email: email });
       showMessage(statusEl, "Please enter a valid email.", true);
@@ -214,18 +262,18 @@
       consent?.focus();
       return { ok: false };
     }
-    if (!makeUrl || makeUrl.includes("COLE_AQUI")) {
+    if (!MAKE_WEBHOOK_URL || MAKE_WEBHOOK_URL.includes("PASTE_MAKE_WEBHOOK_URL_HERE")) {
       logEvent("error", "Starter kit webhook missing");
       showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
       return { ok: false };
     }
-    return { ok: true, email, name, makeUrl };
+    return { ok: true, email, name };
   }
 
   /**
    * Sends the starter kit payload to the configured webhook endpoint.
    * Updates UI state while the request is in progress and handles success or failure.
-   * @param {Object} payload The request payload including makeUrl.
+   * @param {Object} payload The request payload to send to the Make webhook.
    * @param {HTMLElement|null} statusEl The element used to display status messages.
    * @param {HTMLButtonElement|null} submitBtn The submit button to enable/disable.
    * @param {HTMLInputElement|null} consent The consent checkbox used to decide re-enable state.
@@ -235,14 +283,13 @@
     logEvent("info", "Starter kit submit started");
     setButtonState(submitBtn, false);
 
-    logEvent("info", "Fetching Make webhook");
-    fetch(payload.makeUrl, {
+    fetch(MAKE_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
       .then(function (res) {
-        logEvent("info", "Make webhook response received");
+        logEvent("info", "Make webhook response received", { status: res.status });
         return res.text().then(function (text) {
           return { ok: res.ok, status: res.status, text: text };
         });
@@ -253,17 +300,15 @@
           throw new Error("Request failed");
         }
         logEvent("info", "Starter kit webhook success", { status: result.status });
-        showMessage(statusEl, "Sending...");
-        setTimeout(function () {
-          logEvent("info", "Redirecting to success page");
-          globalThis.location.href = "/pages/contato-sucesso.html";
-        }, 800);
+        showMessage(statusEl, "Thanks! Check your email for the download link.");
+        fireGtagEvent("starter_kit_form_submit");
       })
       .catch(function (err) {
         logEvent("error", "Starter kit webhook failed", {
           message: err?.message ?? String(err || ""),
         });
         showMessage(statusEl, "Something went wrong. Please try again.", true);
+        fireGtagEvent("starter_kit_form_error");
         setButtonState(submitBtn, !!consent?.checked);
       });
   }
@@ -568,6 +613,32 @@
       starterFormStartedAt.value = String(Date.now());
     }
 
+    const pageInput = starterForm.querySelector('input[name="page"]');
+    const referrerInput = starterForm.querySelector('input[name="referrer"]');
+    const userAgentInput = starterForm.querySelector('input[name="user_agent"]');
+    const utmSourceInput = starterForm.querySelector('input[name="utm_source"]');
+    const utmMediumInput = starterForm.querySelector('input[name="utm_medium"]');
+    const utmCampaignInput = starterForm.querySelector('input[name="utm_campaign"]');
+    const utmContentInput = starterForm.querySelector('input[name="utm_content"]');
+    const utmTermInput = starterForm.querySelector('input[name="utm_term"]');
+
+    if (pageInput) {
+      pageInput.value = String(globalThis.location.pathname || "");
+    }
+    if (referrerInput) {
+      referrerInput.value = document.referrer || "";
+    }
+    if (userAgentInput) {
+      userAgentInput.value = navigator.userAgent || "";
+    }
+
+    const utm = getUTM(globalThis.location.search);
+    if (utmSourceInput) utmSourceInput.value = utm.utm_source;
+    if (utmMediumInput) utmMediumInput.value = utm.utm_medium;
+    if (utmCampaignInput) utmCampaignInput.value = utm.utm_campaign;
+    if (utmContentInput) utmContentInput.value = utm.utm_content;
+    if (utmTermInput) utmTermInput.value = utm.utm_term;
+
     /**
      * Synchronizes the starter kit consent checkbox with the submit button state.
      */
@@ -602,7 +673,6 @@
           userAgent: navigator.userAgent || "",
           queryString: globalThis.location.search,
         });
-        payload.makeUrl = result.makeUrl;
         sendStarterWebhook(payload, statusEl, submitBtn, consent);
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {

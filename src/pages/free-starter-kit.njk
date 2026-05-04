@@ -78,8 +78,18 @@ permalink: "/free-starter-kit/"
         action="#"
         method="post"
         novalidate
-        data-make-url="https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm"
       >
+        <label for="leadName">Your name</label>
+        <input
+          type="text"
+          id="leadName"
+          name="name"
+          autocomplete="name"
+          placeholder="Your full name"
+          required
+          class="form-input"
+        />
+
         <label for="leadEmail">Your email</label>
         <input
           type="email"
@@ -95,18 +105,27 @@ permalink: "/free-starter-kit/"
           We will only send the starter kit and BrazilDecoded updates.
         </p>
 
-        <label class="visually-hidden" for="hp_lead"
-          >Leave this field blank</label
-        >
+        <label class="visually-hidden" for="company">Leave this field blank</label>
         <input
           type="text"
-          id="hp_lead"
-          name="company_hp"
+          id="company"
+          name="company"
           class="visually-hidden"
           tabindex="-1"
           autocomplete="new-password"
           aria-hidden="true"
         />
+
+        <input type="hidden" name="source" value="free_starter_kit" />
+        <input type="hidden" name="page" value="" />
+        <input type="hidden" name="form_token" value="bd_starterkit_v1" />
+        <input type="hidden" name="referrer" value="" />
+        <input type="hidden" name="user_agent" value="" />
+        <input type="hidden" name="utm_source" value="" />
+        <input type="hidden" name="utm_medium" value="" />
+        <input type="hidden" name="utm_campaign" value="" />
+        <input type="hidden" name="utm_content" value="" />
+        <input type="hidden" name="utm_term" value="" />
         <input
           type="hidden"
           id="starterFormStartedAt"
