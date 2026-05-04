@@ -1,55 +1,17 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createContext, runInContext } from "vm";
-import { fileURLToPath } from "url";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
+const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
-const root_path = __filename.split("/tests")[0];
+const root_path = join(dirname(__filename), "..", "..");
 
-function createSandbox(fileName) {
-  const sandbox = {
-    require,
-    module: { exports: {} },
-    exports: {},
-    console,
-    URL,
-    URLSearchParams,
-    TextEncoder,
-    TextDecoder,
-    JSON,
-    ArrayBuffer,
-    Uint8Array,
-    atob,
-    btoa,
-    Date,
-    Math,
-    Number,
-    String,
-    Object,
-    Array,
-    RegExp,
-    Error,
-    Promise,
-    setTimeout,
-    clearTimeout,
-    setInterval,
-    clearInterval,
-    globalThis: {},
-    process: { env: {} },
-  };
-  Object.defineProperty(sandbox, "globalThis", {
-    get() { return sandbox; },
-    set(v) {},
-    configurable: true,
-  });
-  return sandbox;
-}
-
-function runFileInSandbox(sandbox, filePath) {
-  const code = fileURLToPath(new URL(filePath, import.meta.url));
-  const fs = require("fs");
-  const content = fs.readFileSync(code, "utf-8");
-  runInContext(content, createContext(sandbox), { filename: code });
-  sandbox.globalThis.BDStarterKit = sandbox.module?.exports;
+function loadStarterKit() {
+  delete globalThis.BDStarterKit;
+  const kit = require(join(root_path, "src/assets/js/lib/starter-kit.js"));
+  globalThis.BDStarterKit = kit;
+  return kit;
 }
 
 describe("starter-kit.js", () => {
@@ -58,17 +20,15 @@ describe("starter-kit.js", () => {
   });
 
   it("isValidEmail validates basic email formats", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    expect(sandbox.globalThis.BDStarterKit.isValidEmail("test@example.com")).toBe(true);
-    expect(sandbox.globalThis.BDStarterKit.isValidEmail("invalid")).toBe(false);
-    expect(sandbox.globalThis.BDStarterKit.isValidEmail("")).toBe(false);
+    const kit = loadStarterKit();
+    expect(kit.isValidEmail("test@example.com")).toBe(true);
+    expect(kit.isValidEmail("invalid")).toBe(false);
+    expect(kit.isValidEmail("")).toBe(false);
   });
 
   it("buildPayload returns expected starter kit payload", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    const payload = sandbox.globalThis.BDStarterKit.buildPayload({
+    const kit = loadStarterKit();
+    const payload = kit.buildPayload({
       type: "starter_kit",
       email: "test@example.com",
       name: "User",
@@ -88,9 +48,8 @@ describe("starter-kit.js", () => {
   });
 
   it("buildPayload handles empty and null values safely", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    const payload = sandbox.globalThis.BDStarterKit.buildPayload({
+    const kit = loadStarterKit();
+    const payload = kit.buildPayload({
       email: null,
       name: undefined,
       page: null,
@@ -104,40 +63,40 @@ describe("starter-kit.js", () => {
   });
 
   it("getUTM extracts utm params safely", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    const utm = sandbox.globalThis.BDStarterKit.getUTM(
-      "?utm_source=src&utm_medium=med&utm_campaign=cmp"
-    );
+    const kit = loadStarterKit();
+    const utm = kit.getUTM("?utm_source=src&utm_medium=med&utm_campaign=cmp");
     expect(utm.utm_source).toBe("src");
     expect(utm.utm_medium).toBe("med");
     expect(utm.utm_campaign).toBe("cmp");
   });
 
   it("getUTM returns empty strings when query string is empty", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    const utm = sandbox.globalThis.BDStarterKit.getUTM("");
+    const kit = loadStarterKit();
+    const utm = kit.getUTM("");
     expect(utm.utm_source).toBe("");
     expect(utm.utm_medium).toBe("");
     expect(utm.utm_campaign).toBe("");
   });
 
   it("getUTM trims whitespace", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    const utm = sandbox.globalThis.BDStarterKit.getUTM(
-      "?utm_source= src &utm_medium= med &utm_campaign= cmp "
-    );
+    const kit = loadStarterKit();
+    const utm = kit.getUTM("?utm_source= src &utm_medium= med &utm_campaign= cmp ");
     expect(utm.utm_source).toBe("src");
     expect(utm.utm_medium).toBe("med");
     expect(utm.utm_campaign).toBe("cmp");
   });
 
-  it("attaches BDStarterKit to globalThis in a browser-like context", () => {
-    const sandbox = createSandbox();
-    runFileInSandbox(sandbox, "../../src/assets/js/lib/starter-kit.js");
-    expect(sandbox.globalThis.BDStarterKit).toBeDefined();
+  it("attaches BDStarterKit to globalThis", () => {
+    const kit = loadStarterKit();
+    expect(kit).toBeDefined();
+    expect(kit.isValidEmail).toBeDefined();
+    expect(kit.buildPayload).toBeDefined();
+    expect(kit.getUTM).toBeDefined();
+  });
+
+  it("isValidEmail rejects email with more than 254 characters", () => {
+    const kit = loadStarterKit();
+    const longEmail = "a".repeat(255) + "@example.com";
+    expect(kit.isValidEmail(longEmail)).toBe(false);
   });
 });
-

@@ -1,3 +1,9 @@
+/**
+ * Returns true when the input string is a plausible email address.
+ * This is intentionally simple and sufficient for client-side validation.
+ * @param {string} email The email string to validate.
+ * @returns {boolean} True when the email appears valid.
+ */
 function isValidEmail(email) {
   const value = (email || "").trim();
   if (!value || value.length > 254) return false;
@@ -11,6 +17,11 @@ function isValidEmail(email) {
   return true;
 }
 
+/**
+ * Extracts UTM tracking parameters from a query string.
+ * @param {string} queryString The URL search portion, including leading ?.
+ * @returns {{utm_source:string,utm_medium:string,utm_campaign:string}}
+ */
 function getUTM(queryString) {
   const p = new URLSearchParams(queryString || "");
   return {
@@ -20,6 +31,11 @@ function getUTM(queryString) {
   };
 }
 
+/**
+ * Builds a normalized payload object for form submission.
+ * This helper centralizes UTM and browser metadata extraction.
+ * @param {Object} options The payload source values.
+ */
 function buildPayload(options) {
   const utm = getUTM(options.queryString);
   return {
@@ -35,6 +51,11 @@ function buildPayload(options) {
   };
 }
 
+/**
+ * Exposes starter kit utilities in both CommonJS and browser environments.
+ * This allows Node-based tests to import the helper module and browser code
+ * to access BDStarterKit globally.
+ */
 (function (root, factory) {
   /* c8 ignore start */
   if (typeof module === "object" && module.exports) {

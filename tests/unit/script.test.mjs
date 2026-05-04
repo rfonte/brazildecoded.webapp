@@ -26,7 +26,10 @@ function setLocation(pathname) {
       writable: true,
       value: locationMock,
     });
-  } catch (err) {
+  } catch (error) {
+    if (!(error instanceof TypeError)) {
+      throw error;
+    }
     globalThis.location = locationMock;
   }
 }
@@ -60,6 +63,19 @@ function dispatchClick(el) {
 
 async function flushPromises() {
   await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+function withImmediateTimers(fn) {
+  const realSetTimeout = globalThis.setTimeout;
+  globalThis.setTimeout = (callback, delay, ...args) => {
+    callback(...args);
+    return 0;
+  };
+  try {
+    return fn();
+  } finally {
+    globalThis.setTimeout = realSetTimeout;
+  }
 }
 
 function ensureMock(fn, fallback) {
@@ -401,10 +417,10 @@ describe("script.js", () => {
     globalThis.dispatchEvent(errEvent);
     const rejEvent =
       typeof PromiseRejectionEvent === "function"
-        ? new PromiseRejectionEvent("unhandledrejection", { reason: null })
+        ? new PromiseRejectionEvent("unhandledrejection", { reason: new Error("Unhandled rejection") })
         : (() => {
             const evt = new Event("unhandledrejection");
-            evt.reason = null;
+            evt.reason = new Error("Unhandled rejection");
             return evt;
           })();
     globalThis.dispatchEvent(rejEvent);
@@ -578,7 +594,7 @@ describe("script.js", () => {
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     document.getElementById("leadName").value = "User";
-    submitForm("starterKitForm");
+    withImmediateTimers(() => submitForm("starterKitForm"));
     await flushPromises();
     await flushPromises();
     const payload = JSON.parse(globalThis.fetch.mock.calls[0][1].body);
@@ -616,7 +632,7 @@ describe("script.js", () => {
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     document.getElementById("leadName").value = "User";
-    submitForm("starterKitForm");
+    withImmediateTimers(() => submitForm("starterKitForm"));
     await flushPromises();
     await flushPromises();
     await flushPromises();
@@ -1486,7 +1502,7 @@ describe("script.js", () => {
     globalThis.location.search = "?utm_source=test";
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
-    submitForm("starterKitForm");
+    withImmediateTimers(() => submitForm("starterKitForm"));
     await flushPromises();
     await flushPromises();
     expect(payloadSpy).toHaveBeenCalled();
@@ -1611,12 +1627,75 @@ describe("script.js", () => {
     expect(el.style.color).toBe("rgb(176, 0, 32)");
   });
 
-  it("returns null from getCookieConsent for invalid JSON", async () => {
+it("returns null from getCookieConsent for invalid JSON", async () => {
     localStorage.setItem("brazildecoded_cookie_consent", "not-a-json");
     setHtml('<div id="cookieBanner" class="is-hidden"></div>');
     await loadScript();
     expect(
       document.getElementById("cookieBanner").classList.contains("is-hidden")
     ).toBe(false);
+  });
+
+  it("uses fallback isValidEmail when helper exists but isValidEmail is missing", async () => {
+    globalThis.BDStarterKit = { buildPayload: () => ({}) };
+    await loadScript();
+    expect(globalThis.BDApp.isValidEmail("bad-email")).toBe(false);
+    expect(globalThis.BDApp.isValidEmail("user@example.com")).toBe(false);
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing isValidEmail")).toBe(
+      true
+    );
+  });
+
+  it("handles isValidEmail when helper has null function", async () => {
+    globalThis.BDStarterKit = { isValidEmail: null };
+    await loadScript();
+    expect(globalThis.BDApp.isValidEmail("user@example.com")).toBe(false);
+  });
+
+  it("handles buildPayload when helper has null function", async () => {
+    globalThis.BDStarterKit = { buildPayload: null, isValidEmail: () => true };
+    await loadScript();
+    const payload = globalThis.BDApp.buildPayload({
+      email: "test@example.com",
+      name: "Test",
+      page: "/test",
+      referrer: "",
+      userAgent: "test",
+      queryString: "",
+    });
+    expect(payload.email).toBe("test@example.com");
+    expect(getLogs().some((log) => log.message === "Starter kit utils missing buildPayload")).toBe(
+      true
+    );
+  });
+
+  it("handles getUTM when helper has null function", async () => {
+    globalThis.BDStarterKit = { getUTM: null, isValidEmail: () => true };
+    await loadScript();
+    const utm = globalThis.BDApp.getUTM("?utm_source=test");
+    expect(utm.utm_source).toBe("");
+  });
+
+  it("handles webhook error with null message", async () => {
+    setLocation("/free-starter-kit");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.fetch = vi.fn(() => Promise.reject(null));
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    submitForm("starterKitForm");
+    await flushPromises();
+    await flushPromises();
+    const logs = getLogs();
+    const match = logs.find((log) => log.message === "Starter kit webhook failed");
+    expect(match.meta.message).toBe("");
   });
 });

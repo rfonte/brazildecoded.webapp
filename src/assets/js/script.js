@@ -1,4 +1,10 @@
-// Simple form handling for a static prototype.
+/**
+ * Core BrazilDecoded page behavior.
+ *
+ * This module implements cookie consent, analytics loading, starter kit and
+ * contact form submission, client-side validation, lead export, and local
+ * logging for browser-admin pages.
+ */
 (function () {
   const app = globalThis.BDApp || {};
   globalThis.BDApp = app;
@@ -20,6 +26,10 @@
   const COOKIE_CONSENT_KEY = "brazildecoded_cookie_consent";
   const MIN_FORM_TIME_MS = 3000;
 
+  /**
+   * Loads the Google Tag Manager script only once.
+   * @param {string} gtmId The GTM container ID to load.
+   */
   function loadGtm(gtmId) {
     if (!gtmId || globalThis.__bdGtmLoaded) return;
     // Validate gtmId to ensure it's safe for URL construction
@@ -37,6 +47,10 @@
     f.parentNode.insertBefore(j, f);
   }
 
+  /**
+   * Reads cookie consent state from localStorage.
+   * @returns {{status:string,analytics:boolean,marketing:boolean}|null} The saved consent state, or null when none exists.
+   */
   function getCookieConsent() {
     try {
       const raw = localStorage.getItem(COOKIE_CONSENT_KEY) || "";
@@ -60,6 +74,10 @@
     }
   }
 
+  /**
+   * Persists cookie consent state in localStorage.
+   * @param {{status:string,analytics:boolean,marketing:boolean}} value The consent state to save.
+   */
   function setCookieConsent(value) {
     try {
       localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(value));
@@ -68,6 +86,13 @@
     }
   }
 
+  /**
+   * Stores a diagnostic log entry in localStorage.
+   * Keeps only the latest 200 records to avoid uncontrolled local storage growth.
+   * @param {string} level The log severity, like "info", "warn", or "error".
+   * @param {string} message A short descriptive message.
+   * @param {Object} [meta] Optional metadata attached to the log entry.
+   */
   function logEvent(level, message, meta) {
     try {
       const existing = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
@@ -86,12 +111,23 @@
     }
   }
 
+  /**
+   * Enables or disables a button and keeps aria-disabled in sync.
+   * @param {HTMLButtonElement|null} button The button element to update.
+   * @param {boolean} enabled True to enable, false to disable.
+   */
   function setButtonState(button, enabled) {
     if (!button) return;
     button.disabled = !enabled;
     button.setAttribute("aria-disabled", button.disabled ? "true" : "false");
   }
 
+  /**
+   * Extracts UTM parameters from a query string using helper utilities.
+   * Falls back to empty values if the helper is unavailable.
+   * @param {string} search The location search string.
+   * @returns {{utm_source:string,utm_medium:string,utm_campaign:string}}
+   */
   function getUTM(search) {
     if (starterKitUtils?.getUTM) {
       return starterKitUtils.getUTM(search);
@@ -100,6 +136,11 @@
     return { utm_source: "", utm_medium: "", utm_campaign: "" };
   }
 
+  /**
+   * Builds the request payload for starter kit submission.
+   * Uses helper buildPayload if available to preserve any custom payload format.
+   * @param {Object} options Form metadata and tracking values.
+   */
   function buildPayload(options) {
     if (starterKitUtils?.buildPayload) {
       return starterKitUtils.buildPayload({
@@ -126,6 +167,14 @@
     };
   }
 
+  /**
+   * Validates the starter kit form before submission.
+   * Performs honeypot, timing, email, consent, and webhook URL checks.
+   * @param {HTMLFormElement} form The starter form element.
+   * @param {HTMLElement|null} statusEl The element for status feedback.
+   * @param {HTMLButtonElement|null} submitBtn The submit button element.
+   * @returns {Object} Validation results including ok, email, name, and makeUrl.
+   */
   function validateStarterForm(form, statusEl, submitBtn) {
     const honeypot = form.querySelector('input[name="company_hp"]');
     if (honeypot?.value) {
@@ -173,6 +222,14 @@
     return { ok: true, email, name, makeUrl };
   }
 
+  /**
+   * Sends the starter kit payload to the configured webhook endpoint.
+   * Updates UI state while the request is in progress and handles success or failure.
+   * @param {Object} payload The request payload including makeUrl.
+   * @param {HTMLElement|null} statusEl The element used to display status messages.
+   * @param {HTMLButtonElement|null} submitBtn The submit button to enable/disable.
+   * @param {HTMLInputElement|null} consent The consent checkbox used to decide re-enable state.
+   */
   function sendStarterWebhook(payload, statusEl, submitBtn, consent) {
     showMessage(statusEl, "Sending...");
     logEvent("info", "Starter kit submit started");
@@ -211,6 +268,11 @@
       });
   }
 
+  /**
+   * Renders locally stored leads into an admin table.
+   * @param {HTMLElement} listEl Container element where leads are displayed.
+   * @returns {boolean} True when leads were found and rendered.
+   */
   function renderLeads(listEl) {
     if (!listEl) return false;
     const leads = JSON.parse(
@@ -242,6 +304,10 @@
     return true;
   }
 
+  /**
+   * Exports stored leads as a CSV file and triggers browser download.
+   * @returns {boolean} True when export was started.
+   */
   function exportLeads() {
     const leads = JSON.parse(localStorage.getItem("brazildecoded_leads") || "[]");
     if (!leads.length) {
@@ -268,6 +334,11 @@
     return true;
   }
 
+  /**
+   * Clears all saved leads from localStorage and optionally re-renders the UI.
+   * @param {Function} [renderFn] Optional callback to refresh the lead display.
+   * @returns {boolean} True when leads were cleared.
+   */
   function clearLeads(renderFn) {
     if (!confirm("Clear all locally stored leads?")) return false;
     localStorage.removeItem("brazildecoded_leads");
@@ -278,6 +349,10 @@
     return true;
   }
 
+  /**
+   * Exports the log history from localStorage as a JSON file.
+   * @returns {boolean} True when the download was triggered.
+   */
   function exportLogs() {
     const logs = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
     if (!logs.length) {
@@ -296,6 +371,10 @@
     return true;
   }
 
+  /**
+   * Removes all client-side log entries and records the clearing action.
+   * @returns {boolean} True when logs were cleared.
+   */
   function clearLogs() {
     if (!confirm("Clear all locally stored logs?")) return false;
     localStorage.removeItem(LOG_KEY);
@@ -303,6 +382,7 @@
     return true;
   }
 
+  // Expose helper utilities on the global BDApp object to support testing and shared behavior.
   app.showMessage = showMessage;
   app.logEvent = logEvent;
   app.isValidEmail = isValidEmail;
@@ -316,6 +396,7 @@
   app.clearLogs = clearLogs;
   app.LOG_KEY = LOG_KEY;
 
+  // Global error handling to log unexpected browser errors and promise rejection details.
   globalThis.addEventListener("error", function (event) {
     logEvent("error", event.message || "Script error", {
       filename: event.filename || "",
@@ -330,6 +411,11 @@
       message: reason?.message ?? String(reason || ""),
     });
   });
+  /**
+   * Validates the email address using helper utilities if available.
+   * @param {string} email The email address to validate.
+   * @returns {boolean} True when the email is valid.
+   */
   function isValidEmail(email) {
     if (starterKitUtils?.isValidEmail) {
       return starterKitUtils.isValidEmail(email);
@@ -355,6 +441,11 @@
   const gtmId = document.body?.dataset.gtmId || "";
   let consent = getCookieConsent();
 
+  /**
+   * Checks whether GTM should load based on the saved consent state.
+   * @param {Object|null} consentState The stored consent details.
+   * @returns {boolean} True when analytics or marketing consent is granted.
+   */
   function shouldLoadGtm(consentState) {
     return (
       consentState &&
@@ -362,6 +453,10 @@
     );
   }
 
+  /**
+   * Applies cookie banner visibility and loads analytics when appropriate.
+   * @param {Object|null} consentState The stored consent details.
+   */
   function applyConsent(consentState) {
     if (!cookieBanner) return;
     if (!consentState) {
@@ -374,6 +469,10 @@
     }
   }
 
+  /**
+   * Synchronizes the cookie consent input controls with the current consent state.
+   * @param {Object|null} consentState The stored consent details.
+   */
   function syncCookieInputs(consentState) {
     if (cookieAnalytics && consentState) {
       cookieAnalytics.checked = consentState.analytics;
@@ -383,12 +482,19 @@
     }
   }
 
+  /**
+   * Persists a new consent state and applies it immediately.
+   * @param {Object} state The new consent state.
+   */
   function setConsentState(state) {
     setCookieConsent(state);
     consent = state;
     applyConsent(state);
   }
 
+  /**
+   * Toggles the cookie settings panel and updates accessibility attributes.
+   */
   function toggleSettingsPanel() {
     if (!cookieSettingsPanel || !cookieSettings) return;
     const isExpanded = cookieSettingsPanel.classList.toggle("is-visible");
@@ -401,6 +507,9 @@
     if (cookieMarketing && !consent) cookieMarketing.checked = false;
   }
 
+  /**
+   * Initializes the cookie consent banner and loads analytics if consent already exists.
+   */
   function initCookieBanner() {
     if (!cookieBanner) {
       if (consent && shouldLoadGtm(consent)) {
@@ -441,6 +550,9 @@
 
   initCookieBanner();
 
+  /**
+   * Initializes starter kit form behaviors, checkbox sync, timing, and submission.
+   */
   function initStarterForm() {
     const starterForm = document.getElementById("starterKitForm");
     if (!starterForm) return;
@@ -456,6 +568,9 @@
       starterFormStartedAt.value = String(Date.now());
     }
 
+    /**
+     * Synchronizes the starter kit consent checkbox with the submit button state.
+     */
     function syncConsent() {
       if (!consent) return;
       if (submitBtn) {
@@ -502,6 +617,9 @@
     });
   }
 
+  /**
+   * Initializes the contact form, including validation, consent, honeypot, and webhook submission.
+   */
   function initContactForm() {
     const contactForm = document.getElementById("contactForm");
     if (!contactForm) return;
@@ -515,6 +633,9 @@
       contactFormStartedAt.value = String(Date.now());
     }
 
+    /**
+     * Synchronizes the contact consent checkbox state with the submit button and helper text.
+     */
     function syncContactConsent() {
       if (!contactConsent) return;
       if (contactSubmitBtn) {
@@ -618,6 +739,11 @@
     });
   }
 
+  /**
+   * Sends the contact form payload to the configured webhook endpoint.
+   * Handles success and failure with user feedback and log events.
+   * @param {Object} options The contact submission options.
+   */
   function sendContactWebhook(options) {
     fetch(options.makeUrl, {
       method: "POST",
@@ -650,6 +776,9 @@
       });
   }
 
+  /**
+   * Initializes admin controls for lead and log export/clear actions.
+   */
   function initAdmin() {
     const leadsList = document.getElementById("leadsList");
     if (!leadsList) return;
