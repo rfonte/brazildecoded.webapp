@@ -132,6 +132,17 @@ npm run format
 - O formulário exige consentimento explícito antes de enviar dados.
 - O admin local (`/pages/leads.html`) funciona como protótipo de exportação/visualização de leads.
 
+## Cloudflare Turnstile
+
+- O formulário do Starter Kit inclui proteção contra bots via Cloudflare Turnstile.
+- O token do Turnstile é enviado junto com os dados do formulário para o webhook Make.
+- Para configurar:
+  1. Acesse o painel do Cloudflare e navegue para Turnstile.
+  2. Crie um novo site e obtenha o `site_key` e `secret_key`.
+  3. Adicione o script do Turnstile ao layout (`src/_includes/layout.njk`).
+  4. Configure o widget no formulário com o `site_key`.
+  5. O token gerado será incluído no campo `turnstile_token` do payload enviado ao Make.
+
 ## Configuração sensível
 
 - O webhook em `data-make-url` é uma configuração sensível. mantenha-o fora de repositórios públicos e rotacione se vazar.
