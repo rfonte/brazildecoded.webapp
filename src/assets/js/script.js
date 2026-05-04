@@ -18,6 +18,7 @@
   function showMessage(el, msg, isError) {
     if (!el) return;
     el.textContent = msg;
+    el.style.color = isError ? "#b00020" : "";
     el.classList.toggle("error", !!isError);
     el.classList.toggle("success", !isError && !!msg);
   }
@@ -42,7 +43,10 @@
       .replace(/\s{2,}/g, " ");
   }
 
-  const starterKitUtils = globalThis.BDStarterKit || {};
+  function getStarterKitUtils() {
+    return globalThis.BDStarterKit || {};
+  }
+
   const LOG_KEY = "brazildecoded_logs";
   const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/v7toev6h4hvpj1akkpsrhobamwdj9hkm";
   const FORM_TOKEN = "bd_starterkit_v1";
@@ -153,27 +157,25 @@
    * @returns {{utm_source:string,utm_medium:string,utm_campaign:string}}
    */
   function getUTM(search) {
-    try {
-      const params = new URLSearchParams(search || "");
-      return {
-        utm_source: params.get("utm_source") || "",
-        utm_medium: params.get("utm_medium") || "",
-        utm_campaign: params.get("utm_campaign") || "",
-        utm_content: params.get("utm_content") || "",
-        utm_term: params.get("utm_term") || "",
-      };
-    } catch (err) {
-      logEvent("error", "Failed to parse UTM params", {
-        message: err?.message || String(err || ""),
-      });
-      return {
-        utm_source: "",
-        utm_medium: "",
-        utm_campaign: "",
-        utm_content: "",
-        utm_term: "",
-      };
+    const helper = getStarterKitUtils();
+    if (helper && typeof helper.getUTM === "function") {
+      try {
+        return helper.getUTM(search);
+      } catch (err) {
+        logEvent("error", "Starter kit helper getUTM failed", {
+          message: err?.message || String(err || ""),
+        });
+      }
     }
+
+    logEvent("warn", "Starter kit utils missing getUTM");
+    return {
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+      utm_content: "",
+      utm_term: "",
+    };
   }
 
   /**
@@ -182,8 +184,8 @@
    * @param {Object} options Form metadata and tracking values.
    */
   function buildPayload(options) {
-    const utm = getUTM(options.queryString || "");
-    return {
+    const helper = getStarterKitUtils();
+    const payload = {
       name: sanitizeText(options.name || ""),
       email: String(options.email || "").trim().toLowerCase(),
       source: STARTER_KIT_SOURCE,
@@ -191,12 +193,30 @@
       form_token: FORM_TOKEN,
       referrer: options.referrer || "",
       user_agent: options.userAgent || "",
-      utm_source: utm.utm_source,
-      utm_medium: utm.utm_medium,
-      utm_campaign: utm.utm_campaign,
-      utm_content: utm.utm_content,
-      utm_term: utm.utm_term,
+      ...getUTM(options.queryString || ""),
     };
+
+    if (helper && typeof helper.buildPayload === "function") {
+      try {
+        return helper.buildPayload({
+          type: "starter_kit",
+          email: payload.email,
+          name: payload.name,
+          page: payload.page,
+          referrer: payload.referrer,
+          userAgent: payload.user_agent,
+          queryString: options.queryString || "",
+        });
+      } catch (err) {
+        logEvent("error", "Starter kit helper buildPayload failed", {
+          message: err?.message || String(err || ""),
+        });
+        return payload;
+      }
+    }
+
+    logEvent("warn", "Starter kit utils missing buildPayload");
+    return payload;
   }
 
   /**
@@ -208,7 +228,9 @@
    * @returns {Object} Validation results including ok, email, and name.
    */
   function validateStarterForm(form, statusEl, submitBtn) {
-    const honeypot = form.querySelector('input[name="company"]');
+    const honeypot =
+      form.querySelector('input[name="company"]') ||
+      form.querySelector('input[name="company_hp"]');
     if (honeypot?.value.trim()) {
       logEvent("warn", "Starter kit blocked by honeypot");
       return { ok: false };
@@ -222,32 +244,24 @@
         return { ok: false };
       }
     }
+
     const emailField = form.querySelector('input[name="email"]');
     const nameField = form.querySelector('input[name="name"]');
     const tokenField = form.querySelector('input[name="form_token"]');
     const consent = document.getElementById("consent");
     const email = String(emailField?.value || "").trim().toLowerCase();
     const name = sanitizeText(nameField?.value || "");
+    const hasFormWebhook = form.hasAttribute("data-make-url");
+    const makeUrl = hasFormWebhook ? form.dataset.makeUrl : MAKE_WEBHOOK_URL;
 
-    if (!nameField) {
-      logEvent("error", "Starter kit name field missing");
-      showMessage(statusEl, "Please enter your name.", true);
-      return { ok: false };
-    }
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
       showMessage(statusEl, "Please enter your email.", true);
       return { ok: false };
     }
-    if (!tokenField || tokenField.value !== FORM_TOKEN) {
+    if (tokenField && tokenField.value !== FORM_TOKEN) {
       logEvent("error", "Starter kit token missing or invalid");
       showMessage(statusEl, "Invalid form configuration. Please refresh the page.", true);
-      return { ok: false };
-    }
-    if (!name) {
-      logEvent("warn", "Starter kit missing name");
-      showMessage(statusEl, "Please enter your name.", true);
-      nameField.focus();
       return { ok: false };
     }
     if (!isValidEmail(email)) {
@@ -262,12 +276,16 @@
       consent?.focus();
       return { ok: false };
     }
-    if (!MAKE_WEBHOOK_URL || MAKE_WEBHOOK_URL.includes("PASTE_MAKE_WEBHOOK_URL_HERE")) {
+    const missingWebhook =
+      !makeUrl ||
+      (hasFormWebhook && makeUrl.includes("COLE_AQUI")) ||
+      (!hasFormWebhook && MAKE_WEBHOOK_URL.includes("PASTE_MAKE_WEBHOOK_URL_HERE"));
+    if (missingWebhook) {
       logEvent("error", "Starter kit webhook missing");
       showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
       return { ok: false };
     }
-    return { ok: true, email, name };
+    return { ok: true, email, name, makeUrl, redirectOnSuccess: hasFormWebhook };
   }
 
   /**
@@ -283,7 +301,8 @@
     logEvent("info", "Starter kit submit started");
     setButtonState(submitBtn, false);
 
-    fetch(MAKE_WEBHOOK_URL, {
+    const webhookUrl = payload.makeUrl || MAKE_WEBHOOK_URL;
+    fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -302,6 +321,12 @@
         logEvent("info", "Starter kit webhook success", { status: result.status });
         showMessage(statusEl, "Thanks! Check your email for the download link.");
         fireGtagEvent("starter_kit_form_submit");
+        if (payload.redirectOnSuccess) {
+          setTimeout(function () {
+            logEvent("info", "Redirecting to success page");
+            globalThis.location.href = "/pages/contato-sucesso.html";
+          }, 800);
+        }
       })
       .catch(function (err) {
         logEvent("error", "Starter kit webhook failed", {
@@ -462,10 +487,18 @@
    * @returns {boolean} True when the email is valid.
    */
   function isValidEmail(email) {
-    if (starterKitUtils?.isValidEmail) {
-      return starterKitUtils.isValidEmail(email);
+    const helper = getStarterKitUtils();
+    if (helper && typeof helper.isValidEmail === "function") {
+      try {
+        return helper.isValidEmail(email);
+      } catch (err) {
+        logEvent("error", "Starter kit helper isValidEmail failed", {
+          message: err?.message || String(err || ""),
+        });
+        return false;
+      }
     }
-    logEvent("error", "Starter kit utils missing isValidEmail");
+    logEvent("warn", "Starter kit utils missing isValidEmail");
     return false;
   }
 
@@ -673,6 +706,8 @@
           userAgent: navigator.userAgent || "",
           queryString: globalThis.location.search,
         });
+        payload.makeUrl = result.makeUrl;
+        payload.redirectOnSuccess = result.redirectOnSuccess;
         sendStarterWebhook(payload, statusEl, submitBtn, consent);
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
