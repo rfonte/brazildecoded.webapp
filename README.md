@@ -143,6 +143,29 @@ npm run format
   4. Configure o widget no formulário com o `site_key`.
   5. O token gerado será incluído no campo `turnstile_token` do payload enviado ao Make.
 
+## Cloudflare R2 Storage
+
+- O arquivo PDF do Starter Kit é armazenado no Cloudflare R2 para distribuição segura e eficiente.
+- O Cloudflare Worker valida tokens de acesso e serve o arquivo diretamente do R2.
+- Para configurar:
+  1. Acesse o painel do Cloudflare e navegue para R2.
+  2. Crie um novo bucket (ex: `brazildecoded-starter-kit`).
+  3. Faça upload do arquivo PDF do Starter Kit para o bucket.
+  4. Configure permissões: torne o bucket privado (acesso apenas via Worker).
+  5. No Cloudflare Workers, crie um Worker que:
+     - Receba requests para `/download/` com parâmetro `token`
+     - Valide o token (pode ser um JWT ou token simples)
+     - Se válido, busque o arquivo do R2 e retorne como response
+     - Se inválido, retorne erro 403
+  6. Configure o Worker route para o domínio (ex: `brazildecoded.com/download/*`).
+  7. No webhook Make, após processar o lead, gere um token válido e envie por email.
+
+- Benefícios do R2:
+  - Armazenamento de objetos durável e escalável
+  - Baixo custo (gratuito para primeiros TBs)
+  - Integração nativa com Workers
+  - CDN global para downloads rápidos
+
 ## Configuração sensível
 
 - O webhook em `data-make-url` é uma configuração sensível. mantenha-o fora de repositórios públicos e rotacione se vazar.
