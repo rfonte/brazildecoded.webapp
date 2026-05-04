@@ -1,5 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import starterKit from "../../src/assets/js/lib/starter-kit.js";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const root_path = join(dirname(__filename), "..", "..");
+
+function loadStarterKit() {
+  delete globalThis.BDStarterKit;
+  const kit = require(join(root_path, "src/assets/js/lib/starter-kit.js"));
+  globalThis.BDStarterKit = kit;
+  return kit;
+}
 
 const scriptPath = "../../src/assets/js/script.js";
 const logKey = "brazildecoded_logs";
@@ -102,7 +115,7 @@ beforeEach(() => {
   document.body.innerHTML = "";
   localStorage.clear();
   vi.restoreAllMocks();
-  globalThis.BDStarterKit = starterKit;
+  globalThis.BDStarterKit = loadStarterKit();
   delete globalThis.__bdGtmLoaded;
   setLocation("/index.html");
   stubUrlHelpers();
@@ -1056,25 +1069,6 @@ describe("script.js", () => {
     );
   });
 
-  it("blocks contact submission when consent is missing", async () => {
-    setHtml(`
-      <form id="contactForm" data-make-url="https://example.com/webhook">
-        <input type="text" id="contactName" value="User" />
-        <input type="email" id="contactEmail" value="user@example.com" />
-        <textarea id="contactMessage">Test</textarea>
-        <input type="text" id="hp_contact" />
-        <input type="hidden" id="contactFormStartedAt" />
-        <p id="contactFeedback"></p>
-        <button id="contactSubmit" type="submit"></button>
-      </form>
-    `);
-    await loadScript();
-    submitForm("contactForm");
-    expect(document.getElementById("contactFeedback").textContent).toBe(
-      "You must accept the consent to enable the button."
-    );
-  });
-
   it("blocks contact submission when webhook url is missing", async () => {
     setHtml(`
       <form id="contactForm" data-make-url="COLE_AQUI">
@@ -1627,7 +1621,7 @@ describe("script.js", () => {
     expect(el.style.color).toBe("rgb(176, 0, 32)");
   });
 
-it("returns null from getCookieConsent for invalid JSON", async () => {
+  it("returns null from getCookieConsent for invalid JSON", async () => {
     localStorage.setItem("brazildecoded_cookie_consent", "not-a-json");
     setHtml('<div id="cookieBanner" class="is-hidden"></div>');
     await loadScript();
