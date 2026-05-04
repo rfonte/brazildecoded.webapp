@@ -255,16 +255,6 @@
     const hasFormWebhook = form.hasAttribute("data-make-url");
     const makeUrl = hasFormWebhook ? form.dataset.makeUrl : MAKE_WEBHOOK_URL;
 
-    // Check for Turnstile token
-    const turnstileResponse = form.querySelector('[name="cf-turnstile-response"]');
-    const turnstileToken = turnstileResponse?.value;
-
-    if (!turnstileToken) {
-      logEvent("warn", "Starter kit Turnstile token missing");
-      showMessage(statusEl, "⚠️ Aguarde a verificação anti-bot carregar.", true);
-      return { ok: false };
-    }
-
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
       showMessage(statusEl, "Please enter your email.", true);
@@ -296,13 +286,23 @@
       showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
       return { ok: false };
     }
+
+    // Check for Turnstile token (optional if widget is available)
+    const turnstileResponse = form.querySelector('[name="cf-turnstile-response"]');
+    const turnstileToken = turnstileResponse?.value;
+
+    if (turnstileResponse && !turnstileToken) {
+      logEvent("warn", "Starter kit Turnstile token missing");
+      showMessage(statusEl, "⚠️ Aguarde a verificação anti-bot carregar.", true);
+      return { ok: false };
+    }
     return { ok: true, email, name, makeUrl, redirectOnSuccess: hasFormWebhook };
   }
 
   /**
-   * Sends the starter kit payload to the configured Worker endpoint.
+   * Sends the starter kit payload to the configured webhook endpoint.
    * Updates UI state while the request is in progress and handles success or failure.
-   * @param {Object} payload The request payload to send to the Worker.
+   * @param {Object} payload The request payload to send to the Make webhook.
    * @param {HTMLElement|null} statusEl The element used to display status messages.
    * @param {HTMLButtonElement|null} submitBtn The submit button to enable/disable.
    * @param {HTMLInputElement|null} consent The consent checkbox used to decide re-enable state.
@@ -312,56 +312,44 @@
     logEvent("info", "Starter kit submit started");
     setButtonState(submitBtn, false);
 
-    // ⚠️ Substitua pela URL do seu Worker
-    const workerUrl = "https://brazildecoded-api.SEU-SUBDOMINIO.workers.dev/cadastro";
-
-    fetch(workerUrl, {
+    const webhookUrl = payload.makeUrl || MAKE_WEBHOOK_URL;
+    fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        nome: payload.name,
-        email: payload.email,
-        token: payload.turnstile_token,
-      }),
+      body: JSON.stringify(payload),
     })
       .then(function (res) {
-        logEvent("info", "Worker response received", { status: res.status });
-        return res.json().then(function (data) {
-          return { ok: res.ok, status: res.status, data: data };
+        logEvent("info", "Make webhook response received", { status: res.status });
+        return res.text().then(function (text) {
+          return { ok: res.ok, status: res.status, text: text };
         });
       })
       .then(function (result) {
-        if (result.data.sucesso) {
-          logEvent("info", "Starter kit worker success");
-          showMessage(statusEl, "Thanks! Check your email for the download link.");
-          fireGtagEvent("starter_kit_form_submit");
-          // Reset the Turnstile widget
-          if (globalThis.turnstile) {
-            globalThis.turnstile.reset();
-          }
-          // Redirect to success page
+        if (!result.ok) {
+          logEvent("error", "Starter kit webhook failed", result);
+          throw new Error("Request failed");
+        }
+        logEvent("info", "Starter kit webhook success", { status: result.status });
+        showMessage(statusEl, "Thanks! Check your email for the download link.");
+        fireGtagEvent("starter_kit_form_submit");
+        if (payload.redirectOnSuccess) {
           setTimeout(function () {
             logEvent("info", "Redirecting to success page");
             globalThis.location.href = "/pages/contato-sucesso.html";
           }, 800);
-        } else {
-          logEvent("error", "Worker returned error", { error: result.data.erro });
-          showMessage(statusEl, "❌ " + (result.data.erro || "Erro desconhecido"), true);
-          fireGtagEvent("starter_kit_form_error");
-          // Reset the Turnstile widget
-          if (globalThis.turnstile) {
-            globalThis.turnstile.reset();
-          }
-          setButtonState(submitBtn, !!consent?.checked);
+        }
+        // Reset the Turnstile widget if available
+        if (globalThis.turnstile) {
+          globalThis.turnstile.reset();
         }
       })
       .catch(function (err) {
-        logEvent("error", "Starter kit worker failed", {
+        logEvent("error", "Starter kit webhook failed", {
           message: err?.message ?? String(err || ""),
         });
-        showMessage(statusEl, "❌ Erro de conexão. Tente novamente.", true);
+        showMessage(statusEl, "Something went wrong. Please try again.", true);
         fireGtagEvent("starter_kit_form_error");
-        // Reset the Turnstile widget
+        // Reset the Turnstile widget if available
         if (globalThis.turnstile) {
           globalThis.turnstile.reset();
         }
