@@ -193,6 +193,7 @@
       form_token: FORM_TOKEN,
       referrer: options.referrer || "",
       user_agent: options.userAgent || "",
+      turnstile_token: options.turnstileToken || "",
       ...getUTM(options.queryString || ""),
     };
 
@@ -705,6 +706,7 @@
           referrer: document.referrer || "",
           userAgent: navigator.userAgent || "",
           queryString: globalThis.location.search,
+          turnstileToken: document.querySelector('input[name="turnstile_token"]')?.value || "",
         });
         payload.makeUrl = result.makeUrl;
         payload.redirectOnSuccess = result.redirectOnSuccess;
