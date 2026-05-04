@@ -11,7 +11,7 @@ Static site for BrazilDecoded, built with Eleventy. This repository contains the
 ## Visão geral
 
 - **Escopo:** site estático com captura de leads por email, formulário de contato, painel admin local e integrações de webhook.
-- **Diferenciais:** estrutura Eleventy simples, foco em acessibilidade básica (ARIA, labels, foco), e testes automatizados (Vitest + Playwright).
+- **Diferenciais:** estrutura Eleventy simples, foco em acessibilidade básica (ARIA, labels, foco), testes automatizados (Vitest + Playwright) e fluxo de download seguro via Cloudflare Worker.
 - **Limitações:** os dados de lead são mantidos localmente no prototype; integração externa depende de webhook/Make e configuração adicional.
 
 ## Sumário
@@ -112,6 +112,7 @@ npm run format
 - `src/pages/free-starter-kit.njk` - formulário de Starter Kit
 - `src/pages/contact.njk` - formulário de contato
 - `src/pages/leads.njk` - painel de leads local
+- `src/download/index.html` - página de redirect para o download seguro do Starter Kit via Cloudflare Worker
 - `src/pages/thank-you.njk` - página de agradecimento
 - `src/pages/contato-sucesso.njk` - página de sucesso do Starter Kit
 - `src/_includes/layout.njk` - layout compartilhado e tags globais
@@ -148,6 +149,8 @@ npm run format
 
 - Publicação via GitHub Pages usando GitHub Actions.
 - O site é construído com Eleventy e deployado a partir de `dist/`.
+- O fluxo de download do Starter Kit usa uma página de redirecionamento estática em `/download/` que encaminha para um Cloudflare Worker seguro.
+- A página de download aceita um token no query string, por exemplo: `/download/?token=SEU_TOKEN_AQUI`.
 
 ## GitHub Pages e cache
 
