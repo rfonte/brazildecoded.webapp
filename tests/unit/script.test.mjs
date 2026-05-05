@@ -1568,7 +1568,7 @@ describe("script.js", () => {
       queryString: undefined,
     });
     expect(payload.email).toBe("");
-    expect(payload.name).toBe("");
+    expect(payload.nome).toBe("");
     expect(payload.page).toBe("");
     expect(payload.referrer).toBe("");
     expect(payload.user_agent).toBe("");

@@ -60,7 +60,7 @@ function buildPayload(options) {
   return {
     type: options.type || "",
     email: options.email || "",
-    name: options.name || "",
+    nome: options.name || "",
     page: options.page || "",
     referrer: options.referrer || "",
     user_agent: options.userAgent || "",

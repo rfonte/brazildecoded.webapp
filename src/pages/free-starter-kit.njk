@@ -146,7 +146,11 @@ permalink: "/free-starter-kit/"
         </p>
 
         <!-- Widget Turnstile -->
-        <div class="cf-turnstile" data-sitekey="{{ site.turnstileSiteKey }}" data-theme="auto"></div>
+        <div class="cf-turnstile"
+             data-sitekey="{{ site.turnstileSiteKey }}"
+             data-theme="auto"
+             data-callback="onTurnstileSuccess"
+             data-expired-callback="onTurnstileExpired"></div>
 
         <button class="cta primary" id="leadSubmit" type="submit">
           Send me the Starter Kit

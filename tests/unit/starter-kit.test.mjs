@@ -39,7 +39,7 @@ describe("starter-kit.js", () => {
     });
     expect(payload.type).toBe("starter_kit");
     expect(payload.email).toBe("test@example.com");
-    expect(payload.name).toBe("User");
+    expect(payload.nome).toBe("User");
     expect(payload.page).toBe("/free-starter-kit");
     expect(payload.user_agent).toBe("Mozilla/5.0");
     expect(payload.utm_source).toBe("google");
@@ -58,7 +58,7 @@ describe("starter-kit.js", () => {
       queryString: undefined,
     });
     expect(payload.email).toBe("");
-    expect(payload.name).toBe("");
+    expect(payload.nome).toBe("");
     expect(payload.referrer).toBe("");
   });
 

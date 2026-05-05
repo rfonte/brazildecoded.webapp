@@ -714,6 +714,13 @@
     }
     syncConsent();
 
+    globalThis.onTurnstileSuccess = function () {
+      setButtonState(submitBtn, !!consent?.checked);
+    };
+    globalThis.onTurnstileExpired = function () {
+      setButtonState(submitBtn, false);
+    };
+
     starterForm.addEventListener("submit", function (e) {
       e.preventDefault();
       try {
