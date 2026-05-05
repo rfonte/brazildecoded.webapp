@@ -743,6 +743,7 @@
           formStartedAt: starterFormStartedAt?.value || "",
           consent: document.getElementById("consent")?.checked,
           company: starterForm.querySelector('[name="company"]')?.value || "",
+          formToken: starterForm.querySelector('[name="form_token"]')?.value || "",
         });
         sendStarterWebhook(result.endpoint, payload, statusEl, submitBtn, consent, starterFormStartedAt);
       } catch (err) {
