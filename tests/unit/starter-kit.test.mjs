@@ -62,7 +62,7 @@ describe("starter-kit.js", () => {
     expect(payload.referrer).toBe("");
   });
 
-  it("buildPayload includes source, form_token, form_started_at, company and turnstile_token", () => {
+  it("buildPayload includes source, form_token, form_started_at, company and token", () => {
     const kit = loadStarterKit();
     const payload = kit.buildPayload({
       type: "free_starter_kit",
@@ -79,7 +79,7 @@ describe("starter-kit.js", () => {
     expect(payload.form_token).toBe("bd_starterkit_v1");
     expect(payload.form_started_at).toBe("1700000000000");
     expect(payload.company).toBe("");
-    expect(payload.turnstile_token).toBe("tok_abc123");
+    expect(payload.token).toBe("tok_abc123");
   });
 
   it("buildPayload converts consent true to boolean true", () => {

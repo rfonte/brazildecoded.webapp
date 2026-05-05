@@ -29,7 +29,7 @@ function getUTM(queryString) {
     utm_medium: (p.get("utm_medium") || "").trim(),
     utm_campaign: (p.get("utm_campaign") || "").trim(),
     utm_content: (p.get("utm_content") || "").trim(),
-utm_term: (p.get("utm_term") || "").trim().replace(/ /g, "+"),
+    utm_term: (p.get("utm_term") || "").trim().replaceAll(" ", "+"),
   };
 }
 
@@ -42,10 +42,10 @@ utm_term: (p.get("utm_term") || "").trim().replace(/ /g, "+"),
  * @returns {boolean}
  */
 function isHumanTiming(startedAt, minMs, now) {
-  var ms = minMs === undefined ? 3000 : minMs;
-  var ts = Number(startedAt);
-  if (!ts || isNaN(ts) || ts <= 0) return false;
-  var current = now === undefined ? Date.now() : now;
+  const ms = minMs === undefined ? 3000 : minMs;
+  const ts = Number(startedAt);
+  if (!ts || Number.isNaN(ts) || ts <= 0) return false;
+  const current = now === undefined ? Date.now() : now;
   return current - ts >= ms;
 }
 
@@ -69,7 +69,7 @@ function buildPayload(options) {
     form_started_at: options.formStartedAt || "",
     consent: options.consent === true || options.consent === "on",
     company: options.company || "",
-    turnstile_token: options.turnstileToken || "",
+    token: options.turnstileToken || "",
     utm_source: utm.utm_source,
     utm_medium: utm.utm_medium,
     utm_campaign: utm.utm_campaign,

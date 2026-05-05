@@ -195,7 +195,7 @@
       form_started_at: options.formStartedAt || "",
       consent: options.consent === true || options.consent === "on",
       company: options.company || "",
-      turnstile_token: options.turnstileToken || "",
+      token: options.turnstileToken || "",
       ...getUTM(options.queryString || ""),
     };
 
