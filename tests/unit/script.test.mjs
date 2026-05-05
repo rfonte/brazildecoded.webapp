@@ -1751,5 +1751,260 @@ describe("script.js", () => {
     const match = logs.find((log) => log.message === "Starter kit webhook failed");
     expect(match.meta.message).toBe("");
   });
+
+  it("covers isValidEmail when helper throws", async () => {
+    globalThis.BDStarterKit = { isValidEmail: () => { throw new Error("helper failed"); } };
+    await loadScript();
+    const result = globalThis.BDApp.isValidEmail("test@test.com");
+    expect(result).toBe(false);
+    expect(getLogs().some((log) => log.message === "Starter kit helper isValidEmail failed")).toBe(true);
+  });
+
+  it("covers getUTM when helper throws", async () => {
+    globalThis.BDStarterKit = { getUTM: () => { throw new Error("utm fail"); }, isValidEmail: () => true };
+    await loadScript();
+    const utm = globalThis.BDApp.getUTM("?utm_source=src");
+    expect(utm.utm_source).toBe("");
+    expect(getLogs().some((log) => log.message === "Starter kit helper getUTM failed")).toBe(true);
+  });
+
+  it("covers buildPayload when helper throws", async () => {
+    globalThis.BDStarterKit = { buildPayload: () => { throw new Error("bp fail"); }, isValidEmail: () => true };
+    await loadScript();
+    const payload = globalThis.BDApp.buildPayload({ email: "t@t.com", name: "T", page: "/", referrer: "", userAgent: "ua", queryString: "" });
+    expect(payload.email).toBe("t@t.com");
+    expect(getLogs().some((log) => log.message === "Starter kit helper buildPayload failed")).toBe(true);
+  });
+
+  it("rejects submission when form token is invalid", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" value="user@example.com" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" name="form_token" value="wrong_token" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    await loadScript();
+    submitForm("starterKitForm");
+    expect(document.querySelector("[data-status]").textContent).toBe(
+      "Invalid form configuration. Please refresh the page."
+    );
+  });
+
+  it("accepts submission when form token is valid", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" value="user@example.com" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" name="form_token" value="bd_starterkit_v1" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ sucesso: true, mensagem: "Done" }) })
+    );
+    await loadScript();
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    expect(globalThis.fetch).toHaveBeenCalled();
+  });
+
+  it("fills all hidden inputs when present in starter form", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <input type="hidden" name="page" />
+        <input type="hidden" name="referrer" />
+        <input type="hidden" name="user_agent" />
+        <input type="hidden" name="utm_source" />
+        <input type="hidden" name="utm_medium" />
+        <input type="hidden" name="utm_campaign" />
+        <input type="hidden" name="utm_content" />
+        <input type="hidden" name="utm_term" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    await loadScript();
+    expect(document.querySelector('[name="page"]').value).toBe("/free-starter-kit/");
+    expect(typeof document.querySelector('[name="user_agent"]').value).toBe("string");
+    expect(typeof document.querySelector('[name="utm_source"]').value).toBe("string");
+  });
+
+  it("shows default success message when worker omits mensagem", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ sucesso: true }) })
+    );
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    expect(document.querySelector("[data-status]").textContent).toBe(
+      "Thanks! Check your email for the download link."
+    );
+  });
+
+  it("fires gtag event and resets turnstile on successful webhook", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.gtag = vi.fn();
+    globalThis.turnstile = { reset: vi.fn() };
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ sucesso: true, mensagem: "Done" }) })
+    );
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    expect(globalThis.gtag).toHaveBeenCalledWith("event", "starter_kit_form_submit");
+    expect(globalThis.turnstile.reset).toHaveBeenCalled();
+    delete globalThis.gtag;
+    delete globalThis.turnstile;
+  });
+
+  it("logs gtag error when gtag throws", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.gtag = () => { throw new Error("gtag boom"); };
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ sucesso: true, mensagem: "Done" }) })
+    );
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    expect(getLogs().some((log) => log.message === "Gtag event failed")).toBe(true);
+    delete globalThis.gtag;
+  });
+
+  it("showMessage silently ignores null element", async () => {
+    await loadScript();
+    expect(() => globalThis.BDApp.showMessage(null, "hi")).not.toThrow();
+    expect(() => globalThis.BDApp.showMessage(undefined, "hi")).not.toThrow();
+  });
+
+  it("getCookieConsent handles null JSON and missing status", async () => {
+    localStorage.setItem("brazildecoded_cookie_consent", "null");
+    setHtml('<div id="cookieBanner" class="is-hidden"></div>');
+    await loadScript();
+    expect(
+      document.getElementById("cookieBanner").classList.contains("is-hidden")
+    ).toBe(false);
+  });
+
+  it("getCookieConsent uses custom status when status field is absent", async () => {
+    localStorage.setItem(
+      "brazildecoded_cookie_consent",
+      JSON.stringify({ analytics: false, marketing: false })
+    );
+    setHtml('<div id="cookieBanner"></div>');
+    await loadScript();
+    expect(getLogs().filter((l) => l.level === "error").length).toBe(0);
+  });
+
+  it("clearLeads without callback still clears leads", async () => {
+    localStorage.setItem(
+      "brazildecoded_leads",
+      JSON.stringify([{ name: "A", email: "a@b.com", date: "now" }])
+    );
+    await loadScript();
+    globalThis.confirm = vi.fn(() => true);
+    expect(globalThis.BDApp.clearLeads()).toBe(true);
+    expect(localStorage.getItem("brazildecoded_leads")).toBeNull();
+  });
+
+  it("toggleSettingsPanel covers collapsed state on second click", async () => {
+    setHtml(`
+      <div id="cookieBanner"></div>
+      <div id="cookieSettingsPanel"></div>
+      <button id="cookieSettings"></button>
+    `);
+    await loadScript();
+    document.getElementById("cookieSettings").click();
+    document.getElementById("cookieSettings").click();
+    expect(
+      document.getElementById("cookieSettingsPanel").getAttribute("aria-hidden")
+    ).toBe("true");
+  });
+
+  it("toggleSettingsPanel returns early when panel is missing", async () => {
+    setHtml(`
+      <div id="cookieBanner"></div>
+      <button id="cookieSettings"></button>
+    `);
+    await loadScript();
+    expect(() => document.getElementById("cookieSettings").click()).not.toThrow();
+  });
+
+  it("contact form without contactConsent skips listener and returns early from syncContactConsent", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Hello</textarea>
+        <input type="hidden" id="contactFormStartedAt" />
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+    expect(document.getElementById("contactSubmit").disabled).toBe(false);
+  });
+
+  it("unhandledrejection handler logs null reason via String fallback", async () => {
+    await loadScript();
+    const event = new Event("unhandledrejection");
+    event.reason = null;
+    globalThis.dispatchEvent(event);
+    const logs = getLogs();
+    const logEntry = logs.find((l) => l.message === "Unhandled promise rejection");
+    expect(logEntry).toBeDefined();
+  });
 });
 
