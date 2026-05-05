@@ -29,7 +29,7 @@ function getUTM(queryString) {
     utm_medium: (p.get("utm_medium") || "").trim(),
     utm_campaign: (p.get("utm_campaign") || "").trim(),
     utm_content: (p.get("utm_content") || "").trim(),
-    utm_term: (p.get("utm_term") || "").trim(),
+utm_term: (p.get("utm_term") || "").trim().replace(/ /g, "+"),
   };
 }
 

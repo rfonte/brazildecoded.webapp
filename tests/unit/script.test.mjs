@@ -367,7 +367,7 @@ describe("script.js", () => {
   it("handles starter kit form consent and invalid email", async () => {
     setLocation("/free-starter-kit/");
     setHtml(`
-      <form id="starterKitForm" data-make-url="">
+      <form id="starterKitForm" data-endpoint="">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="text" name="name" id="leadName" />
@@ -396,9 +396,10 @@ describe("script.js", () => {
   it("returns early when status element is missing", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
-      <form id="starterKitForm" data-make-url="">
+      <form id="starterKitForm" data-endpoint="">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
       </form>
@@ -478,6 +479,7 @@ describe("script.js", () => {
     setHtml(`
       <form id="starterKitForm">
         <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
         <label><input type="checkbox" id="consent" checked /></label>
         <button id="leadSubmit" type="submit"></button>
         <p data-status></p>
@@ -587,7 +589,7 @@ describe("script.js", () => {
       isValidEmail: () => true,
     };
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
@@ -601,7 +603,7 @@ describe("script.js", () => {
       Promise.resolve({
         ok: true,
         status: 200,
-        text: () => Promise.resolve("OK"),
+        json: () => Promise.resolve({ sucesso: true, mensagem: "OK" }),
       })
     );
     await loadScript();
@@ -625,7 +627,7 @@ describe("script.js", () => {
       isValidEmail: () => true,
     };
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
@@ -639,7 +641,7 @@ describe("script.js", () => {
       Promise.resolve({
         ok: true,
         status: 200,
-        text: () => Promise.resolve("OK"),
+        json: () => Promise.resolve({ sucesso: true, mensagem: "Thanks!" }),
       })
     );
     await loadScript();
@@ -654,10 +656,10 @@ describe("script.js", () => {
     expect(globalThis.BDStarterKit.buildPayload).toHaveBeenCalled();
   });
 
-  it("redirects to success page after successful webhook", async () => {
+  it("shows success message after starter kit webhook succeeds", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />
@@ -670,22 +672,17 @@ describe("script.js", () => {
       Promise.resolve({
         ok: true,
         status: 200,
-        text: () => Promise.resolve("OK"),
+        json: () => Promise.resolve({ sucesso: true, mensagem: "Thanks! Check your email!" }),
       })
     );
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
-    // make setTimeout run immediately to trigger the redirect synchronously
-    const realSetTimeout = globalThis.setTimeout;
-    globalThis.setTimeout = function (fn) {
-      fn();
-      return 0;
-    };
-    submitForm("starterKitForm");
+    withImmediateTimers(() => submitForm("starterKitForm"));
     await flushPromises();
     await flushPromises();
-    expect(globalThis.location.href).toContain("/pages/contato-sucesso.html");
-    globalThis.setTimeout = realSetTimeout;
+    expect(document.querySelector("[data-status]").textContent).toBe(
+      "Thanks! Check your email!"
+    );
   });
 
   it("logs and displays an error if submit handler throws", async () => {
@@ -714,7 +711,7 @@ describe("script.js", () => {
   it("handles webhook failures and re-enables submit", async () => {
     setLocation("/free-starter-kit/");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />
@@ -727,7 +724,7 @@ describe("script.js", () => {
       Promise.resolve({
         ok: false,
         status: 500,
-        text: () => Promise.resolve("fail"),
+        json: () => Promise.resolve({ sucesso: false }),
       })
     );
     await loadScript();
@@ -746,7 +743,7 @@ describe("script.js", () => {
   it("handles webhook failures when fetch rejects", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />
@@ -815,7 +812,7 @@ describe("script.js", () => {
   it("handles webhook failure when submit button is missing", async () => {
     setLocation("/free-starter-kit/");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />
@@ -823,7 +820,6 @@ describe("script.js", () => {
         <p data-status></p>
       </form>
     `);
-    // simulate server failure
     globalThis.fetch = vi.fn(() => Promise.reject(new Error('boom')));
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
@@ -1113,6 +1109,7 @@ describe("script.js", () => {
     submitForm("contactForm");
     await flushPromises();
     await flushPromises();
+    await flushPromises();
     expect(document.getElementById("contactFeedback").textContent).toBe(
       "Something went wrong. Please try again."
     );
@@ -1181,6 +1178,7 @@ describe("script.js", () => {
     document.getElementById("contactEmail").value = "user@example.com";
     document.getElementById("contactMessage").value = "Hi";
     submitForm("contactForm");
+    await flushPromises();
     await flushPromises();
     await flushPromises();
     expect(document.getElementById("contactFeedback").textContent).toBe(
@@ -1474,7 +1472,7 @@ describe("script.js", () => {
   it("passes userAgent and queryString when submitting with buildPayload", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="name" id="leadName" />
         <input type="text" name="company_hp" />
@@ -1490,7 +1488,7 @@ describe("script.js", () => {
       Promise.resolve({
         ok: true,
         status: 200,
-        text: () => Promise.resolve("OK"),
+        json: () => Promise.resolve({ sucesso: true }),
       })
     );
     globalThis.location.search = "?utm_source=test";
@@ -1507,7 +1505,7 @@ describe("script.js", () => {
   it("logs string errors when webhook rejects with a string", async () => {
     setLocation("/free-starter-kit/");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />
@@ -1673,7 +1671,7 @@ describe("script.js", () => {
   it("handles webhook error with null message", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
-      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
         <input type="text" name="company_hp" />
         <input type="hidden" id="starterFormStartedAt" />

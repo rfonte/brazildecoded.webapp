@@ -202,7 +202,7 @@
     if (helper && typeof helper.buildPayload === "function") {
       try {
         return helper.buildPayload({
-          type: "free_starter_kit",
+          type: "starter_kit",
           email: payload.email,
           name: payload.name,
           page: payload.page,
@@ -267,7 +267,7 @@
 
     if (!emailField) {
       logEvent("error", "Starter kit email field missing");
-      showMessage(statusEl, "Please enter your email.", true);
+      if (statusEl) showMessage(statusEl, "Please enter your email.", true);
       return { ok: false };
     }
     if (tokenField && tokenField.value !== FORM_TOKEN) {
@@ -277,7 +277,7 @@
     }
     if (!isValidEmail(email)) {
       logEvent("warn", "Starter kit invalid email", { email: email });
-      showMessage(statusEl, "Please enter a valid email.", true);
+      if (statusEl) showMessage(statusEl, "Please enter a valid email.", true);
       emailField.focus();
       return { ok: false };
     }
@@ -289,7 +289,7 @@
     }
     if (!endpoint || endpoint.includes("COLE_AQUI")) {
       logEvent("error", "Starter kit endpoint missing");
-      showMessage(statusEl, "Missing endpoint URL. Please update the form settings.", true);
+      showMessage(statusEl, "Missing Make webhook URL. Please update the form settings.", true);
       return { ok: false };
     }
 
@@ -353,9 +353,7 @@
       })
       .catch(function (err) {
         resetAfterSubmit();
-        logEvent("error", "Starter kit webhook failed", {
-          message: err?.message ?? String(err || ""),
-        });
+        logEvent("error", "Starter kit webhook failed", { message: err && err.message ? err.message : String(err ?? "") });
         showMessage(statusEl, "Something went wrong. Please try again.", true);
         fireGtagEvent("starter_kit_form_error");
         setButtonState(submitBtn, !!consent?.checked);
