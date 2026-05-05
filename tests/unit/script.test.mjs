@@ -26,24 +26,24 @@ async function loadScript() {
   return import(scriptPath);
 }
 
-function setLocation(pathname) {
-  const href = `http://localhost:3000${pathname}`;
-  const locationMock = {
-    href,
-    pathname,
-    search: "",
-  };
+function setLocation(pathAndSearch) {
+  const href = `http://localhost:3000${pathAndSearch}`;
+  const qmark = pathAndSearch.indexOf("?");
+  const pathname = qmark >= 0 ? pathAndSearch.slice(0, qmark) : pathAndSearch;
+  const search = qmark >= 0 ? pathAndSearch.slice(qmark) : "";
+  const locationMock = { href, pathname, search };
   try {
     Object.defineProperty(globalThis, "location", {
       configurable: true,
       writable: true,
       value: locationMock,
     });
-  } catch (error) {
-    if (!(error instanceof TypeError)) {
-      throw error;
-    }
-    globalThis.location = locationMock;
+  } catch {
+    // vmForks: location is non-configurable on jsdom Window;
+    // use history.pushState to update pathname/search without triggering navigation
+    try {
+      globalThis.history.pushState({}, "", href);
+    } catch {}
   }
 }
 
@@ -1115,6 +1115,16 @@ describe("script.js", () => {
     );
   });
 
+  it("covers buildPayload consent variants", async () => {
+    await loadScript();
+    const payloadOn = globalThis.BDApp.buildPayload({ consent: "on" });
+    const payloadOff = globalThis.BDApp.buildPayload({ consent: "off" });
+    const payloadNull = globalThis.BDApp.buildPayload({ consent: null });
+    expect(payloadOn.consent).toBe(true);
+    expect(payloadOff.consent).toBe(false);
+    expect(payloadNull.consent).toBe(false);
+  });
+
   it("uses empty user_agent when navigator.userAgent is blank", async () => {
     setHtml(`
       <form id="contactForm" data-make-url="https://example.com/webhook">
@@ -1470,7 +1480,7 @@ describe("script.js", () => {
   });
 
   it("passes userAgent and queryString when submitting with buildPayload", async () => {
-    setLocation("/free-starter-kit");
+    setLocation("/free-starter-kit?utm_source=test");
     setHtml(`
       <form id="starterKitForm" data-endpoint="https://example.com/webhook">
         <input type="email" name="email" id="leadEmail" />
@@ -1491,7 +1501,6 @@ describe("script.js", () => {
         json: () => Promise.resolve({ sucesso: true }),
       })
     );
-    globalThis.location.search = "?utm_source=test";
     await loadScript();
     document.getElementById("leadEmail").value = "user@example.com";
     withImmediateTimers(() => submitForm("starterKitForm"));
@@ -1668,6 +1677,58 @@ describe("script.js", () => {
     expect(utm.utm_source).toBe("");
   });
 
+  it("covers Turnstile validation paths", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" value="user@example.com" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+        <input name="cf-turnstile-response" />
+      </form>
+    `);
+    await loadScript();
+    submitForm("starterKitForm");
+    expect(document.querySelector("[data-status]").textContent).toMatch(/Aguarde|anti-bot/);
+
+    document.querySelector('[name="cf-turnstile-response"]').value = "tok123";
+    submitForm("starterKitForm", { skipTiming: true });
+    expect(getLogs().some(log => log.message === "Starter kit submit started")).toBe(true);
+  });
+
+  it("handles logEvent storage quota exceeded", async () => {
+    await loadScript();
+    const realSetItem = localStorage.setItem;
+    localStorage.setItem = vi.fn(() => { throw { name: "QuotaExceededError" }; });
+    globalThis.BDApp.logEvent("error", "test");
+    localStorage.setItem = realSetItem;
+  });
+
+  it("handles sendContact non-JSON response", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    globalThis.fetch = vi.fn(() => Promise.resolve({
+      ok: true, status: 200, text: () => Promise.resolve("plain text")
+    }));
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    expect(document.getElementById("contactFeedback").textContent).toBe("Message sent. Thank you!");
+  });
+
   it("handles webhook error with null message", async () => {
     setLocation("/free-starter-kit");
     setHtml(`
@@ -1691,3 +1752,4 @@ describe("script.js", () => {
     expect(match.meta.message).toBe("");
   });
 });
+

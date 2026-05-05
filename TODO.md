@@ -1,10 +1,11 @@
-# TODO - Fix Unit Tests (BlackBoxAI)
+# Task: Increase unit test coverage to 90%+
 
-✅ 1. Criar TODO.md com steps  
-✅ 2. Confirmar plano com user  
-✅ 3. Editar src/assets/js/lib/starter-kit.js (fix getUTM)  
-✅ 4. Editar src/assets/js/script.js (round 2 fixes)  
-✅ 5. Run `npm run test:unit` verificar 100% pass  
-6. Se OK, commit/push branch PR  
-7. Complete gh auth, `gh pr create --base main`
+## Steps to complete:
+1. [ ] Update `tests/unit/script.test.mjs` with ~20 new tests for uncovered branches (Turnstile, fallbacks, errors, admin edges).
+2. [ ] Update `tests/unit/starter-kit.test.mjs` with minor tests (consent variants, malformed UTM).
+3. [ ] Run `npx vitest run --coverage` and verify coverage/coverage-final.json shows ≥90% lines/functions/branches/statements.
+4. [ ] If needed, add more tests iteratively.
+5. [ ] Run `attempt_completion` when done.
+
+Current progress: Plan approved, starting edits.
 

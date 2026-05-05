@@ -3,7 +3,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "jsdom",
-    pool: "forks",
+    pool: "vmForks",
     include: ["tests/unit/**/*.mjs"],
     exclude: ["tests/e2e/**", "node_modules/**"],
     coverage: {

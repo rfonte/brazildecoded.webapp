@@ -199,4 +199,15 @@ describe("starter-kit.js", () => {
     const longEmail = "a".repeat(255) + "@example.com";
     expect(kit.isValidEmail(longEmail)).toBe(false);
   });
+
+  it("getUTM handles malformed queries", () => {
+    const kit = loadStarterKit();
+    expect(kit.getUTM("utm_source=untrimmed ")).toEqual(expect.objectContaining({
+      utm_source: "untrimmed"
+    }));
+    expect(kit.getUTM("utm_term=term with space")).toEqual(expect.objectContaining({
+      utm_term: "term+with+space"
+    }));
+  });
 });
+
