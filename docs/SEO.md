@@ -2,6 +2,19 @@ SEO: Keyword Mapping
 
 Goal: improve organic ranking and conversion with a focus on eBook sales and lead capture.
 
+## Domain Verification
+
+The site includes domain verification meta tags for:
+- **Google Search Console:** `<meta name="google-site-verification" content="GwKXjSPv8jfDW6ujzzrmT-BbY9cuDHVS0rD-N88WvcM" />`
+- **Pinterest:** `<meta name="p:domain_verify" content="699071a59134c23320fa27296e5d386b" />`
+
+These tags are managed in `src/_includes/layout.njk` and included on all pages via the base layout.
+
+**Updating Pinterest verification token:**
+1. If the token changes, update the `content` attribute in `src/_includes/layout.njk` (line 9)
+2. Update this documentation with the new token value
+3. Rebuild and deploy the site
+
 1) Primary keywords per page
 
 - Home (`/index.html`)

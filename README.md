@@ -207,6 +207,7 @@ npm run format
 - Playwright: https://playwright.dev/
 - SonarCloud: https://sonarcloud.io/
 - Structured data report: `docs/SEO.md`
+- Domain verification setup: see `docs/SEO.md` for Google Search Console and Pinterest configuration
 
 ## Observações
 
