@@ -23,6 +23,42 @@
     el.classList.toggle("success", !isError && !!msg);
   }
 
+  function showElement(el) {
+    if (!el) return;
+    el.hidden = false;
+  }
+
+  function hideElement(el) {
+    if (!el) return;
+    el.hidden = true;
+  }
+
+  function disableFormControls(form) {
+    if (!form || !form.elements) return;
+    Array.from(form.elements).forEach(function (field) {
+      if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement || field instanceof HTMLTextAreaElement || field instanceof HTMLButtonElement) {
+        field.disabled = true;
+      }
+    });
+  }
+
+  function showStarterSuccess(panel, form, email) {
+    if (!panel) return;
+    const emailEl = panel.querySelector("#starterSuccessEmail");
+    if (emailEl) {
+      emailEl.textContent = email || "your inbox";
+    }
+    showElement(panel);
+    if (form) {
+      form.setAttribute("aria-hidden", "true");
+      disableFormControls(form);
+      hideElement(form);
+    }
+    if (typeof panel.scrollIntoView === "function") {
+      panel.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
   function fireGtagEvent(eventName) {
     try {
       if (typeof gtag === "function") {
@@ -299,9 +335,7 @@
 
     if (turnstileResponse && !turnstileToken) {
       logEvent("warn", "Starter kit Turnstile token missing");
-      showMessage(statusEl, "⚠️ Aguarde a verificação anti-bot carregar.", true);
-      return { ok: false };
-    }
+      showMessage(statusEl, "⚠️ Please wait for the anti-bot verification to load.", true);
     return { ok: true, email, name, endpoint };
   }
 
@@ -315,7 +349,7 @@
    * @param {HTMLInputElement|null} consent The consent checkbox used to decide re-enable state.
    * @param {HTMLInputElement|null} startedAtEl The hidden form_started_at field to refresh on completion.
    */
-  function sendStarterWebhook(endpoint, payload, statusEl, submitBtn, consent, startedAtEl) {
+  function sendStarterWebhook(endpoint, payload, statusEl, submitBtn, consent, startedAtEl, form, successPanel) {
     showMessage(statusEl, "Sending...");
     logEvent("info", "Starter kit submit started");
     setButtonState(submitBtn, false);
@@ -343,6 +377,7 @@
         if (data.sucesso === true) {
           logEvent("info", "Starter kit submit success");
           showMessage(statusEl, data.mensagem || "Thanks! Check your email for the download link.");
+          showStarterSuccess(successPanel, form, payload.email);
           fireGtagEvent("starter_kit_form_submit");
         } else {
           logEvent("error", "Starter kit submit rejected", { erro: data.erro });
@@ -676,6 +711,7 @@
     const utmCampaignInput = starterForm.querySelector('input[name="utm_campaign"]');
     const utmContentInput = starterForm.querySelector('input[name="utm_content"]');
     const utmTermInput = starterForm.querySelector('input[name="utm_term"]');
+    const successPanel = document.getElementById("starterSuccess");
 
     if (pageInput) {
       pageInput.value = String(globalThis.location.pathname || "");
@@ -745,7 +781,16 @@
           company: starterForm.querySelector('[name="company"]')?.value || "",
           formToken: starterForm.querySelector('[name="form_token"]')?.value || "",
         });
-        sendStarterWebhook(result.endpoint, payload, statusEl, submitBtn, consent, starterFormStartedAt);
+        sendStarterWebhook(
+          result.endpoint,
+          payload,
+          statusEl,
+          submitBtn,
+          consent,
+          starterFormStartedAt,
+          starterForm,
+          successPanel
+        );
       } catch (err) {
         logEvent("error", "Starter kit submit exception", {
           message: err?.message ? err.message : String(err || ""),
