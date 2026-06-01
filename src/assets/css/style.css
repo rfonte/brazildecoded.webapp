@@ -20,6 +20,11 @@
   box-sizing: border-box;
 }
 
+/* Ensure [hidden] is never overridden by display rules elsewhere */
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   color: var(--ink);
@@ -864,6 +869,21 @@ section:last-of-type {
   padding: 1.75rem 1.75rem 1.5rem;
   position: sticky;
   top: calc(72px + 1.5rem);
+  min-height: 430px;
+  transition: background 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Card turns green when success is visible */
+.starter-form-card:has(#starterSuccess:not([hidden])) {
+  background: linear-gradient(160deg, #f0fdf6 0%, #ecfdf5 100%);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgb(11 110 79 / 12%), var(--shadow);
+}
+
+/* Hide form title/subtitle when success panel is shown (JS only hides the <form>) */
+.starter-form-card:has(#starterSuccess:not([hidden])) .starter-form-title,
+.starter-form-card:has(#starterSuccess:not([hidden])) .starter-form-subtitle {
+  display: none;
 }
 
 .starter-form-card form {
@@ -918,9 +938,35 @@ section:last-of-type {
 
 /* ─── Success panel ─────────────────────────────────────────────────────── */
 
+@keyframes successReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes successPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  65%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+#starterSuccess:not([hidden]) {
+  animation: successReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  scroll-margin-top: calc(72px + 2rem);
+}
+
+#starterSuccess:not([hidden]) .starter-success-icon {
+  animation: successPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
 .starter-success-panel {
   text-align: center;
-  padding: 1rem 0.5rem 0.5rem;
+  padding: 1.5rem 0.5rem 1rem;
 }
 
 .starter-success-icon {
