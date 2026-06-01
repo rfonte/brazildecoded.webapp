@@ -39,7 +39,7 @@ describe("starter-kit.js", () => {
     });
     expect(payload.type).toBe("starter_kit");
     expect(payload.email).toBe("test@example.com");
-    expect(payload.nome).toBe("User");
+    expect(payload.name).toBe("User");
     expect(payload.page).toBe("/free-starter-kit");
     expect(payload.user_agent).toBe("Mozilla/5.0");
     expect(payload.utm_source).toBe("google");
@@ -58,11 +58,11 @@ describe("starter-kit.js", () => {
       queryString: undefined,
     });
     expect(payload.email).toBe("");
-    expect(payload.nome).toBe("");
+    expect(payload.name).toBe("");
     expect(payload.referrer).toBe("");
   });
 
-  it("buildPayload includes source, form_token, form_started_at, company and token", () => {
+  it("buildPayload includes source, form_token, form_started_at, company and turnstile_token", () => {
     const kit = loadStarterKit();
     const payload = kit.buildPayload({
       type: "free_starter_kit",
@@ -79,7 +79,7 @@ describe("starter-kit.js", () => {
     expect(payload.form_token).toBe("bd_starterkit_v1");
     expect(payload.form_started_at).toBe("1700000000000");
     expect(payload.company).toBe("");
-    expect(payload.token).toBe("tok_abc123");
+    expect(payload.turnstile_token).toBe("tok_abc123");
   });
 
   it("buildPayload converts consent true to boolean true", () => {

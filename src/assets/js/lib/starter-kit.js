@@ -60,7 +60,7 @@ function buildPayload(options) {
   return {
     type: options.type || "",
     email: options.email || "",
-    nome: options.name || "",
+    name: options.name || "",
     page: options.page || "",
     referrer: options.referrer || "",
     user_agent: options.userAgent || "",
@@ -69,7 +69,7 @@ function buildPayload(options) {
     form_started_at: options.formStartedAt || "",
     consent: options.consent === true || options.consent === "on",
     company: options.company || "",
-    token: options.turnstileToken || "",
+    turnstile_token: options.turnstileToken || "",
     utm_source: utm.utm_source,
     utm_medium: utm.utm_medium,
     utm_campaign: utm.utm_campaign,
