@@ -6,34 +6,76 @@
 [![SonarCloud Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
 [![SonarCloud Coverage](https://sonarcloud.io/api/project_badges/measure?project=rfonte_brazildecoded.webapp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=rfonte_brazildecoded.webapp)
 
-Static site for BrazilDecoded, built with Eleventy. This repository contains the Eleventy templates, CSS, JavaScript, and form flows for the Starter Kit lead capture prototype, support page, and local admin experience.
+Site estático do **BrazilDecoded** — guia de viagem para o Brasil voltado para estrangeiros. Construído com Eleventy (SSG) e um servidor Express para autenticação e APIs internas.
 
-## Visão geral
-
-- **Escopo:** site estático com captura de leads por email, formulário de contato, painel admin local e integrações de webhook.
-- **Diferenciais:** estrutura Eleventy simples, foco em acessibilidade básica (ARIA, labels, foco), testes automatizados (Vitest + Playwright) e fluxo de download seguro via Cloudflare Worker.
-- **Limitações:** os dados de lead são mantidos localmente no prototype; integração externa depende de webhook/Make e configuração adicional.
+---
 
 ## Sumário
 
+- [Visão geral](#visão-geral)
+- [Arquitetura](#arquitetura)
 - [Requisitos](#requisitos)
 - [Instalação](#instalação)
 - [Desenvolvimento local](#desenvolvimento-local)
-- [Build](#build)
+- [Scripts disponíveis](#scripts-disponíveis)
+- [Estrutura do projeto](#estrutura-do-projeto)
+- [Backend e autenticação](#backend-e-autenticação)
+- [Variáveis de ambiente](#variáveis-de-ambiente)
+- [Formulário Starter Kit](#formulário-starter-kit)
+- [Integrações externas](#integrações-externas)
 - [Testes](#testes)
 - [Lint e formatação](#lint-e-formatação)
-- [Estrutura do projeto](#estrutura-do-projeto)
-- [Fluxo de formulários e leads](#fluxo-de-formulários-e-leads)
-- [Configuração sensível](#configuração-sensível)
 - [Deploy](#deploy)
 - [Contribuição](#contribuição)
-- [Links úteis](#links-úteis)
+
+---
+
+## Visão geral
+
+- **Frontend:** site estático gerado com Eleventy (Nunjucks + CSS + JS vanilla), publicado via GitHub Pages.
+- **Backend:** servidor Express com autenticação JWT, armazenamento JSON (MVP) e APIs protegidas por role.
+- **Formulário principal:** `/free-starter-kit/` captura leads e envia para um Cloudflare Worker → Make → Airtable → email com link de download seguro.
+- **Proteção anti-bot:** Cloudflare Turnstile + honeypot + verificação de tempo de preenchimento + `form_token`.
+- **Qualidade:** cobertura de testes ≥ 90% (Vitest), testes E2E (Playwright) e análise estática (SonarCloud + ESLint + Stylelint + HTMLHint).
+
+---
+
+## Arquitetura
+
+```
+Navegador
+  │
+  ├── GET /free-starter-kit/   → Eleventy (HTML estático)
+  │
+  └── POST /cadastro           → Cloudflare Worker (brazildecoded-api)
+                                      │
+                                      └── Make (webhook)
+                                              ├── Validação Turnstile
+                                              ├── Airtable (criar/atualizar lead)
+                                              └── Email com token de download
+
+Servidor Express (localhost:3001)
+  ├── POST /api/auth/login
+  ├── POST /api/auth/logout
+  ├── POST /api/auth/refresh
+  ├── GET  /api/account/profile
+  ├── PUT  /api/account/profile
+  ├── POST /api/account/change-password
+  ├── GET  /api/admin/stats
+  ├── GET  /api/admin/leads
+  ├── GET  /api/admin/users
+  └── GET  /health
+```
+
+---
 
 ## Requisitos
 
-- Node.js 18+ recomendado
-- npm
-- Navegador moderno para testes Playwright
+- **Node.js 18+**
+- **npm 9+**
+- Navegador moderno (para testes Playwright)
+
+---
 
 ## Instalação
 
@@ -41,178 +83,335 @@ Static site for BrazilDecoded, built with Eleventy. This repository contains the
 npm install
 ```
 
+O `postinstall` instala automaticamente os browsers do Playwright.
+
+---
+
 ## Desenvolvimento local
+
+### Frontend (Eleventy)
 
 ```powershell
 npm run serve
 ```
 
-Abra `http://localhost:8080/` no navegador.
+Abre em `http://localhost:8080/`.
 
-## Build
+### Backend (Express)
 
 ```powershell
-npm run build
+# Uma execução simples
+npm run server:dev
+
+# Com hot-reload (nodemon)
+npm run server:watch
 ```
+
+O servidor sobe em `http://localhost:3001/`.
+
+Copie `.env.example` para `.env` antes de iniciar:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+> Para rodar frontend e backend juntos, abra dois terminais.
+
+---
+
+## Scripts disponíveis
+
+| Script | O que faz |
+|---|---|
+| `npm run build` | Gera o site estático em `dist/` |
+| `npm run serve` | Eleventy com live reload (`localhost:8080`) |
+| `npm run server:dev` | Backend Express com dotenv (`localhost:3001`) |
+| `npm run server:watch` | Backend com nodemon (auto-reload) |
+| `npm run lint` | ESLint + Stylelint + HTMLHint |
+| `npm run format` | Prettier (JS, CSS, Markdown) |
+| `npm run format:check` | Verifica formatação sem alterar arquivos |
+| `npm run test:unit` | Testes unitários (Vitest) |
+| `npm run test:unit:coverage` | Testes com cobertura (threshold 90%) |
+| `npm run test:e2e` | Testes end-to-end (Playwright) |
+| `npm run docs` | Gera documentação JSDoc |
+| `npm run sd:report` | Relatório de structured data |
+| `npm run sonar` | Análise SonarCloud |
+| `npm run prepush` | Testes + cobertura + Sonar (pré-push) |
+
+---
+
+## Estrutura do projeto
+
+```
+.
+├── src/
+│   ├── index.njk                   # Página inicial
+│   ├── pages/
+│   │   ├── free-starter-kit.njk    # Formulário de captura de leads
+│   │   ├── contact.njk             # Formulário de contato
+│   │   ├── leads.njk               # Painel admin local (protótipo)
+│   │   ├── the-guide.njk           # Página do guia completo
+│   │   ├── about-the-author.njk    # Sobre o autor
+│   │   ├── thank-you.njk           # Confirmação de envio
+│   │   ├── contato-sucesso.njk     # Sucesso do formulário de contato
+│   │   ├── privacy.njk             # Política de privacidade
+│   │   ├── terms.njk               # Termos de uso
+│   │   └── ...                     # Páginas SEO e institucionais
+│   ├── _includes/
+│   │   └── layout.njk              # Layout compartilhado (head, nav, footer)
+│   ├── _data/
+│   │   └── site.json               # Config global (sitekey Turnstile, GTM, apiUrl)
+│   ├── assets/
+│   │   ├── css/                    # Estilos do site
+│   │   ├── js/
+│   │   │   ├── script.js           # Lógica principal do frontend
+│   │   │   └── lib/
+│   │   │       └── starter-kit.js  # Helpers: buildPayload, getUTM, isHumanTiming
+│   │   └── images/
+│   └── download/                   # Redirect estático para download via Worker
+├── backend-server.js               # Servidor Express all-in-one (dev/prototipagem)
+├── server.js                       # Servidor modular (importa rotas de src-backend/)
+├── src-backend/
+│   └── routes/
+│       ├── auth.js                 # Login, logout, refresh
+│       ├── account.js              # Perfil e senha do usuário
+│       └── admin.js                # Estatísticas e gestão de leads/usuários
+├── tests/
+│   ├── unit/                       # Vitest (script.test.mjs, starter-kit.test.mjs)
+│   └── e2e/                        # Playwright (starter-kit.spec.js, site.spec.js)
+├── tools/                          # Scripts utilitários (Sonar, structured data)
+├── docs/                           # Documentação adicional (SEO.md)
+├── .env.example                    # Template de variáveis de ambiente
+└── dist/                           # Build gerado (não commitar)
+```
+
+---
+
+## Backend e autenticação
+
+### Dois modos de servidor
+
+| Arquivo | Quando usar |
+|---|---|
+| `backend-server.js` | Prototipagem rápida — tudo em um arquivo |
+| `server.js` + `src-backend/` | Desenvolvimento estruturado (recomendado) |
+
+### Autenticação JWT
+
+- Token armazenado em cookie `httpOnly`, `Secure`, `SameSite=Strict`
+- Expiração configurável via `JWT_EXPIRY` (padrão: `15m`)
+- Refresh automático via `POST /api/auth/refresh` (expira em `JWT_REFRESH_EXPIRY`, padrão `7d`)
+- Roles: `admin` e `user`
+
+### Banco de dados (MVP)
+
+Armazenamento em JSON local (`db/`). Para produção, trocar `DATABASE_TYPE` para `mongodb` ou `postgresql` e configurar `DATABASE_URL`.
+
+Usuários padrão para desenvolvimento:
+
+| Email | Senha | Role |
+|---|---|---|
+| `admin@brazildecoded.com` | `password123` | admin |
+| `user@brazildecoded.com` | `password123` | user |
+
+> **Troque as senhas antes de qualquer exposição pública.**
+
+---
+
+## Variáveis de ambiente
+
+Copie `.env.example` para `.env` e preencha:
+
+```env
+NODE_ENV=development
+PORT=3001
+
+JWT_SECRET=troque-por-uma-chave-forte
+JWT_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
+
+CLIENT_URL=http://localhost:8080
+SERVER_URL=http://localhost:3001
+
+DATABASE_TYPE=json
+# DATABASE_URL=mongodb+srv://...
+
+LOG_LEVEL=debug
+
+# Opcionais — para envio de email
+# RESEND_API_KEY=
+# SENDGRID_API_KEY=
+```
+
+> `JWT_SECRET` é obrigatório em produção. Nunca commite o `.env`.
+
+---
+
+## Formulário Starter Kit
+
+### Payload enviado ao Worker
+
+Toda chave usa **snake_case em inglês**. A função `buildPayload` em `src/assets/js/lib/starter-kit.js` é a única fonte de verdade para o formato do payload.
+
+```json
+{
+  "type": "starter_kit",
+  "name": "Rodrigo",
+  "email": "user@example.com",
+  "page": "/free-starter-kit/",
+  "referrer": "https://google.com/",
+  "user_agent": "Mozilla/5.0 ...",
+  "source": "free_starter_kit",
+  "form_token": "bd_starterkit_v1",
+  "form_started_at": "1780335513236",
+  "consent": true,
+  "company": "",
+  "turnstile_token": "1.5xSGL...",
+  "utm_source": "",
+  "utm_medium": "",
+  "utm_campaign": "",
+  "utm_content": "",
+  "utm_term": ""
+}
+```
+
+### Camadas de proteção anti-bot
+
+| Camada | Como funciona |
+|---|---|
+| **Honeypot** | Campo `company` oculto — se preenchido, o envio é silenciosamente bloqueado |
+| **Timing** | Formulário bloqueado se enviado em menos de 3 segundos após carregar |
+| **form_token** | Valor fixo validado no frontend; falha invalida o envio |
+| **Cloudflare Turnstile** | Widget CAPTCHA — botão só habilita após `onTurnstileSuccess` |
+| **Worker / Make** | Validação server-side do token Turnstile via `siteverify` |
+
+---
+
+## Integrações externas
+
+### Cloudflare Turnstile
+
+- `site_key` configurado em `src/_data/site.json` → `turnstileSiteKey`
+- Script carregado em `src/_includes/layout.njk`
+- Validação server-side obrigatória no Make (HTTP → POST para o endpoint `siteverify` da Cloudflare)
+
+### Cloudflare Worker
+
+- URL: `https://brazildecoded-api.rodcafonte.workers.dev`
+- Endpoint de captura de lead: `POST /cadastro`
+- Após validação, repassa para o cenário Make
+
+### Make (automação)
+
+Fluxo do cenário:
+
+```
+Webhook → Validações anti-bot → Validar Turnstile → Normalizar email
+→ Gerar Download Token → Airtable Search → Router
+    ├─ Create Record (novo lead)
+    └─ Update Record (lead existente)
+→ Enviar email → Atualizar Airtable (status do envio)
+```
+
+### Cloudflare R2
+
+- Bucket privado para o PDF do Starter Kit
+- Acesso apenas via Worker com token de download
+- Token gerado pelo Make, expira em 24h
+
+### Google Tag Manager
+
+- GTM ID: `GTM-PS36XKLG` (configurado em `site.json`)
+- Eventos personalizados: `starter_kit_form_submit`, `starter_kit_form_error`
+
+---
 
 ## Testes
 
-- Testes unitários (Vitest):
+### Unitários (Vitest)
 
 ```powershell
 npm run test:unit
-```
 
-- Testes unitários com cobertura:
-
-```powershell
+# Com cobertura (threshold: 90%)
 npm run test:unit:coverage
 ```
 
-- E2E (Playwright):
+Arquivos testados: `src/assets/js/**/*.js`
+Cobertura atual: ~98% statements, ~91% branches.
+
+### E2E (Playwright)
 
 ```powershell
 npm run test:e2e
 ```
 
-  - A suíte E2E atual inclui `tests/e2e/starter-kit.spec.js` e `tests/e2e/site.spec.js`, cobrindo o formulário do Starter Kit, páginas de SEO e o fluxo de contato.
+O Playwright inicia o Eleventy automaticamente. Cobre o formulário Starter Kit, páginas SEO e fluxo de contato.
 
-- Relatório SonarCloud:
-
-```powershell
-$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
-npm run sonar:summary
-```
-
-- Executar SonarCloud diretamente:
+### SonarCloud
 
 ```powershell
-$env:SONAR_TOKEN="YOUR_TOKEN_HERE"
+$env:SONAR_TOKEN = "SEU_TOKEN"
 npm run sonar
 ```
 
-- Gancho pre-push:
+> Use `setx SONAR_TOKEN "SEU_TOKEN"` para persistir a variável no Windows (requer novo terminal).
 
-```powershell
-npm run prepush
-```
-
-> Observação: `setx SONAR_TOKEN "YOUR_TOKEN_HERE"` grava a variável para o usuário atual, mas é necessário abrir um novo terminal para que ela tenha efeito.
+---
 
 ## Lint e formatação
 
 ```powershell
+# Verificar
 npm run lint
+
+# Formatar
 npm run format
+
+# Só checar sem alterar
+npm run format:check
 ```
 
-## Estrutura do projeto
+Ferramentas: ESLint (JS), Stylelint (CSS), HTMLHint (Nunjucks), Prettier.
 
-- `src/index.njk` - página inicial
-- `src/pages/free-starter-kit.njk` - formulário de Starter Kit
-- `src/pages/contact.njk` - formulário de contato
-- `src/pages/leads.njk` - painel de leads local
-- `src/download/index.html` - página de redirect para o download seguro do Starter Kit via Cloudflare Worker
-- `src/pages/thank-you.njk` - página de agradecimento
-- `src/pages/contato-sucesso.njk` - página de sucesso do Starter Kit
-- `src/_includes/layout.njk` - layout compartilhado e tags globais
-- `src/assets/css/` - CSS do site
-- `src/assets/js/` - JavaScript do site
-- `src/assets/images/` - imagens e ícones
-- `src/_data/site.json` - dados de navegação e site
-- `src/CNAME` - domínio customizado para GitHub Pages
-- `docs/` - documentação adicional (SEO, TODOs)
-- `tests/unit/` - testes de unidade (Vitest)
-- `tests/e2e/` - testes end-to-end (Playwright)
-- `tools/` - scripts utilitários (relatórios, Sonar)
-
-## Fluxo de formulários e leads
-
-- O Starter Kit usa `data-make-url` em `src/pages/free-starter-kit.njk` para apontar para um webhook Make.
-- O formulário exige consentimento explícito antes de enviar dados.
-- O admin local (`/pages/leads.html`) funciona como protótipo de exportação/visualização de leads.
-
-## Cloudflare Turnstile
-
-- O formulário do Starter Kit inclui proteção contra bots via Cloudflare Turnstile.
-- O token do Turnstile é enviado junto com os dados do formulário para o webhook Make.
-- Para configurar:
-  1. Acesse o painel do Cloudflare e navegue para Turnstile.
-  2. Crie um novo site e obtenha o `site_key` e `secret_key`.
-  3. Adicione o script do Turnstile ao layout (`src/_includes/layout.njk`).
-  4. Configure o widget no formulário com o `site_key`.
-  5. O token gerado será incluído no campo `turnstile_token` do payload enviado ao Make.
-
-## Cloudflare R2 Storage
-
-- O arquivo PDF do Starter Kit é armazenado no Cloudflare R2 para distribuição segura e eficiente.
-- O Cloudflare Worker valida tokens de acesso e serve o arquivo diretamente do R2.
-- Para configurar:
-  1. Acesse o painel do Cloudflare e navegue para R2.
-  2. Crie um novo bucket (ex: `brazildecoded-starter-kit`).
-  3. Faça upload do arquivo PDF do Starter Kit para o bucket.
-  4. Configure permissões: torne o bucket privado (acesso apenas via Worker).
-  5. No Cloudflare Workers, crie um Worker que:
-     - Receba requests para `/download/` com parâmetro `token`
-     - Valide o token (pode ser um JWT ou token simples)
-     - Se válido, busque o arquivo do R2 e retorne como response
-     - Se inválido, retorne erro 403
-  6. Configure o Worker route para o domínio (ex: `brazildecoded.com/download/*`).
-  7. No webhook Make, após processar o lead, gere um token válido e envie por email.
-
-- Benefícios do R2:
-  - Armazenamento de objetos durável e escalável
-  - Baixo custo (gratuito para primeiros TBs)
-  - Integração nativa com Workers
-  - CDN global para downloads rápidos
-
-## Configuração sensível
-
-- O webhook em `data-make-url` é uma configuração sensível. mantenha-o fora de repositórios públicos e rotacione se vazar.
-- O checkbox de consentimento (`#consent`) deve permanecer `required` antes de enviar o formulário.
-- Não armazene nem envie dados pessoais sem consentimento. Ajuste a mensagem de privacidade conforme a legislação aplicável.
-
-## Make webhook
-
-1. Crie um cenário no Make com um gatilho **Custom webhook**.
-2. Copie a URL do webhook para `data-make-url` em `src/pages/free-starter-kit.njk`.
-3. Teste com **Run once** e, após validar, ative o cenário.
-4. Conecte os módulos downstream (Google Sheets, Mailchimp, email, etc.).
+---
 
 ## Deploy
 
-- Publicação via GitHub Pages usando GitHub Actions.
-- O site é construído com Eleventy e deployado a partir de `dist/`.
-- O fluxo de download do Starter Kit usa uma página de redirecionamento estática em `/download/` que encaminha para um Cloudflare Worker seguro.
-- A página de download aceita um token no query string, por exemplo: `/download/?token=SEU_TOKEN_AQUI`.
+- **Frontend:** publicado via GitHub Actions → GitHub Pages a partir de `dist/`.
+- **Backend:** servidor Express rodando separadamente (VPS, Railway, Render, etc.).
+- **Worker:** deployado no Cloudflare Workers.
+- **Cache:** GitHub Pages não suporta `_headers`. Use Cloudflare para cabeçalhos customizados.
+  - HTML: bypass cache ou TTL curto
+  - `/assets/*`: Cache Everything, Edge TTL 1 ano
+  - `site.buildVersion` nos bundles CSS/JS garante cache busting
 
-## GitHub Pages e cache
-
-- GitHub Pages não aplica `_headers`. Use Cloudflare se precisar de cabeçalhos de cache personalizados.
-- Exemplo de regra de cache:
-  - `*/*` -> Bypass cache ou TTL curto para HTML
-  - `/assets/*` -> Cache Everything, Edge TTL 1 ano
-- Use `site.buildVersion` para controle de cache em CSS/JS.
+---
 
 ## Contribuição
 
-- Crie uma issue para bugs ou sugestões.
-- Abra um PR com uma descrição clara do problema e das mudanças.
-- Execute `npm run lint`, `npm run test:unit` e `npm run test:e2e` antes de submeter.
+1. Abra uma issue descrevendo o bug ou sugestão.
+2. Crie um branch a partir de `main`.
+3. Execute antes de abrir o PR:
+
+```powershell
+npm run lint
+npm run test:unit
+npm run test:e2e
+```
+
+4. Abra o PR com descrição clara do problema e das mudanças.
+
+---
 
 ## Links úteis
 
-- Eleventy: https://www.11ty.dev/
-- Vitest: https://vitest.dev/
-- Playwright: https://playwright.dev/
-- SonarCloud: https://sonarcloud.io/
-- Structured data report: `docs/SEO.md`
-- Domain verification setup: see `docs/SEO.md` for Google Search Console and Pinterest configuration
-
-## Observações
-
-- A versão mínima recomendada do Node.js é 18.
-- Os arquivos gerados pela build não devem ser comitados se estiverem no `.gitignore`.
-- Mantenha o texto de consentimento do formulário sincronizado com as regras de privacidade.
-
-
+- [Eleventy](https://www.11ty.dev/)
+- [Vitest](https://vitest.dev/)
+- [Playwright](https://playwright.dev/)
+- [SonarCloud](https://sonarcloud.io/)
+- [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/)
+- [Make (Integromat)](https://www.make.com/)
+- Documentação SEO: `docs/SEO.md`
+- Setup backend: `BACKEND_SETUP_GUIDE.md`
+- Quick start auth: `QUICK_START_AUTH.md`
