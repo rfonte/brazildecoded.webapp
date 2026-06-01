@@ -202,6 +202,23 @@ textarea.form-input {
   color: #b91c1c;
 }
 
+.starter-success-panel {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #0f766e;
+  border-radius: 18px;
+  background: #ecfdf5;
+}
+
+.starter-success-panel p {
+  margin: 0 0 1rem;
+}
+
+.starter-success-panel h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
 .form-helper {
   margin: 0;
   color: var(--muted);
@@ -326,6 +343,7 @@ textarea:focus-visible {
 .lead {
   font-size: 1.15rem;
   color: var(--muted);
+  margin: 0 0 0.85rem;
 }
 
 .hero-actions,
@@ -342,7 +360,7 @@ textarea:focus-visible {
   list-style: none;
   display: grid;
   gap: 0.4rem;
-  padding: 0;
+  padding: 0%;
   margin: 0;
   color: var(--muted);
   font-size: 0.95rem;
@@ -416,7 +434,7 @@ button.cta:disabled {
 
 /* Sections */
 .section {
-  padding: 2.75rem 0;
+  padding: 2rem 0;
 }
 
 section:last-of-type {
@@ -816,4 +834,149 @@ section:last-of-type {
   content: "→";
   color: var(--accent);
   margin-right: 0.4rem;
+}
+
+/* ─── Starter Kit page ─────────────────────────────────────────────────── */
+
+.hero--starter {
+  padding-bottom: 4rem;
+}
+
+.hero-grid--starter {
+  grid-template-columns: 1fr minmax(340px, 420px);
+  align-items: start;
+  gap: 3rem;
+}
+
+.hero-proof {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0;
+  padding-top: 0.25rem;
+}
+
+/* Form card */
+.starter-form-card {
+  background: var(--paper);
+  border-radius: var(--radius);
+  border: 1px solid rgb(16 24 40 / 10%);
+  box-shadow: var(--shadow);
+  padding: 1.75rem 1.75rem 1.5rem;
+  position: sticky;
+  top: calc(72px + 1.5rem);
+}
+
+.starter-form-card form {
+  max-width: 100%;
+  margin-top: 0;
+}
+
+.starter-form-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  margin: 0 0 0.3rem;
+}
+
+.starter-form-subtitle {
+  color: var(--muted);
+  font-size: 0.875rem;
+  margin: 0 0 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgb(16 24 40 / 8%);
+}
+
+/* Consent label with flex so checkbox aligns to top of text */
+.consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.consent-label input[type="checkbox"] {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Turnstile spacing */
+.cf-turnstile {
+  min-height: 65px;
+}
+
+/* Submit button — full width, prominent */
+.starter-submit-btn {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+/* ─── Success panel ─────────────────────────────────────────────────────── */
+
+.starter-success-panel {
+  text-align: center;
+  padding: 1rem 0.5rem 0.5rem;
+}
+
+.starter-success-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 auto 1.1rem;
+}
+
+.starter-success-heading {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  margin: 0 0 0.6rem;
+  color: var(--ink);
+}
+
+.starter-success-body {
+  color: var(--muted);
+  font-size: 0.975rem;
+  line-height: 1.5;
+  margin: 0 0 0.4rem;
+}
+
+.starter-success-body strong {
+  color: var(--accent-dark);
+  font-weight: 700;
+}
+
+.starter-success-detail {
+  font-size: 0.825rem;
+  color: var(--muted);
+  margin: 0 0 1.5rem;
+}
+
+.starter-success-cta {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+}
+
+/* ─── Responsive ────────────────────────────────────────────────────────── */
+
+@media (width <= 900px) {
+  .hero-grid--starter {
+    grid-template-columns: 1fr;
+  }
+
+  .starter-form-card {
+    position: static;
+  }
 }

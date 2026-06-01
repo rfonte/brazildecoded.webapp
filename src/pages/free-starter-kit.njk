@@ -5,42 +5,6 @@ layout: "layout.njk"
 pageKey: "starter"
 permalink: "/free-starter-kit/"
 ---
-<section class="hero" aria-labelledby="starter-title">
-  <div class="container hero-grid">
-    <div class="stack">
-      <p class="eyebrow">Free download</p>
-      <h1 id="starter-title">Free Brazil Travel Starter Kit</h1>
-      <p class="lead measure">Downloaded by first-time travelers from over 30 countries.</p>
-      <p class="lead measure">
-        A practical PDF guide with safety tips, local etiquette, and a quick
-        checklist to plan your trip to Brazil. Delivered by email.
-      </p>
-      <ul class="hero-highlights" aria-label="Kit highlights">
-        <li>Quick planning checklist</li>
-        <li>Safety and etiquette tips</li>
-        <li>Ideal for first-time visitors</li>
-      </ul>
-    </div>
-
-    <aside class="card" aria-label="Starter kit summary">
-      <h2 class="card-title">What happens next?</h2>
-
-      <p class="card-subtitle">
-        Fill out the form below and we’ll email you the <strong>Brazil Starter Kit</strong>.
-      </p>
-
-      <ol class="card-steps" aria-label="Next steps">
-        <li>Enter your email and submit the form.</li>
-        <li>Check your inbox (and spam/promotions, just in case).</li>
-        <li>Open the kit and start planning with confidence.</li>
-      </ol>
-
-      <p class="card-note">
-        No spam, only the Starter Kit and occasional BrazilDecoded updates.
-      </p>
-    </aside>
-  </div>
-</section>
 
 {# JSON-LD: Breadcrumbs for SEO #}
 <script type="application/ld+json">
@@ -64,18 +28,55 @@ permalink: "/free-starter-kit/"
 }
 </script>
 
-<section class="section" aria-labelledby="form-title">
-  <div class="container">
-    <div class="card">
-      <h2 class="section-title" id="form-title">Get the Brazil travel starter kit</h2>
-      <p class="section-note">Use a valid email to receive the material.</p>
+<section class="hero hero--starter" aria-labelledby="starter-title">
+  <div class="container hero-grid hero-grid--starter">
+
+    {# LEFT: copy #}
+    <div class="stack">
+      <p class="eyebrow">Free download</p>
+      <h1 id="starter-title">Free Brazil Travel Starter Kit</h1>
+      <p class="lead measure">
+        A practical PDF guide with safety tips, local etiquette, and a quick
+        checklist to plan your trip to Brazil. Delivered by email.
+      </p>
+      <ul class="hero-highlights" aria-label="Kit highlights">
+        <li>Quick planning checklist</li>
+        <li>Safety and etiquette tips</li>
+        <li>Ideal for first-time visitors</li>
+      </ul>
+      <p class="hero-proof">Downloaded by first-time travelers from over 30 countries.</p>
+    </div>
+
+    {# RIGHT: form card #}
+    <div class="starter-form-card">
+
+      {# Success state — revealed after submit, replaces form #}
+      <div id="starterSuccess" class="starter-success-panel" hidden aria-live="assertive">
+        <div class="starter-success-icon" aria-hidden="true">✓</div>
+        <h2 class="starter-success-heading">Check your inbox!</h2>
+        <p class="starter-success-body">
+          We sent the secure download link to<br>
+          <strong id="starterSuccessEmail">your email</strong>.
+        </p>
+        <p class="starter-success-detail">
+          The link expires in 24 hours. Didn't receive it? Check spam or promotions.
+        </p>
+        <a class="cta ghost starter-success-cta" href="/the-guide/">
+          See the complete guide →
+        </a>
+      </div>
+
+      {# Form #}
+      <h2 class="starter-form-title" id="form-title">Get your free Starter Kit</h2>
+      <p class="starter-form-subtitle">Your download link will arrive by email in minutes.</p>
 
       <form
         class="lead-form"
         id="starterKitForm"
-        action="#"
+        action=""
         method="post"
         novalidate
+        aria-labelledby="form-title"
         data-endpoint="{{ site.apiUrl }}/cadastro"
       >
         <label for="leadName">Your name</label>
@@ -132,9 +133,9 @@ permalink: "/free-starter-kit/"
           name="form_started_at"
         />
 
-        <label>
+        <label class="consent-label">
           <input type="checkbox" id="consent" name="consent" required />
-          I agree to receive the Starter Kit and occasional BrazilDecoded updates. No spam.
+          <span>I agree to receive the Starter Kit and occasional BrazilDecoded updates. No spam.</span>
         </label>
         <p
           id="consentHelper"
@@ -145,14 +146,14 @@ permalink: "/free-starter-kit/"
           You must accept the consent to enable the button.
         </p>
 
-        <!-- Widget Turnstile -->
+        <!-- Turnstile widget -->
         <div class="cf-turnstile"
              data-sitekey="{{ site.turnstileSiteKey }}"
              data-theme="auto"
              data-callback="onTurnstileSuccess"
              data-expired-callback="onTurnstileExpired"></div>
 
-        <button class="cta primary" id="leadSubmit" type="submit">
+        <button class="cta primary starter-submit-btn" id="leadSubmit" type="submit">
           Send me the Starter Kit
         </button>
 
@@ -160,16 +161,20 @@ permalink: "/free-starter-kit/"
           id="leadFeedback"
           class="form-feedback"
           role="status"
+          aria-live="polite"
           data-status
         ></p>
       </form>
-    </div>
 
-    <div class="cta-row section">
-      <a class="cta ghost" href="/">Back home</a>
-    </div>
+    </div>{# /starter-form-card #}
   </div>
 </section>
+
+<div class="container">
+  <div class="cta-row section">
+    <a class="cta ghost" href="/">← Back home</a>
+  </div>
+</div>
 
 {# JSON-LD: Product (digital starter kit) to improve appearance in search results #}
 <script type="application/ld+json">
