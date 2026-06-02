@@ -235,6 +235,45 @@ function requireRole(...roles) {
 }
 
 // ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+function createRateLimiter({ windowMs = 15 * 60 * 1000, max = 30, message = 'Too many requests, please try again later.' } = {}) {
+  const store = new Map();
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of store.entries()) {
+      if (now > entry.resetTime) store.delete(key);
+    }
+  }, windowMs).unref();
+
+  return (req, res, next) => {
+    const key = req.ip || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = store.get(key);
+
+    if (!entry || now > entry.resetTime) {
+      store.set(key, { count: 1, resetTime: now + windowMs });
+      return next();
+    }
+
+    entry.count += 1;
+    if (entry.count > max) {
+      res.setHeader('Retry-After', Math.ceil((entry.resetTime - now) / 1000));
+      return res.status(429).json({ error: message });
+    }
+
+    next();
+  };
+}
+
+// Strict limiter for auth endpoints (10 req / 15 min per IP)
+const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10, message: 'Too many auth attempts, please try again later.' });
+
+// Standard limiter for authenticated API routes (60 req / 15 min per IP)
+const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 60 });
+
+// ============================================================================
 // EXPRESS APP SETUP
 // ============================================================================
 
@@ -272,7 +311,7 @@ app.get('/health', (req, res) => {
 // ROUTES - AUTHENTICATION
 // ============================================================================
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', authLimiter, (req, res) => {
   try {
     const { username, password, rememberMe } = req.body;
 
@@ -313,12 +352,12 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', (req, res) => {
+app.post('/api/auth/logout', authLimiter, (req, res) => {
   clearAuthCookie(res);
   res.json({ sucesso: true, message: 'Logged out successfully' });
 });
 
-app.post('/api/auth/refresh', verifyToken, (req, res) => {
+app.post('/api/auth/refresh', authLimiter, verifyToken, (req, res) => {
   try {
     const user = db.getUserById(req.user.id);
     if (!user) {
@@ -338,7 +377,7 @@ app.post('/api/auth/refresh', verifyToken, (req, res) => {
   }
 });
 
-app.post('/api/auth/forgot-password', (req, res) => {
+app.post('/api/auth/forgot-password', authLimiter, (req, res) => {
   try {
     const { email } = req.body;
 
@@ -372,7 +411,7 @@ app.post('/api/auth/forgot-password', (req, res) => {
 // ROUTES - ACCOUNT
 // ============================================================================
 
-app.get('/api/account/profile', verifyToken, (req, res) => {
+app.get('/api/account/profile', apiLimiter, verifyToken, (req, res) => {
   try {
     const user = db.getUserById(req.user.id);
     if (!user) {
@@ -389,7 +428,7 @@ app.get('/api/account/profile', verifyToken, (req, res) => {
   }
 });
 
-app.put('/api/account/profile', verifyToken, (req, res) => {
+app.put('/api/account/profile', apiLimiter, verifyToken, (req, res) => {
   try {
     const { name, email } = req.body;
 
@@ -408,7 +447,7 @@ app.put('/api/account/profile', verifyToken, (req, res) => {
   }
 });
 
-app.post('/api/account/change-password', verifyToken, (req, res) => {
+app.post('/api/account/change-password', authLimiter, verifyToken, (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
@@ -449,7 +488,7 @@ app.post('/api/account/change-password', verifyToken, (req, res) => {
 // ROUTES - ADMIN
 // ============================================================================
 
-app.get('/api/admin/stats', verifyToken, requireRole('admin'), (req, res) => {
+app.get('/api/admin/stats', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const leads = db.getAllLeads();
     const users = db.getAllUsers();
@@ -474,7 +513,7 @@ app.get('/api/admin/stats', verifyToken, requireRole('admin'), (req, res) => {
   }
 });
 
-app.get('/api/admin/leads', verifyToken, requireRole('admin'), (req, res) => {
+app.get('/api/admin/leads', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const leads = db.getAllLeads().map(lead => ({
       ...lead,
@@ -490,7 +529,7 @@ app.get('/api/admin/leads', verifyToken, requireRole('admin'), (req, res) => {
   }
 });
 
-app.get('/api/admin/users', verifyToken, requireRole('admin'), (req, res) => {
+app.get('/api/admin/users', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const users = db.getAllUsers().map(u => {
       const { password: _, ...userWithoutPassword } = u;
@@ -506,7 +545,7 @@ app.get('/api/admin/users', verifyToken, requireRole('admin'), (req, res) => {
   }
 });
 
-app.put('/api/admin/settings', verifyToken, requireRole('admin'), (req, res) => {
+app.put('/api/admin/settings', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const { siteTitle, adminEmail } = req.body;
 
