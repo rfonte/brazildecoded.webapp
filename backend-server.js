@@ -16,6 +16,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import 'dotenv/config';
 
@@ -169,22 +170,23 @@ if (db.getAllUsers().length === 0) {
 // AUTHENTICATION UTILITIES
 // ============================================================================
 
-function generateToken(user) {
-  return jwt.sign(
-    {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRY }
-  );
+const sessions = new Map();
+
+function createSession(user) {
+  const sessionId = crypto.randomBytes(32).toString('hex');
+  sessions.set(sessionId, {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    createdAt: Date.now(),
+  });
+  return sessionId;
 }
 
-function setAuthCookie(res, token) {
-  res.cookie('bd_auth_token', token, {
+function setAuthCookie(res, sessionId) {
+  res.cookie('bd_auth_token', sessionId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -294,8 +296,8 @@ app.post('/api/auth/login', (req, res) => {
       });
     }
 
-    const token = generateToken(user);
-    setAuthCookie(res, token);
+    const sessionId = createSession(user);
+    setAuthCookie(res, sessionId);
 
     // Return user data without password
     const { password: _, ...userWithoutPassword } = user;
