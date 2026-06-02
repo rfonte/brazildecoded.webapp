@@ -1403,6 +1403,94 @@ describe("script.js", () => {
     globalThis.BDApp.setButtonState(null, true);
   });
 
+  it("shows starter success panel after successful webhook submission", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" value="user@example.com" />
+        <input type="text" name="company_hp" />
+        <input type="text" name="name" id="leadName" value="User" />
+        <input type="hidden" name="form_token" value="bd_starterkit_v1" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+      <div id="starter-success" hidden>
+        <span id="starter-success-email"></span>
+      </div>
+    `);
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve({ sucesso: true, mensagem: "Success" }),
+      })
+    );
+
+    await loadScript();
+    expect(document.getElementById("starter-success")).not.toBeNull();
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    await flushPromises();
+
+    expect(document.getElementById("starter-success").hidden).toBe(false);
+    expect(document.getElementById("starter-success-email").textContent).toBe(
+      "user@example.com"
+    );
+  });
+
+  it("logs a warning when cookie consent persistence fails", async () => {
+    const originalStorage = globalThis.localStorage;
+    const stubStorage = {
+      getItem: originalStorage.getItem.bind(originalStorage),
+      removeItem: originalStorage.removeItem.bind(originalStorage),
+      clear: originalStorage.clear.bind(originalStorage),
+      key: originalStorage.key.bind(originalStorage),
+      get length() {
+        return originalStorage.length;
+      },
+      setItem(key, value) {
+        if (key === "brazildecoded_cookie_consent") {
+          throw new Error("storage gone");
+        }
+        return originalStorage.setItem(key, value);
+      },
+    };
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      writable: true,
+      value: stubStorage,
+    });
+
+    setHtml(`
+      <script></script>
+      <div id="cookieBanner">
+        <button id="cookieAccept" type="button"></button>
+        <button id="cookieReject" type="button"></button>
+        <button id="cookieSettings" type="button"></button>
+        <div id="cookieSettingsPanel"></div>
+        <input type="checkbox" id="cookieAnalytics" />
+        <input type="checkbox" id="cookieMarketing" />
+        <button id="cookieSave" type="button"></button>
+      </div>
+    `);
+    await loadScript();
+
+    document.getElementById("cookieAnalytics").checked = true;
+    const saveButton = document.getElementById("cookieSave");
+    expect(saveButton).not.toBeNull();
+    dispatchClick(saveButton);
+
+    expect(getLogs().some((log) => log.message === "Cookie consent storage failed")).toBe(true);
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      writable: true,
+      value: originalStorage,
+    });
+  });
+
   it("logEvent handles storage failures safely", async () => {
     await loadScript();
     const realSetItem = localStorage.setItem.bind(localStorage);
@@ -1697,6 +1785,27 @@ describe("script.js", () => {
     document.querySelector('[name="cf-turnstile-response"]').value = "tok123";
     submitForm("starterKitForm", { skipTiming: true });
     expect(getLogs().some(log => log.message === "Starter kit submit started")).toBe(true);
+  });
+
+  it("updates button state via Turnstile success and expired handlers", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm">
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+      </form>
+    `);
+    await loadScript();
+
+    const submitBtn = document.getElementById("leadSubmit");
+    expect(typeof globalThis.onTurnstileSuccess).toBe("function");
+    expect(typeof globalThis.onTurnstileExpired).toBe("function");
+
+    globalThis.onTurnstileSuccess();
+    expect(submitBtn.disabled).toBe(false);
+
+    globalThis.onTurnstileExpired();
+    expect(submitBtn.disabled).toBe(true);
   });
 
   it("handles logEvent storage quota exceeded", async () => {
