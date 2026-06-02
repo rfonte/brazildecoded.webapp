@@ -213,6 +213,7 @@ textarea.form-input {
   border: 1px solid #0f766e;
   border-radius: 18px;
   background: #ecfdf5;
+  text-align: center;
 }
 
 .starter-success-panel p {
@@ -222,6 +223,21 @@ textarea.form-input {
 .starter-success-panel h3 {
   margin: 0 0 0.75rem;
   font-size: 1.15rem;
+}
+
+.starter-success-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0 auto 1.1rem;
 }
 
 .form-helper {
@@ -843,11 +859,11 @@ section:last-of-type {
 
 /* ─── Starter Kit page ─────────────────────────────────────────────────── */
 
-.hero--starter {
+.hero-starter {
   padding-bottom: 4rem;
 }
 
-.hero-grid--starter {
+.hero-grid-starter {
   grid-template-columns: 1fr minmax(340px, 420px);
   align-items: start;
   gap: 3rem;
@@ -874,21 +890,10 @@ section:last-of-type {
 }
 
 /* Card turns green when success is visible */
-.starter-form-card:has(#starterSuccess:not([hidden])) {
+.starter-form-card:has(#starter-success:not([hidden])) {
   background: linear-gradient(160deg, #f0fdf6 0%, #ecfdf5 100%);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgb(11 110 79 / 12%), var(--shadow);
-}
-
-/* Hide form title/subtitle when success panel is shown (JS only hides the <form>) */
-.starter-form-card:has(#starterSuccess:not([hidden])) .starter-form-title,
-.starter-form-card:has(#starterSuccess:not([hidden])) .starter-form-subtitle {
-  display: none;
-}
-
-.starter-form-card form {
-  max-width: 100%;
-  margin-top: 0;
 }
 
 .starter-form-title {
@@ -903,6 +908,17 @@ section:last-of-type {
   margin: 0 0 1.25rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid rgb(16 24 40 / 8%);
+}
+
+/* Hide form title/subtitle when success panel is shown (JS only hides the <form>) */
+.starter-form-card:has(#starter-success:not([hidden])) .starter-form-title,
+.starter-form-card:has(#starter-success:not([hidden])) .starter-form-subtitle {
+  display: none;
+}
+
+.starter-form-card form {
+  max-width: 100%;
+  margin-top: 0;
 }
 
 /* Consent label with flex so checkbox aligns to top of text */
@@ -938,51 +954,43 @@ section:last-of-type {
 
 /* ─── Success panel ─────────────────────────────────────────────────────── */
 
-@keyframes successReveal {
+@keyframes success-reveal {
   from {
     opacity: 0;
     transform: translateY(20px) scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes successPop {
-  0%   { transform: scale(0.4); opacity: 0; }
-  65%  { transform: scale(1.18); opacity: 1; }
-  100% { transform: scale(1); }
+@keyframes success-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  65% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-#starterSuccess:not([hidden]) {
-  animation: successReveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+#starter-success:not([hidden]) {
+  animation: success-reveal 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   scroll-margin-top: calc(72px + 2rem);
 }
 
-#starterSuccess:not([hidden]) .starter-success-icon {
-  animation: successPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+#starter-success:not([hidden]) .starter-success-icon {
+  animation: success-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 
-.starter-success-panel {
-  text-align: center;
-  padding: 1.5rem 0.5rem 1rem;
-}
-
-.starter-success-icon {
-  width: 56px;
-  height: 56px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1;
-  margin: 0 auto 1.1rem;
-}
 
 .starter-success-heading {
   font-family: var(--font-display);
@@ -1017,20 +1025,20 @@ section:last-of-type {
 
 /* ─── Success: expand card to full width, hide copy column ─────────────── */
 
-.hero--starter:has(#starterSuccess:not([hidden])) {
+.hero-starter:has(#starter-success:not([hidden])) {
   padding-bottom: 3rem;
 }
 
-.hero--starter:has(#starterSuccess:not([hidden])) .hero-grid--starter {
+.hero-starter:has(#starter-success:not([hidden])) .hero-grid-starter {
   grid-template-columns: 1fr;
   justify-items: center;
 }
 
-.hero--starter:has(#starterSuccess:not([hidden])) .stack {
+.hero-starter:has(#starter-success:not([hidden])) .stack {
   display: none;
 }
 
-.hero--starter:has(#starterSuccess:not([hidden])) .starter-form-card {
+.hero-starter:has(#starter-success:not([hidden])) .starter-form-card {
   position: static;
   width: 100%;
   max-width: 500px;
@@ -1041,7 +1049,7 @@ section:last-of-type {
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 
 @media (width <= 900px) {
-  .hero-grid--starter {
+  .hero-grid-starter {
     grid-template-columns: 1fr;
   }
 

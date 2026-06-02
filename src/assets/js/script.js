@@ -44,7 +44,7 @@
 
   function showStarterSuccess(panel, form, email) {
     if (!panel) return;
-    const emailEl = panel.querySelector("#starterSuccessEmail");
+    const emailEl = panel.querySelector("#starter-success-email");
     if (emailEl) {
       emailEl.textContent = email || "your inbox";
     }
@@ -714,7 +714,7 @@
     const utmCampaignInput = starterForm.querySelector('input[name="utm_campaign"]');
     const utmContentInput = starterForm.querySelector('input[name="utm_content"]');
     const utmTermInput = starterForm.querySelector('input[name="utm_term"]');
-    const successPanel = document.getElementById("starterSuccess");
+    const successPanel = document.getElementById("starter-success");
 
     if (pageInput) {
       pageInput.value = String(globalThis.location.pathname || "");
