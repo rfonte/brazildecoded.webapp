@@ -1429,7 +1429,9 @@ describe("script.js", () => {
     );
 
     await loadScript();
-    expect(document.getElementById("starter-success")).not.toBeNull();
+    const successPanel = document.getElementById("starter-success");
+    expect(successPanel).not.toBeNull();
+    successPanel.scrollIntoView = vi.fn();
     withImmediateTimers(() => submitForm("starterKitForm"));
     await flushPromises();
     await flushPromises();
@@ -1439,6 +1441,7 @@ describe("script.js", () => {
     expect(document.getElementById("starter-success-email").textContent).toBe(
       "user@example.com"
     );
+    expect(successPanel.scrollIntoView).toHaveBeenCalled();
   });
 
   it("logs a warning when cookie consent persistence fails", async () => {
@@ -1499,6 +1502,16 @@ describe("script.js", () => {
     });
     expect(() => globalThis.BDApp.logEvent("info", "test")).not.toThrow();
     localStorage.setItem = realSetItem;
+  });
+
+  it("logEvent handles localStorage getItem failures safely", async () => {
+    await loadScript();
+    const realGetItem = localStorage.getItem.bind(localStorage);
+    localStorage.getItem = vi.fn(() => {
+      throw new Error("boom");
+    });
+    expect(() => globalThis.BDApp.logEvent("info", "test")).not.toThrow();
+    localStorage.getItem = realGetItem;
   });
 
   it("handles email validation with no helper", async () => {
@@ -2114,6 +2127,104 @@ describe("script.js", () => {
     const logs = getLogs();
     const logEntry = logs.find((l) => l.message === "Unhandled promise rejection");
     expect(logEntry).toBeDefined();
+  });
+
+  it("fireGtagEvent uses String fallback when gtag throws a non-Error value", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-endpoint="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    globalThis.gtag = () => { throw "gtag-string-error"; };
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ sucesso: true }) })
+    );
+    await loadScript();
+    document.getElementById("leadEmail").value = "user@example.com";
+    withImmediateTimers(() => submitForm("starterKitForm"));
+    await flushPromises();
+    await flushPromises();
+    const match = getLogs().find((l) => l.message === "Gtag event failed");
+    expect(match).toBeDefined();
+    expect(match.meta.message).toBe("gtag-string-error");
+    delete globalThis.gtag;
+  });
+
+  it("getUTM uses String fallback when helper throws a non-Error value", async () => {
+    globalThis.BDStarterKit = { getUTM: () => { throw "utm-string-error"; }, isValidEmail: () => true };
+    await loadScript();
+    const utm = globalThis.BDApp.getUTM("?utm_source=src");
+    expect(utm.utm_source).toBe("");
+    const match = getLogs().find((l) => l.message === "Starter kit helper getUTM failed");
+    expect(match.meta.message).toBe("utm-string-error");
+  });
+
+  it("buildPayload uses String fallback when helper throws a non-Error value", async () => {
+    globalThis.BDStarterKit = { buildPayload: () => { throw "bp-string-error"; }, isValidEmail: () => true };
+    await loadScript();
+    const payload = globalThis.BDApp.buildPayload({ email: "t@t.com", name: "T", page: "/", referrer: "", userAgent: "ua", queryString: "" });
+    expect(payload.email).toBe("t@t.com");
+    const match = getLogs().find((l) => l.message === "Starter kit helper buildPayload failed");
+    expect(match.meta.message).toBe("bp-string-error");
+  });
+
+  it("isValidEmail uses String fallback when helper throws a non-Error value", async () => {
+    globalThis.BDStarterKit = { isValidEmail: () => { throw "ive-string-error"; } };
+    await loadScript();
+    expect(globalThis.BDApp.isValidEmail("test@test.com")).toBe(false);
+    const match = getLogs().find((l) => l.message === "Starter kit helper isValidEmail failed");
+    expect(match.meta.message).toBe("ive-string-error");
+  });
+
+  it("submit exception uses String fallback when thrown value has no message", async () => {
+    setLocation("/free-starter-kit/");
+    setHtml(`
+      <form id="starterKitForm" data-make-url="https://example.com/webhook">
+        <input type="email" name="email" id="leadEmail" />
+        <input type="text" name="company_hp" />
+        <input type="hidden" id="starterFormStartedAt" />
+        <label><input type="checkbox" id="consent" checked /></label>
+        <button id="leadSubmit" type="submit"></button>
+        <p data-status></p>
+      </form>
+    `);
+    await loadScript();
+    const form = document.getElementById("starterKitForm");
+    form.querySelector = () => { throw "non-error-exception"; };
+    submitForm("starterKitForm");
+    const match = getLogs().find((l) => l.message === "Starter kit submit exception");
+    expect(match.meta.message).toBe("non-error-exception");
+  });
+
+  it("contact webhook uses String fallback when fetch rejects with a non-Error value", async () => {
+    setHtml(`
+      <form id="contactForm" data-make-url="https://example.com/webhook">
+        <input type="text" id="contactName" value="User" />
+        <input type="email" id="contactEmail" value="user@example.com" />
+        <textarea id="contactMessage">Test</textarea>
+        <input type="text" id="hp_contact" />
+        <input type="hidden" id="contactFormStartedAt" />
+        <label><input type="checkbox" id="contactConsent" checked /></label>
+        <p id="contactFeedback"></p>
+        <button id="contactSubmit" type="submit"></button>
+      </form>
+    `);
+    globalThis.fetch = vi.fn(() => Promise.reject("contact-string-error"));
+    await loadScript();
+    submitForm("contactForm");
+    await flushPromises();
+    await flushPromises();
+    expect(document.getElementById("contactFeedback").textContent).toBe(
+      "Something went wrong. Please try again."
+    );
+    const match = getLogs().find((l) => l.message === "Contact webhook failed");
+    expect(match.meta.message).toBe("contact-string-error");
   });
 });
 
