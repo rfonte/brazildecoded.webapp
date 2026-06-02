@@ -336,6 +336,9 @@
     if (turnstileResponse && !turnstileToken) {
       logEvent("warn", "Starter kit Turnstile token missing");
       showMessage(statusEl, "⚠️ Please wait for the anti-bot verification to load.", true);
+      return { ok: false };
+    }
+
     return { ok: true, email, name, endpoint };
   }
 
