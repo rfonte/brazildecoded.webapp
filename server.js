@@ -27,7 +27,45 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:8080';
 
-// Middleware
+// ── Rate limiters ────────────────────────────────────────────────────────────
+
+function createRateLimiter({ windowMs = 15 * 60 * 1000, max = 30, message = 'Too many requests, please try again later.' } = {}) {
+  const store = new Map();
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of store.entries()) {
+      if (now > entry.resetTime) store.delete(key);
+    }
+  }, windowMs).unref();
+
+  return (req, res, next) => {
+    const key = req.ip || req.socket?.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = store.get(key);
+
+    if (!entry || now > entry.resetTime) {
+      store.set(key, { count: 1, resetTime: now + windowMs });
+      return next();
+    }
+
+    entry.count += 1;
+    if (entry.count > max) {
+      res.setHeader('Retry-After', Math.ceil((entry.resetTime - now) / 1000));
+      return res.status(429).json({ error: message });
+    }
+
+    next();
+  };
+}
+
+// 10 req / 15 min — credential-sensitive endpoints
+const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10, message: 'Too many auth attempts, please try again later.' });
+
+// 60 req / 15 min — authenticated API endpoints
+const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 60 });
+
+// ── Middleware ───────────────────────────────────────────────────────────────
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -56,10 +94,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/account', accountRoutes);
+// API Routes — rate limiters applied before route modules
+app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/admin', apiLimiter, adminRoutes);
+app.use('/api/account', apiLimiter, accountRoutes);
 
 // 404 handler
 app.use((req, res) => {
