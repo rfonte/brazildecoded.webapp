@@ -1015,6 +1015,29 @@ section:last-of-type {
   justify-content: center;
 }
 
+/* ─── Success: expand card to full width, hide copy column ─────────────── */
+
+.hero--starter:has(#starterSuccess:not([hidden])) {
+  padding-bottom: 3rem;
+}
+
+.hero--starter:has(#starterSuccess:not([hidden])) .hero-grid--starter {
+  grid-template-columns: 1fr;
+  justify-items: center;
+}
+
+.hero--starter:has(#starterSuccess:not([hidden])) .stack {
+  display: none;
+}
+
+.hero--starter:has(#starterSuccess:not([hidden])) .starter-form-card {
+  position: static;
+  width: 100%;
+  max-width: 500px;
+  min-height: unset;
+  padding: 2.5rem 2rem;
+}
+
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 
 @media (width <= 900px) {
