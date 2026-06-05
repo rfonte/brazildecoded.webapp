@@ -458,6 +458,12 @@ button.cta:disabled {
   padding: 2rem 0;
 }
 
+.section--tinted {
+  background: linear-gradient(135deg, #fff8ee 0%, #eef7f1 100%);
+  border-top: 1px solid rgb(16 24 40 / 6%);
+  border-bottom: 1px solid rgb(16 24 40 / 6%);
+}
+
 section:last-of-type {
   padding-bottom: 48px;
 }
@@ -497,6 +503,20 @@ section:last-of-type {
   color: var(--muted);
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
+}
+
+/* About page two-column layout */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem 4rem;
+  align-items: start;
+}
+
+@media (width <= 720px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Feature grid */
