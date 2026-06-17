@@ -14,6 +14,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import rateLimit from 'express-rate-limit';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -207,6 +208,13 @@ function clearAuthCookie(res) {
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function verifyToken(req, res, next) {
   try {
@@ -529,7 +537,7 @@ app.get('/api/admin/leads', apiLimiter, verifyToken, requireRole('admin'), (req,
   }
 });
 
-app.get('/api/admin/users', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
+app.get('/api/admin/users', apiLimiter, authLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const users = db.getAllUsers().map(u => {
       const { password: _, ...userWithoutPassword } = u;
