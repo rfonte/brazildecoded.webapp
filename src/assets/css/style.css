@@ -458,7 +458,7 @@ button.cta:disabled {
   padding: 2rem 0;
 }
 
-.section--tinted {
+.section-tinted {
   background: linear-gradient(135deg, #fff8ee 0%, #eef7f1 100%);
   border-top: 1px solid rgb(16 24 40 / 6%);
   border-bottom: 1px solid rgb(16 24 40 / 6%);
