@@ -17,6 +17,7 @@ Thumbs.db
 *~
 .env
 .env.local
+db/
 .idea/
 SECURITY_REPORT.md
 TODO.md

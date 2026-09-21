@@ -171,27 +171,26 @@ if (db.getAllUsers().length === 0) {
 // AUTHENTICATION UTILITIES
 // ============================================================================
 
-const sessions = new Map();
-
-function createSession(user) {
-  const sessionId = crypto.randomBytes(32).toString('hex');
-  sessions.set(sessionId, {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    createdAt: Date.now(),
-  });
-  return sessionId;
+function generateToken(user) {
+  return jwt.sign(
+    {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRY }
+  );
 }
 
-function setAuthCookie(res, sessionId) {
-  res.cookie('bd_auth_token', sessionId, {
+function setAuthCookie(res, token) {
+  res.cookie('bd_auth_token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: 15 * 60 * 1000,
+    maxAge: 15 * 60 * 1000, // keep in sync with JWT_EXPIRY default
     path: '/',
   });
 }
@@ -208,13 +207,6 @@ function clearAuthCookie(res) {
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
 
 function verifyToken(req, res, next) {
   try {
@@ -246,40 +238,22 @@ function requireRole(...roles) {
 // RATE LIMITING
 // ============================================================================
 
-function createRateLimiter({ windowMs = 15 * 60 * 1000, max = 30, message = 'Too many requests, please try again later.' } = {}) {
-  const store = new Map();
-  setInterval(() => {
-    const now = Date.now();
-    for (const [key, entry] of store.entries()) {
-      if (now > entry.resetTime) store.delete(key);
-    }
-  }, windowMs).unref();
-
-  return (req, res, next) => {
-    const key = req.ip || req.socket?.remoteAddress || 'unknown';
-    const now = Date.now();
-    const entry = store.get(key);
-
-    if (!entry || now > entry.resetTime) {
-      store.set(key, { count: 1, resetTime: now + windowMs });
-      return next();
-    }
-
-    entry.count += 1;
-    if (entry.count > max) {
-      res.setHeader('Retry-After', Math.ceil((entry.resetTime - now) / 1000));
-      return res.status(429).json({ error: message });
-    }
-
-    next();
-  };
-}
-
 // Strict limiter for auth endpoints (10 req / 15 min per IP)
-const authLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10, message: 'Too many auth attempts, please try again later.' });
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many auth attempts, please try again later.' },
+});
 
 // Standard limiter for authenticated API routes (60 req / 15 min per IP)
-const apiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 60 });
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ============================================================================
 // EXPRESS APP SETUP
@@ -295,13 +269,57 @@ app.use(cors({
   origin: CLIENT_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
 }));
 
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
+
+// ============================================================================
+// CSRF PROTECTION (double-submit cookie)
+// ============================================================================
+// The auth cookie is sent automatically by the browser on cross-site
+// requests, so state-changing routes must also require a token that a
+// cross-site page cannot read or set on the caller's behalf.
+
+const CSRF_COOKIE_NAME = 'bd_csrf_token';
+const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+function issueCsrfCookie(req, res, next) {
+  if (!req.cookies[CSRF_COOKIE_NAME]) {
+    const token = crypto.randomBytes(32).toString('hex');
+    res.cookie(CSRF_COOKIE_NAME, token, {
+      httpOnly: false, // must be readable by client JS to echo back in a header
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+    });
+    req.csrfToken = token;
+  } else {
+    req.csrfToken = req.cookies[CSRF_COOKIE_NAME];
+  }
+  next();
+}
+
+function verifyCsrfToken(req, res, next) {
+  if (CSRF_SAFE_METHODS.has(req.method)) {
+    return next();
+  }
+
+  const cookieToken = req.cookies[CSRF_COOKIE_NAME];
+  const headerToken = req.get('x-csrf-token');
+
+  if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    return res.status(403).json({ error: 'Invalid or missing CSRF token' });
+  }
+
+  next();
+}
+
+app.use(issueCsrfCookie);
+app.use(verifyCsrfToken);
 
 // ============================================================================
 // ROUTES - HEALTH CHECK
@@ -313,6 +331,10 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
+});
+
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken });
 });
 
 // ============================================================================
@@ -343,8 +365,8 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
       });
     }
 
-    const sessionId = createSession(user);
-    setAuthCookie(res, sessionId);
+    const token = generateToken(user);
+    setAuthCookie(res, token);
 
     // Return user data without password
     const { password: _, ...userWithoutPassword } = user;
@@ -537,7 +559,7 @@ app.get('/api/admin/leads', apiLimiter, verifyToken, requireRole('admin'), (req,
   }
 });
 
-app.get('/api/admin/users', apiLimiter, authLimiter, verifyToken, requireRole('admin'), (req, res) => {
+app.get('/api/admin/users', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
     const users = db.getAllUsers().map(u => {
       const { password: _, ...userWithoutPassword } = u;
