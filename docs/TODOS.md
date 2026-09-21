@@ -3,6 +3,18 @@
 - Add more languages
 - Add webhook contract tests (payload validation and mock responses).
 - Ajustar a execução do deploy barrando com gates de qualdiade
+- Integrate real email delivery (Resend/SendGrid) for /api/auth/forgot-password
+  in backend-server.js — it currently only logs the request.
+- Generate a SONAR_TOKEN at https://sonarcloud.io/account/security/ and add it
+  as a repo secret (`gh secret set SONAR_TOKEN`) — it's missing entirely, so
+  the sonarcloud.yml workflow fails on every push and Sonar never re-scans.
+- Once SONAR_TOKEN is restored, re-check tests/unit/script.test.mjs's
+  duplicated-lines finding with real Sonar data (couldn't get exact
+  duplicate ranges without the token; likely a New Code baseline reset from
+  the 1.1.1 release rather than new duplication).
+- Mark the ci.yml `test` job's plain `npm ci` (no --ignore-scripts) as Safe
+  in SonarCloud once access is restored — that job runs Playwright e2e
+  tests and genuinely needs the postinstall browser install.
 
 # Business and product improvements
 

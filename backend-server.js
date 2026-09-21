@@ -188,6 +188,12 @@ function generateToken(user) {
 function setAuthCookie(res, token) {
   res.cookie('bd_auth_token', token, {
     httpOnly: true,
+    // `secure` is only true in production because local dev serves the API
+    // over plain HTTP; browsers drop secure cookies on an insecure origin,
+    // which would break every local login. CodeQL's clear-text-storage
+    // check flags this non-literal `secure` value, but production traffic
+    // does run over HTTPS and does get secure:true here. Dismissed as an
+    // accepted dev-only limitation rather than a real finding.
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     maxAge: 15 * 60 * 1000, // keep in sync with JWT_EXPIRY default
@@ -296,6 +302,15 @@ app.use((req, res, next) => {
 // The auth cookie is sent automatically by the browser on cross-site
 // requests, so state-changing routes must also require a token that a
 // cross-site page cannot read or set on the caller's behalf.
+//
+// This is applied globally below (issueCsrfCookie + verifyCsrfToken) and,
+// combined with the auth cookie's sameSite:'strict', mitigates CSRF.
+// CodeQL's js/missing-token-validation only recognizes a fixed list of
+// known CSRF middleware packages (e.g. csurf) as "token validation", so it
+// still flags this cookie-based app as unprotected even though this
+// hand-rolled double-submit check provides the same guarantee. Tracked as
+// a dismissed false positive rather than swapped for an unmaintained
+// package (csurf) on the chance CodeQL happens to recognize it.
 
 const CSRF_COOKIE_NAME = 'bd_csrf_token';
 const CSRF_SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
@@ -434,7 +449,8 @@ app.post('/api/auth/forgot-password', authLimiter, (req, res) => {
       });
     }
 
-    // TODO: Integrate with email service (Resend, SendGrid)
+    // Password-reset emails aren't wired up yet (tracked in docs/TODOS.md);
+    // this only logs the request for now.
     console.log(`Password reset requested for: ${sanitizeForLog(email)}`);
 
     res.json({
