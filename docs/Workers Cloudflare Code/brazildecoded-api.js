@@ -10,19 +10,20 @@ const ALLOWED_ORIGINS = [
   'https://www.brazildecoded.com.br',
   'http://localhost:8080',
 ];
+const ALLOWED_ORIGINS_SET = new Set(ALLOWED_ORIGINS);
 
-const HOSTNAMES_VALIDOS = [
+const HOSTNAMES_VALIDOS = new Set([
   'brazildecoded.com.br',
   'www.brazildecoded.com.br',
   'localhost',
-];
+]);
 
 // ------------------------------------------------------------
 // Helpers
 // ------------------------------------------------------------
 
 function corsHeaders(origin) {
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowed = ALLOWED_ORIGINS_SET.has(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -43,10 +44,14 @@ function jsonResponse(data, status, cors) {
 }
 
 function isValidEmail(email) {
-  return typeof email === 'string'
-    && email.length >= 5
-    && email.length <= 254
-    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (typeof email !== 'string' || email.length < 5 || email.length > 254 || /\s/.test(email)) {
+    return false;
+  }
+  const atIndex = email.indexOf('@');
+  if (atIndex <= 0 || atIndex !== email.lastIndexOf('@')) return false;
+  const domain = email.slice(atIndex + 1);
+  const dotIndex = domain.indexOf('.');
+  return dotIndex > 0 && dotIndex < domain.length - 1;
 }
 
 function sanitizeString(val, maxLen) {
@@ -157,7 +162,7 @@ export default {
       return jsonResponse({ erro: 'Rota não encontrada' }, 404, cors);
     }
 
-    if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    if (origin && !ALLOWED_ORIGINS_SET.has(origin)) {
       return jsonResponse({ erro: 'Origem não autorizada' }, 403, cors);
     }
 
@@ -210,7 +215,7 @@ export default {
       return jsonResponse({ erro: 'Falha na verificação anti-bot' }, 403, cors);
     }
 
-    if (!HOSTNAMES_VALIDOS.includes(verificacao.hostname)) {
+    if (!HOSTNAMES_VALIDOS.has(verificacao.hostname)) {
       console.warn('Hostname inesperado:', verificacao.hostname);
       return jsonResponse({ erro: 'Origem inválida' }, 403, cors);
     }

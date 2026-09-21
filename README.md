@@ -169,13 +169,7 @@ Copy-Item .env.example .env
 │   │   │       └── starter-kit.js  # Helpers: buildPayload, getUTM, isHumanTiming
 │   │   └── images/
 │   └── download/                   # Redirect estático para download via Worker
-├── backend-server.js               # Servidor Express all-in-one (dev/prototipagem)
-├── server.js                       # Servidor modular (importa rotas de src-backend/)
-├── src-backend/
-│   └── routes/
-│       ├── auth.js                 # Login, logout, refresh
-│       ├── account.js              # Perfil e senha do usuário
-│       └── admin.js                # Estatísticas e gestão de leads/usuários
+├── backend-server.js               # Servidor Express all-in-one (auth, account, admin)
 ├── tests/
 │   ├── unit/                       # Vitest (script.test.mjs, starter-kit.test.mjs)
 │   └── e2e/                        # Playwright (starter-kit.spec.js, site.spec.js)
@@ -189,12 +183,9 @@ Copy-Item .env.example .env
 
 ## Backend e autenticação
 
-### Dois modos de servidor
+### Servidor
 
-| Arquivo | Quando usar |
-|---|---|
-| `backend-server.js` | Prototipagem rápida — tudo em um arquivo |
-| `server.js` + `src-backend/` | Desenvolvimento estruturado (recomendado) |
+`backend-server.js` é o único servidor Express do projeto (auth, conta e admin em um arquivo). Rode com `npm run server:dev` ou `npm run server:watch`.
 
 ### Autenticação JWT
 

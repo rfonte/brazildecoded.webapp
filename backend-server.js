@@ -204,6 +204,16 @@ function clearAuthCookie(res) {
   });
 }
 
+function sanitizeUser(user) {
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
+
+// Strips CR/LF so request-derived values can't forge extra log lines/records.
+function sanitizeForLog(value) {
+  return String(value).replace(/[\r\n]/g, ' ').slice(0, 200);
+}
+
 // ============================================================================
 // MIDDLEWARE
 // ============================================================================
@@ -217,7 +227,9 @@ function verifyToken(req, res, next) {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch {
+    // Expired/invalid/missing tokens are routine (not server errors), so
+    // they're rejected silently instead of logged as failures.
     return res.status(401).json({ error: 'Unauthorized - invalid token' });
   }
 }
@@ -260,6 +272,7 @@ const apiLimiter = rateLimit({
 // ============================================================================
 
 const app = express();
+app.disable('x-powered-by'); // avoid disclosing the framework/version in responses
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -273,7 +286,7 @@ app.use(cors({
 }));
 
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log(`[${new Date().toISOString()}] ${sanitizeForLog(req.method)} ${sanitizeForLog(req.path)}`);
   next();
 });
 
@@ -368,12 +381,9 @@ app.post('/api/auth/login', authLimiter, (req, res) => {
     const token = generateToken(user);
     setAuthCookie(res, token);
 
-    // Return user data without password
-    const { password: _, ...userWithoutPassword } = user;
-
     res.json({
       sucesso: true,
-      user: userWithoutPassword,
+      user: sanitizeUser(user),
       rememberMe,
     });
   } catch (error) {
@@ -397,12 +407,12 @@ app.post('/api/auth/refresh', authLimiter, verifyToken, (req, res) => {
     const token = generateToken(user);
     setAuthCookie(res, token);
 
-    const { password: _, ...userWithoutPassword } = user;
     res.json({
       sucesso: true,
-      user: userWithoutPassword,
+      user: sanitizeUser(user),
     });
   } catch (error) {
+    console.error('Token refresh error:', error);
     res.status(500).json({ error: 'Token refresh failed' });
   }
 });
@@ -425,7 +435,7 @@ app.post('/api/auth/forgot-password', authLimiter, (req, res) => {
     }
 
     // TODO: Integrate with email service (Resend, SendGrid)
-    console.log(`Password reset requested for: ${email}`);
+    console.log(`Password reset requested for: ${sanitizeForLog(email)}`);
 
     res.json({
       sucesso: true,
@@ -448,12 +458,12 @@ app.get('/api/account/profile', apiLimiter, verifyToken, (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const { password: _, ...userWithoutPassword } = user;
     res.json({
       sucesso: true,
-      user: userWithoutPassword,
+      user: sanitizeUser(user),
     });
   } catch (error) {
+    console.error('Fetch profile error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 });
@@ -467,12 +477,12 @@ app.put('/api/account/profile', apiLimiter, verifyToken, (req, res) => {
       ...(email && { email }),
     });
 
-    const { password: _, ...userWithoutPassword } = updated;
     res.json({
       sucesso: true,
-      user: userWithoutPassword,
+      user: sanitizeUser(updated),
     });
   } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 });
@@ -510,6 +520,7 @@ app.post('/api/account/change-password', authLimiter, verifyToken, (req, res) =>
       message: 'Password changed successfully',
     });
   } catch (error) {
+    console.error('Change password error:', error);
     res.status(500).json({ error: 'Failed to change password' });
   }
 });
@@ -539,6 +550,7 @@ app.get('/api/admin/stats', apiLimiter, verifyToken, requireRole('admin'), (req,
       },
     });
   } catch (error) {
+    console.error('Fetch stats error:', error);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
 });
@@ -555,22 +567,21 @@ app.get('/api/admin/leads', apiLimiter, verifyToken, requireRole('admin'), (req,
       leads,
     });
   } catch (error) {
+    console.error('Fetch leads error:', error);
     res.status(500).json({ error: 'Failed to fetch leads' });
   }
 });
 
 app.get('/api/admin/users', apiLimiter, verifyToken, requireRole('admin'), (req, res) => {
   try {
-    const users = db.getAllUsers().map(u => {
-      const { password: _, ...userWithoutPassword } = u;
-      return userWithoutPassword;
-    });
+    const users = db.getAllUsers().map(sanitizeUser);
 
     res.json({
       sucesso: true,
       users,
     });
   } catch (error) {
+    console.error('Fetch users error:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
@@ -590,6 +601,7 @@ app.put('/api/admin/settings', apiLimiter, verifyToken, requireRole('admin'), (r
       settings: updated,
     });
   } catch (error) {
+    console.error('Update settings error:', error);
     res.status(500).json({ error: 'Failed to update settings' });
   }
 });

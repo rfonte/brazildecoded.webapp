@@ -9,6 +9,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reportsDirectory: "coverage",
+      reporter: ["text", "html", "lcov", "clover", "json"],
       include: ["src/assets/js/**/*.js"],
       exclude: [
         "src/assets/js/lib/**",

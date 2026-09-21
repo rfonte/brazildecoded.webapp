@@ -1825,7 +1825,9 @@ describe("script.js", () => {
     await loadScript();
     const realSetItem = localStorage.setItem;
     localStorage.setItem = vi.fn(() => { throw { name: "QuotaExceededError" }; });
-    globalThis.BDApp.logEvent("error", "test");
+
+    expect(() => globalThis.BDApp.logEvent("error", "test")).not.toThrow();
+
     localStorage.setItem = realSetItem;
   });
 
