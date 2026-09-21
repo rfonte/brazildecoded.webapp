@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/rfonte/brazildecoded.webapp/compare/v1.1.0...v1.1.1) (2026-09-21)
+
+
+### Bug Fixes
+
+* address Sonar findings, harden CI, and fix broken coverage/duplication ([223679f](https://github.com/rfonte/brazildecoded.webapp/commit/223679fceb4a3e7ed13b964bb6b3e681cc3e4680))
+* resolve CodeQL alerts and repair broken auth backend ([2043e94](https://github.com/rfonte/brazildecoded.webapp/commit/2043e94f55028dba4fc5b40d7764d0269d7df186))
+
 ## [1.1.0](https://github.com/rfonte/brazildecoded.webapp/compare/v1.0.0...v1.1.0) (2026-06-02)
 
 
