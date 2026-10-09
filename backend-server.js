@@ -171,6 +171,38 @@ if (db.getAllUsers().length === 0) {
 // AUTHENTICATION UTILITIES
 // ============================================================================
 
+const COOKIE_ENCRYPTION_SECRET = process.env.COOKIE_ENCRYPTION_SECRET;
+if (!COOKIE_ENCRYPTION_SECRET) {
+  throw new Error('Missing required env var: COOKIE_ENCRYPTION_SECRET');
+}
+const COOKIE_ENCRYPTION_KEY = crypto
+  .createHash('sha256')
+  .update(COOKIE_ENCRYPTION_SECRET, 'utf8')
+  .digest();
+
+function encryptCookieToken(token) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', COOKIE_ENCRYPTION_KEY, iv);
+  const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return `${iv.toString('base64url')}.${authTag.toString('base64url')}.${encrypted.toString('base64url')}`;
+}
+
+function decryptCookieToken(encryptedToken) {
+  const parts = String(encryptedToken || '').split('.');
+  if (parts.length !== 3) {
+    throw new Error('Invalid encrypted auth cookie format');
+  }
+  const [ivB64, tagB64, dataB64] = parts;
+  const iv = Buffer.from(ivB64, 'base64url');
+  const authTag = Buffer.from(tagB64, 'base64url');
+  const encrypted = Buffer.from(dataB64, 'base64url');
+  const decipher = crypto.createDecipheriv('aes-256-gcm', COOKIE_ENCRYPTION_KEY, iv);
+  decipher.setAuthTag(authTag);
+  const decrypted = Buffer.concat([decipher.update(encrypted), decipher.final()]);
+  return decrypted.toString('utf8');
+}
+
 function generateToken(user) {
   return jwt.sign(
     {
@@ -186,7 +218,8 @@ function generateToken(user) {
 }
 
 function setAuthCookie(res, token) {
-  res.cookie('bd_auth_token', token, {
+  const encryptedToken = encryptCookieToken(token);
+  res.cookie('bd_auth_token', encryptedToken, {
     httpOnly: true,
     // `secure` is only true in production because local dev serves the API
     // over plain HTTP; browsers drop secure cookies on an insecure origin,
